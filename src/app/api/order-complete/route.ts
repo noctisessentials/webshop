@@ -154,6 +154,57 @@ export async function POST(request: Request) {
     }
 
     const order = await res.json()
+
+    // Sync contact + order to Omnisend
+    const omnisendKey = process.env.OMNISEND_API_KEY
+    if (omnisendKey) {
+      // Upsert contact (subscribe if opted in, non-subscribed otherwise)
+      const contactPayload = {
+        email: shipping.email,
+        firstName: shipping.firstName,
+        lastName: shipping.lastName,
+        ...(shipping.newsletterOptIn
+          ? { status: 'subscribed', statusDate: new Date().toISOString(), tags: ['newsletter'] }
+          : { status: 'nonSubscribed' }),
+      }
+      await fetch('https://api.omnisend.com/v3/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
+        body: JSON.stringify(contactPayload),
+      }).catch(() => {})
+
+      // Send order event for abandoned cart / post-purchase flows
+      const orderItems = lineItems.map(({ wcId, quantity }) => ({
+        productID: String(wcId),
+        quantity,
+        price: 0,
+      }))
+      await fetch('https://api.omnisend.com/v3/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
+        body: JSON.stringify({
+          orderID: String(order.id),
+          orderNumber: order.number,
+          email: shipping.email,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          currency: 'EUR',
+          orderSum: paymentIntent.amount / 100,
+          paymentStatus: 'paid',
+          fulfillmentStatus: 'unfulfilled',
+          products: orderItems,
+          shippingAddress: {
+            firstName: shipping.firstName,
+            lastName: shipping.lastName,
+            address: shipping.address1,
+            city: shipping.city,
+            zip: shipping.postcode,
+            country: shipping.country,
+          },
+        }),
+      }).catch(() => {})
+    }
+
     return NextResponse.json({ orderId: order.id, orderNumber: order.number })
   } catch (err) {
     console.error('[order-complete]', err)

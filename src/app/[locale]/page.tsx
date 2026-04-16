@@ -20,14 +20,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const isEn = locale === 'en'
+  const title = isEn ? 'Noctis — Stylish Kitchen Accessories' : 'Noctis — Stijlvolle Keukenaccessoires'
+  const description = isEn
+    ? 'Discover Noctis: stylish kitchen accessories that bring calm and cohesion to your kitchen. Free shipping · 14-day returns · 5,000+ happy customers.'
+    : 'Ontdek de collectie van Noctis: stijlvolle keukenaccessoires die rust en eenheid brengen in jouw keuken. Gratis verzending · 14 dagen retourneren · 5.000+ tevreden klanten.'
   return {
-    title: isEn
-      ? 'Noctis — Stylish Kitchen Accessories'
-      : 'Noctis — Stijlvolle Keukenaccessoires',
-    description: isEn
-      ? 'Stylish kitchen accessories and tools. Curated for calm and cohesion. Free shipping. 14-day returns.'
-      : 'Stijlvolle keukenaccessoires en tools. Samengesteld voor rust en eenheid in je keuken. Gratis verzending. 14 dagen retourneren.',
+    title,
+    description,
     alternates: buildAlternates(),
+    openGraph: {
+      title,
+      description,
+      images: [{ url: '/images/og-home.webp', width: 1200, height: 630, alt: title }],
+    },
   }
 }
 

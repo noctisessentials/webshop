@@ -9,10 +9,22 @@ export function Newsletter() {
   const t = useTranslations('home.newsletter')
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email) setSubmitted(true)
+    if (!email) return
+    setLoading(true)
+    try {
+      await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+    } finally {
+      setLoading(false)
+      setSubmitted(true)
+    }
   }
 
   return (
@@ -56,8 +68,8 @@ export function Newsletter() {
                   required
                   className="flex-1 h-12 px-4 bg-white/8 border border-white/15 text-light placeholder:text-light/30 text-sm font-sans rounded-full focus:outline-none focus:border-accent/60 transition-colors duration-200"
                 />
-                <Button variant="accent" size="md" type="submit" className="rounded-full">
-                  {t('submit')}
+                <Button variant="accent" size="md" type="submit" disabled={loading} className="rounded-full">
+                  {loading ? '...' : t('submit')}
                 </Button>
               </form>
             )}
