@@ -171,33 +171,32 @@ export function CartDrawer() {
           aria-label={t('title')}
         >
           {/* Header */}
-          <div className="px-6 pt-6 pb-4">
+          <div className="px-5 pt-4 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShoppingBag size={18} strokeWidth={1.5} className="text-dark" />
-                <span className="font-sans text-[34px] leading-none font-semibold text-dark">
+                <ShoppingBag size={16} strokeWidth={1.5} className="text-dark" />
+                <span className="font-sans text-xl leading-none font-semibold text-dark">
                   {t('title')}
                 </span>
+                {count > 0 && (
+                  <span className="text-sm font-sans text-muted">
+                    ({count} {count === 1 ? t('itemSingular') : t('itemPlural')})
+                  </span>
+                )}
               </div>
               <Dialog.Close asChild>
                 <button
-                  className="h-11 w-11 rounded-full bg-white border border-border text-dark hover:bg-surface transition-colors duration-200 flex items-center justify-center"
+                  className="h-9 w-9 rounded-full bg-white border border-border text-dark hover:bg-surface transition-colors duration-200 flex items-center justify-center"
                   aria-label={t('close')}
                 >
-                  <X size={20} strokeWidth={1.8} />
+                  <X size={18} strokeWidth={1.8} />
                 </button>
               </Dialog.Close>
             </div>
-
-            {count > 0 && (
-              <p className="mt-1.5 text-sm font-sans text-muted">
-                {count} {count === 1 ? t('itemSingular') : t('itemPlural')}
-              </p>
-            )}
           </div>
 
           {/* Items */}
-          <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <div className="flex-1 overflow-y-auto px-5 pb-4">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full gap-4 px-2 text-center">
                 <ShoppingBag size={46} strokeWidth={1.2} className="text-border" />
@@ -221,9 +220,9 @@ export function CartDrawer() {
 
                 <ul className="space-y-4">
                   {items.map((item) => (
-                    <li key={item.id} className="rounded-2xl border border-border bg-white p-3.5">
+                    <li key={item.id} className="rounded-2xl border border-border bg-white p-3">
                       <div className="flex gap-3">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-surface border border-border">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-surface border border-border">
                           {item.product.images[0] ? (
                             <Image
                               src={item.product.images[0].src}
@@ -240,7 +239,7 @@ export function CartDrawer() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="font-sans text-lg font-semibold text-dark leading-snug">
+                          <p className="font-sans text-sm font-semibold text-dark leading-snug">
                             {getCartItemTitle(item.product, item.color, isEn)}
                           </p>
                           <p className="text-sm font-sans text-muted mt-0.5">
@@ -288,7 +287,7 @@ export function CartDrawer() {
 
                 {visibleSuggestions.length > 0 && (
                   <div className="pt-2">
-                    <h3 className="text-2xl font-sans font-semibold text-dark mb-3">
+                    <h3 className="text-base font-sans font-semibold text-dark mb-3">
                       {t('upsellTitle')}
                     </h3>
                     <div className="grid grid-cols-2 gap-2.5">

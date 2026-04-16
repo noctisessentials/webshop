@@ -34,19 +34,50 @@ export function HomeBlogHighlights({ posts }: { posts: BlogPost[] }) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] gap-4">
+        {/* Mobile: horizontal scroll */}
+        <div className="flex lg:hidden gap-4 overflow-x-auto pb-2 -mx-4 px-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+          {[featured, ...secondary].map((post) => (
+            <article key={post.slug} className="group bg-white border border-border rounded-[16px] overflow-hidden flex-shrink-0 w-[72vw] max-w-[300px]">
+              <Link href={`/blog/${post.slug}`} className="flex flex-col h-full">
+                <div className="relative aspect-[4/3]">
+                  <Image
+                    src={post.image}
+                    alt={post.imageAlt}
+                    fill
+                    className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                    sizes="300px"
+                  />
+                </div>
+                <div className="p-4 flex flex-col flex-1">
+                  <p className="text-xs font-sans text-muted">
+                    {formatDate(post.date)} · {post.readTimeMinutes} min
+                  </p>
+                  <h3 className="mt-1.5 font-sans font-semibold text-dark text-base leading-snug line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <span className="mt-auto pt-3 text-xs font-sans font-semibold text-accent-dark">
+                    Lees artikel →
+                  </span>
+                </div>
+              </Link>
+            </article>
+          ))}
+        </div>
+
+        {/* Desktop: grid */}
+        <div className="hidden lg:grid grid-cols-[1.25fr_0.75fr] gap-4">
           <article className="group bg-white border border-border rounded-[16px] overflow-hidden">
-            <Link href={`/blog/${featured.slug}`} className="grid grid-cols-1 md:grid-cols-[48%_1fr] h-full">
-              <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[320px]">
+            <Link href={`/blog/${featured.slug}`} className="grid grid-cols-[48%_1fr] h-full">
+              <div className="relative aspect-auto min-h-[320px]">
                 <Image
                   src={featured.image}
                   alt={featured.imageAlt}
                   fill
                   className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
-                  sizes="(max-width: 1024px) 100vw, 720px"
+                  sizes="720px"
                 />
               </div>
-              <div className="p-5 md:p-6 flex flex-col">
+              <div className="p-6 flex flex-col">
                 <p className="text-xs font-sans text-muted">
                   {featured.author} · {formatDate(featured.date)} · {featured.readTimeMinutes} min leestijd
                 </p>
@@ -66,7 +97,7 @@ export function HomeBlogHighlights({ posts }: { posts: BlogPost[] }) {
           <div className="space-y-4">
             {secondary.map((post) => (
               <article key={post.slug} className="group bg-white border border-border rounded-[16px] overflow-hidden">
-                <Link href={`/blog/${post.slug}`} className="grid grid-cols-[110px_1fr] md:grid-cols-[120px_1fr]">
+                <Link href={`/blog/${post.slug}`} className="grid grid-cols-[120px_1fr]">
                   <div className="relative h-full min-h-[120px]">
                     <Image
                       src={post.image}

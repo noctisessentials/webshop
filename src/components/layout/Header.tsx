@@ -129,7 +129,6 @@ export function Header() {
             </Link>
 
             <div className="flex items-center gap-4">
-              <LanguageSwitcher compact />
               <button
                 className="relative p-1 text-dark hover:text-accent transition-colors duration-200"
                 onClick={openCart}
@@ -241,17 +240,18 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="font-serif text-2xl font-light text-dark hover:text-accent transition-colors duration-200"
+                  className="font-sans text-xl font-medium text-dark hover:text-accent transition-colors duration-200"
                 >
                   {link.label}
                 </Link>
               ))}
             </nav>
 
-            <div className="px-6 py-8 border-t border-border">
+            <div className="px-6 py-6 border-t border-border flex items-center justify-between">
               <p className="text-xs font-sans text-muted tracking-wide">
                 {t('mobileFooter')}
               </p>
+              <LanguageSwitcher />
             </div>
           </div>
         </div>

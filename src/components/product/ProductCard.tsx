@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/lib/data'
@@ -66,7 +66,7 @@ export function ProductCard({
 
   return (
     <Link
-      href={`/products/${product.handle}`}
+      href={{ pathname: '/products/[handle]', params: { handle: product.handle } }}
       className="group block"
       aria-label={displayName}
     >

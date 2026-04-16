@@ -121,7 +121,12 @@ export default async function ProductPage({
   params: Promise<{ locale: string; handle: string }>
 }) {
   const { handle, locale } = await params
-  const product = await getWCProductByHandle(handle)
+  let product
+  try {
+    product = await getWCProductByHandle(handle)
+  } catch {
+    notFound()
+  }
 
   if (!product) notFound()
 

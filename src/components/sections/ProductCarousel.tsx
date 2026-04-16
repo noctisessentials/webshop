@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/lib/data'
@@ -270,11 +270,16 @@ export function ProductCarousel({
             onMouseDown={(e) => onDragStart(e.clientX)}
             onMouseMove={(e) => onDragMove(e.clientX)}
             onMouseUp={onDragEnd}
-            onTouchStart={() => {
+            onTouchStart={(e) => {
               pauseAutoScrollRef.current = true
+              onDragStart(e.touches[0].clientX)
+            }}
+            onTouchMove={(e) => {
+              onDragMove(e.touches[0].clientX)
             }}
             onTouchEnd={() => {
-              pauseAutoScrollRef.current = false
+              onDragEnd()
+              setTimeout(() => { pauseAutoScrollRef.current = false }, 1200)
             }}
             onScroll={wrapLoopPosition}
             onClickCapture={(e) => {
@@ -291,7 +296,7 @@ export function ProductCarousel({
               return (
                 <Link
                   key={`${item.id}-${index}`}
-                  href={`/products/${item.handle}`}
+                  href={{ pathname: '/products/[handle]', params: { handle: item.handle } }}
                   className="group flex-shrink-0"
                   style={{ width: 'clamp(200px, 26vw, 270px)' }}
                   onDragStart={(e) => e.preventDefault()}
