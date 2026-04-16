@@ -1,0 +1,223 @@
+{
+  "announcement": {
+    "msg1": "Gratis verzending op elke bestelling - geen minimum",
+    "msg2": "Binnen 1-2 werkdagen geleverd in Nederland en Belgi\u00eb",
+    "msg3": "14 dagen gratis retourneren - zonder gedoe",
+    "msg4": "5000+ tevreden klanten",
+    "msg5": "Persoonlijke support - antwoord binnen 24 uur"
+  },
+  "nav": {
+    "shop": "Winkel",
+    "kitchenSet": "19-delige keukenset",
+    "mills": "Peper- en zoutmolens",
+    "cuttingBoard": "Acacia snijplank",
+    "myOrders": "Mijn bestellingen",
+    "search": "Zoeken",
+    "cart": "Winkelwagen",
+    "closeNav": "Sluit navigatie",
+    "openNav": "Open navigatie",
+    "mobileFooter": "Gratis verzending · 14 dagen retourneren"
+  },
+  "footer": {
+    "tagline": "Alles voor een rustige, stijlvolle keuken. Ontworpen om dagelijks te gebruiken en om mooi te blijven.",
+    "general": "ALGEMEEN",
+    "aboutUs": "Over ons",
+    "inspiration": "Inspiratie",
+    "terms": "Algemene voorwaarden",
+    "privacy": "Privacybeleid",
+    "service": "KLANTENSERVICE",
+    "contact": "Contact",
+    "faq": "Veelgestelde vragen",
+    "shipping": "Verzendbeleid",
+    "returns": "Retourneren en terugbetalingen",
+    "rights": "Alle rechten voorbehouden."
+  },
+  "home": {
+    "hero": {
+      "socialProof": "5000+ tevreden klanten",
+      "headline1": "Een stijlvolle keuken",
+      "headline2": "begint bij Noctis.",
+      "subhead": "Van tools tot accessoires - voor een keuken die rustig oogt, voelt als jouw stijl en klopt tot in de details.",
+      "cta": "Shop nu"
+    },
+    "editorial": {
+      "eyebrow": "OVER NOCTIS",
+      "headline": "Een keuken die eindelijk klopt",
+      "body": "De meeste keukens missen geen tools.\nZe missen rust.\n\nVerschillende kleuren. Verschillende materialen.\nNiets voelt echt als een geheel en dat merk je, ook al kun je het niet precies uitleggen.\n\nNoctis is ontstaan om die rust terug te brengen.\nEen zorgvuldig samengestelde collectie waarin alles samenkomt. Visueel en functioneel. Zodat je keuken niet alleen beter werkt, maar ook beter voelt.",
+      "cta": "Ontdek de collectie"
+    },
+    "categories": {
+      "title": "Ontdek onze collecties",
+      "acacia": "Acacia snijplanken",
+      "mills": "Peper- en Zoutmolens",
+      "kitchenSet": "19-delige keukenset"
+    },
+    "faq": {
+      "eyebrow": "Veelgestelde vragen",
+      "title1": "Nog iets dat je",
+      "title2": "wilt weten?",
+      "subtitle": "We reageren op elke vraag binnen 24 uur."
+    },
+    "newsletter": {
+      "eyebrow": "Blijf op de hoogte",
+      "title1": "Gemaakt voor jouw keuken.",
+      "title2": "Rechtstreeks in je inbox.",
+      "subtitle": "Nieuwe collecties, onderhoudstips en exclusieve early access. Geen ruis.",
+      "placeholder": "Jouw e-mailadres",
+      "submit": "Aanmelden",
+      "success": "Je staat op de lijst. ✦",
+      "disclaimer": "Geen spam. Uitschrijven kan altijd."
+    }
+  },
+  "trust": {
+    "shippingTitle": "Gratis verzending",
+    "shippingBody": "Binnen 1-2 dagen geleverd",
+    "returnsTitle": "14 dagen retourneren",
+    "returnsBody": "Gratis, eenvoudig & zonder gedoe",
+    "customersTitle": "5.000+ tevreden klanten",
+    "customersBody": "Gingen je voor en upgraden hun keuken",
+    "supportTitle": "Persoonlijke support",
+    "supportBody": "Wij reageren binnen 24 uur"
+  },
+  "shop": {
+    "title": "Winkel",
+    "subtitle": "Alle Noctis producten op een plek.",
+    "empty": "Geen producten gevonden.",
+    "products": "producten",
+    "product": "product"
+  },
+  "product": {
+    "addToCart": "In winkelwagen",
+    "soldOut": "Uitverkocht",
+    "home": "Home",
+    "shop": "Winkel",
+    "whyItWorks": "Waarom het werkt.",
+    "colour": "Kleur"
+  },
+  "blog": {
+    "title": "Uit het Noctis blog",
+    "subtitle": "Praktische gidsen van Milan van Noctis over kleur, workflow, materiaalkeuzes en keukenrust. Altijd toepasbaar in echte keukens.",
+    "empty": "Nog geen artikelen beschikbaar. Kom snel terug!",
+    "featured": "Uitgelichte gids",
+    "readArticle": "Lees artikel \u2192",
+    "backToAll": "\u2190 Bekijk alle blogs",
+    "backToInspiration": "\u2190 Terug naar inspiratie",
+    "summary": "Samenvatting",
+    "contents": "Inhoud",
+    "minRead": "min leestijd",
+    "faqTitle": "Veelgestelde vragen",
+    "breadcrumb": "Inspiratie",
+    "guideLabel": "Noctis gids",
+    "relatedTitle": "Producten uit deze gids",
+    "viewAll": "Bekijk alle producten"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Heb je een vraag of opmerking? We helpen je graag. Vul het formulier in of bereik ons direct.",
+    "sendMessage": "Stuur ons een bericht",
+    "contactInfo": "Contactgegevens",
+    "email": "E-mail",
+    "availability": "Bereikbaarheid",
+    "availabilityHours": "Maandag \u2013 vrijdag: 9:00 \u2013 17:00",
+    "responseTime": "We reageren doorgaans binnen 24 uur",
+    "returnAddress": "Retouradres",
+    "country": "Nederland",
+    "usefulLinks": "Handige links",
+    "linkFaq": "\u2192 Veelgestelde vragen",
+    "linkShipping": "\u2192 Verzendbeleid",
+    "linkReturns": "\u2192 Retourneren",
+    "faqSectionTitle": "Veelgestelde vragen",
+    "moreFaq": "Meer vragen?",
+    "viewAllFaq": "Bekijk alle veelgestelde vragen",
+    "breadcrumb": "Contact",
+    "faqQ1": "Waar is mijn bestelling?",
+    "faqA1": "Na verzending ontvang je een e-mail met een track & trace-link van PostNL of DHL. Heb je die e-mail niet ontvangen? Controleer je spammap of neem contact met ons op.",
+    "faqQ2": "Hoe lang duurt de levering?",
+    "faqA2": "Bestellingen geplaatst v\u00f3\u00f3r 17:00 worden dezelfde dag verzonden. Je ontvangt je pakket de volgende werkdag. Gemiddeld 1\u20132 werkdagen na bestelling.",
+    "faqQ3": "Kan ik mijn bestelling annuleren?",
+    "faqA3": "Annuleren is alleen mogelijk binnen 2 uur na het plaatsen van je bestelling, zolang de order nog niet is bevestigd en verzonden. Na verzending is annulering niet meer mogelijk. Neem dan de retourprocedure aan.",
+    "faqQ4": "Hoe werkt het retourneren?",
+    "faqA4": "Je kunt producten binnen 14 dagen retourneren. Stuur een e-mail naar info@noctisessentials.nl met je ordernummer en reden. Je ontvangt een gratis retourlabel."
+  },
+  "about": {
+    "title": "Over Noctis",
+    "breadcrumb": "Over ons",
+    "contactCta": "Neem contact op"
+  },
+  "faqPage": {
+    "title": "Veelgestelde vragen",
+    "breadcrumb": "FAQ",
+    "intro": "Staat je vraag er niet bij?",
+    "contactLink": "Neem contact op",
+    "introOr": "of mail naar"
+  },
+  "returns": {
+    "title": "Retourneren en terugbetalingen",
+    "breadcrumb": "Retourneren"
+  },
+  "privacy": {
+    "title": "Privacybeleid",
+    "breadcrumb": "Privacybeleid"
+  },
+  "shippingPage": {
+    "title": "Verzendbeleid",
+    "breadcrumb": "Verzendbeleid"
+  },
+  "terms": {
+    "title": "Algemene voorwaarden",
+    "breadcrumb": "Algemene voorwaarden"
+  },
+  "account": {
+    "title": "Mijn bestellingen",
+    "subtitle": "Voer je e-mailadres en ordernummer in om de status van je bestelling te bekijken.",
+    "helpTitle": "Hulp nodig?",
+    "helpText": "Vind je ordernummer in de bevestigingsmail die je na aankoop hebt ontvangen.",
+    "noEmail": "Geen e-mail ontvangen?",
+    "contactUs": "Neem contact op",
+    "orEmail": "of mail naar",
+    "breadcrumb": "Mijn bestellingen"
+  },
+  "cart": {
+    "title": "Jouw winkelwagen",
+    "close": "Sluit winkelwagen",
+    "itemSingular": "artikel",
+    "itemPlural": "artikelen",
+    "emptyTitle": "Je winkelwagen is leeg",
+    "emptyBody": "Ontdek onze stijlvolle keuken essentials.",
+    "shopNow": "Shop nu",
+    "freeShipping": "Je hebt gratis verzending!",
+    "freeShippingProgress": "Nog {amount} voor gratis verzending",
+    "remove": "Verwijder product",
+    "addOne": "Voeg er een toe",
+    "quantity": "Aantal:",
+    "colour": "Kleur:",
+    "upsellTitle": "Maak je keuken compleet.",
+    "viewProduct": "Bekijk product",
+    "discount": "Korting",
+    "shipping": "Verzending",
+    "free": "Gratis",
+    "subtotal": "Subtotaal",
+    "checkout": "Doorgaan",
+    "paymentAlt": "Betaalmethodes"
+  },
+  "search": {
+    "placeholder": "Zoek producten...",
+    "searching": "Zoeken\u2026",
+    "noResults": "Geen resultaten voor",
+    "suggestions": "Aanbevolen producten",
+    "viewAll": "Bekijk alle producten",
+    "addToCart": "In winkelwagen",
+    "soldOut": "Uitverkocht",
+    "close": "Sluit zoeken"
+  },
+  "collection": {
+    "products": "producten",
+    "product": "product",
+    "empty": "Geen producten gevonden."
+  },
+  "common": {
+    "home": "Home",
+    "viewProduct": "Bekijk product",
+    "addToCart": "In winkelwagen"
+  }
+}

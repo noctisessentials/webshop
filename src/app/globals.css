@@ -1,26 +1,321 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ===========================
+   NOCTIS ESSENTIALS DESIGN TOKENS
+=========================== */
+
+@theme {
+  /* Colors */
+  --color-dark: #1E1D1D;
+  --color-dark-mid: #3D3C3C;
+  --color-light: #F9F9F9;
+  --color-accent: #A4744C;
+  --color-accent-dark: #8B5E38;
+  --color-muted: #8B8B8B;
+  --color-border: #E8E6E3;
+  --color-surface: #F3F1EE;
+
+  /* Typography */
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), Georgia, serif;
+
+  /* Spacing extensions */
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+  --spacing-26: 6.5rem;
+  --spacing-30: 7.5rem;
+  --spacing-34: 8.5rem;
+  --spacing-38: 9.5rem;
+  --spacing-42: 10.5rem;
+  --spacing-50: 12.5rem;
+  --spacing-58: 14.5rem;
+  --spacing-70: 17.5rem;
+
+  /* Border radius — rounded-first design system */
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 12px rgba(30,29,29,0.06);
+  --shadow-card-hover: 0 8px 32px rgba(30,29,29,0.10);
+  --shadow-drawer: -4px 0 40px rgba(30,29,29,0.12);
+  --shadow-sm: 0 1px 4px rgba(30,29,29,0.06);
+
+  /* Animations */
+  --animate-fade-up: fadeUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  --animate-fade-in: fadeIn 0.4s ease forwards;
+  --animate-slide-left: slideLeft 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  --animate-marquee: marquee 28s linear infinite;
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+  @keyframes slideLeft {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+  @keyframes drawerIn {
+    from { transform: translateX(100%); opacity: 0.98; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes drawerOut {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(100%); opacity: 0.98; }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @keyframes marqueeReverse {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
+  }
+  @keyframes accordionDown {
+    from { height: 0; opacity: 0; }
+    to   { height: var(--radix-accordion-content-height); opacity: 1; }
+  }
+  @keyframes accordionUp {
+    from { height: var(--radix-accordion-content-height); opacity: 1; }
+    to   { height: 0; opacity: 0; }
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @keyframes hotspotPulse {
+    0%, 100% { scale: 1; }
+    50% { scale: 1.06; }
+  }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ===========================
+   BASE RESETS
+=========================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+/* Slight global zoom-out on desktop to match ~90% browser zoom feel */
+@media (min-width: 1024px) {
+  html {
+    zoom: 0.9;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-dark);
+  /* Warm page canvas — sections "float" on this with rounded corners */
+  background-color: #EDEAE5;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+::selection {
+  background-color: rgba(30,29,29,0.12);
+  color: var(--color-dark);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: 3px;
+}
+
+/* Search modal — no visible focus ring or selection tint on the input */
+.search-modal-input:focus,
+.search-modal-input:focus-visible {
+  outline: none;
+}
+.search-modal-input::selection {
+  background-color: rgba(30,29,29,0.10);
+  color: var(--color-dark);
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
+
+/* ===========================
+   TYPOGRAPHY
+=========================== */
+
+.font-serif { font-family: var(--font-serif); }
+.font-sans  { font-family: var(--font-sans); }
+
+/* ===========================
+   LAYOUT HELPERS
+=========================== */
+
+.container-content {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+@media (min-width: 768px) {
+  .container-content { padding-inline: 40px; }
+}
+@media (min-width: 1280px) {
+  .container-content { padding-inline: 60px; }
+}
+
+.container-narrow {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.section-py {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+@media (min-width: 768px) {
+  .section-py { padding-top: 120px; padding-bottom: 120px; }
+}
+
+.section-py-sm {
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+@media (min-width: 768px) {
+  .section-py-sm { padding-top: 64px; padding-bottom: 64px; }
+}
+
+/* ===========================
+   SECTION FRAME SYSTEM
+   Sections float on the page bg with rounded corners + margin
+=========================== */
+
+/* Outer wrapper — controls the gap between sections */
+.section-gap {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-inline: 8px;
+}
+@media (min-width: 640px) {
+  .section-gap {
+    padding-inline: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
+@media (min-width: 1024px) {
+  .section-gap {
+    padding-inline: 16px;
+  }
+}
+
+/* Inner rounded frame */
+.section-frame {
+  border-radius: 20px;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .section-frame {
+    border-radius: 24px;
+  }
+}
+
+/* Card rounding — for product cards, review cards, etc */
+.card-round {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Image rounding */
+.img-round {
+  border-radius: 14px;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .img-round {
+    border-radius: 18px;
+  }
+}
+
+/* ===========================
+   PRODUCT IMAGE HOVER
+=========================== */
+
+.product-image-wrap {
+  overflow: hidden;
+  position: relative;
+}
+.product-image-wrap img {
+  transition: transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.product-image-wrap:hover img {
+  transform: scale(1.04);
+}
+
+/* ===========================
+   ACCORDION RADIX
+=========================== */
+
+.accordion-content[data-state='open'] {
+  animation: accordionDown 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.accordion-content[data-state='closed'] {
+  animation: accordionUp 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ===========================
+   SKELETON
+=========================== */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    var(--color-surface) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 2px;
+}
+
+/* ===========================
+   MARQUEE
+=========================== */
+
+.marquee-track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: max-content;
+  animation: marquee 32s linear infinite;
+}
+.marquee-track-reverse {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: max-content;
+  animation: marqueeReverse 32s linear infinite;
+}
+
+.hotspot-bubble {
+  animation: hotspotPulse 2.6s ease-in-out infinite;
 }

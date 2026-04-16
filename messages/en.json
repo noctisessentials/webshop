@@ -1,0 +1,223 @@
+{
+  "announcement": {
+    "msg1": "Free shipping on every order \u2014 no minimum",
+    "msg2": "Delivered in 1\u20132 business days in NL & BE",
+    "msg3": "14-day free returns \u2014 no hassle",
+    "msg4": "5,000+ happy customers",
+    "msg5": "Personal support \u2014 reply within 24 hours"
+  },
+  "nav": {
+    "shop": "Shop",
+    "kitchenSet": "19-Piece Kitchen Set",
+    "mills": "Pepper & Salt Mills",
+    "cuttingBoard": "Acacia Cutting Board",
+    "myOrders": "My Orders",
+    "search": "Search",
+    "cart": "Cart",
+    "closeNav": "Close navigation",
+    "openNav": "Open navigation",
+    "mobileFooter": "Free shipping \u00b7 14-day returns"
+  },
+  "footer": {
+    "tagline": "Everything for a calm, stylish kitchen. Designed for daily use and lasting beauty.",
+    "general": "GENERAL",
+    "aboutUs": "About us",
+    "inspiration": "Inspiration",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "service": "CUSTOMER SERVICE",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "shipping": "Shipping Policy",
+    "returns": "Returns & Refunds",
+    "rights": "All rights reserved."
+  },
+  "home": {
+    "hero": {
+      "socialProof": "5,000+ happy customers",
+      "headline1": "A stylish kitchen",
+      "headline2": "starts with Noctis.",
+      "subhead": "From tools to accessories \u2014 for a kitchen that looks calm, feels like your style, and gets every detail right.",
+      "cta": "Shop now"
+    },
+    "editorial": {
+      "eyebrow": "ABOUT NOCTIS",
+      "headline": "A kitchen that finally makes sense",
+      "body": "Most kitchens don\u2019t lack tools.\nThey lack calm.\n\nDifferent colours. Different materials.\nNothing feels truly cohesive \u2014 and you feel it, even if you can\u2019t quite explain why.\n\nNoctis was created to bring that calm back.\nA carefully curated collection where everything comes together. Visually and functionally. So your kitchen doesn\u2019t just work better, it feels better.",
+      "cta": "Discover the collection"
+    },
+    "categories": {
+      "title": "Discover our collections",
+      "acacia": "Acacia Cutting Boards",
+      "mills": "Pepper & Salt Mills",
+      "kitchenSet": "19-Piece Kitchen Set"
+    },
+    "faq": {
+      "eyebrow": "Frequently asked questions",
+      "title1": "Anything else",
+      "title2": "you\u2019d like to know?",
+      "subtitle": "We respond to every question within 24 hours."
+    },
+    "newsletter": {
+      "eyebrow": "Stay in the loop",
+      "title1": "Made for your kitchen.",
+      "title2": "Straight to your inbox.",
+      "subtitle": "New collections, care tips and exclusive early access. No noise.",
+      "placeholder": "Your email address",
+      "submit": "Subscribe",
+      "success": "You\u2019re on the list. \u2726",
+      "disclaimer": "No spam. Unsubscribe anytime."
+    }
+  },
+  "trust": {
+    "shippingTitle": "Free shipping",
+    "shippingBody": "Delivered within 1\u20132 business days",
+    "returnsTitle": "14-day returns",
+    "returnsBody": "Free, easy & no hassle",
+    "customersTitle": "5,000+ happy customers",
+    "customersBody": "Already upgraded their kitchen",
+    "supportTitle": "Personal support",
+    "supportBody": "We respond within 24 hours"
+  },
+  "shop": {
+    "title": "Shop",
+    "subtitle": "All Noctis products in one place.",
+    "empty": "No products found.",
+    "products": "products",
+    "product": "product"
+  },
+  "product": {
+    "addToCart": "Add to Cart",
+    "soldOut": "Sold Out",
+    "home": "Home",
+    "shop": "Shop",
+    "whyItWorks": "Why it works.",
+    "colour": "Colour"
+  },
+  "blog": {
+    "title": "From the Noctis blog",
+    "subtitle": "Practical guides by Milan from Noctis on colour, workflow, material choices and kitchen calm. Always applicable in real kitchens.",
+    "empty": "No articles yet. Check back soon!",
+    "featured": "Featured guide",
+    "readArticle": "Read article \u2192",
+    "backToAll": "\u2190 View all articles",
+    "backToInspiration": "\u2190 Back to inspiration",
+    "summary": "Summary",
+    "contents": "Contents",
+    "minRead": "min read",
+    "faqTitle": "Frequently asked questions",
+    "breadcrumb": "Inspiration",
+    "guideLabel": "Noctis guide",
+    "relatedTitle": "Products from this guide",
+    "viewAll": "View all products"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Have a question or comment? We\u2019re happy to help. Fill in the form or reach us directly.",
+    "sendMessage": "Send us a message",
+    "contactInfo": "Contact details",
+    "email": "Email",
+    "availability": "Availability",
+    "availabilityHours": "Monday \u2013 Friday: 9:00 \u2013 17:00 CET",
+    "responseTime": "We usually respond within 24 hours",
+    "returnAddress": "Return address",
+    "country": "The Netherlands",
+    "usefulLinks": "Useful links",
+    "linkFaq": "\u2192 FAQ",
+    "linkShipping": "\u2192 Shipping Policy",
+    "linkReturns": "\u2192 Returns",
+    "faqSectionTitle": "Frequently asked questions",
+    "moreFaq": "More questions?",
+    "viewAllFaq": "View all FAQs",
+    "breadcrumb": "Contact",
+    "faqQ1": "Where is my order?",
+    "faqA1": "After dispatch you will receive an email with a track & trace link from PostNL or DHL. Haven\u2019t received it? Check your spam folder or contact us.",
+    "faqQ2": "How long does delivery take?",
+    "faqA2": "Orders placed before 17:00 are shipped the same day. You will receive your package the next business day \u2014 on average 1\u20132 business days after ordering.",
+    "faqQ3": "Can I cancel my order?",
+    "faqA3": "Cancellation is only possible within 2 hours of placing your order, as long as it has not yet been confirmed and dispatched. After dispatch, cancellation is no longer possible \u2014 please use the return procedure instead.",
+    "faqQ4": "How do returns work?",
+    "faqA4": "You can return products within 14 days. Send an email to info@noctisessentials.nl with your order number and reason. You will receive a free return label."
+  },
+  "about": {
+    "title": "About Noctis",
+    "breadcrumb": "About us",
+    "contactCta": "Get in touch"
+  },
+  "faqPage": {
+    "title": "FAQ",
+    "breadcrumb": "FAQ",
+    "intro": "Can't find your answer?",
+    "contactLink": "contact us",
+    "introOr": "or email"
+  },
+  "returns": {
+    "title": "Returns & Refunds",
+    "breadcrumb": "Returns"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "breadcrumb": "Privacy Policy"
+  },
+  "shippingPage": {
+    "title": "Shipping Policy",
+    "breadcrumb": "Shipping Policy"
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "breadcrumb": "Terms & Conditions"
+  },
+  "account": {
+    "title": "My Orders",
+    "subtitle": "Enter your email address and order number to view your order status.",
+    "helpTitle": "Need help?",
+    "helpText": "You can find your order number in the confirmation email you received after purchase.",
+    "noEmail": "Didn\u2019t receive an email?",
+    "contactUs": "Contact us",
+    "orEmail": "or email",
+    "breadcrumb": "My Orders"
+  },
+  "cart": {
+    "title": "Your cart",
+    "close": "Close cart",
+    "itemSingular": "item",
+    "itemPlural": "items",
+    "emptyTitle": "Your cart is empty",
+    "emptyBody": "Discover our stylish kitchen essentials.",
+    "shopNow": "Shop now",
+    "freeShipping": "You have free shipping!",
+    "freeShippingProgress": "{amount} away from free shipping",
+    "remove": "Remove item",
+    "addOne": "Add one",
+    "quantity": "Quantity:",
+    "colour": "Colour:",
+    "upsellTitle": "Complete your kitchen.",
+    "viewProduct": "View product",
+    "discount": "Discount",
+    "shipping": "Shipping",
+    "free": "Free",
+    "subtotal": "Subtotal",
+    "checkout": "Checkout",
+    "paymentAlt": "Payment methods"
+  },
+  "search": {
+    "placeholder": "Search products...",
+    "searching": "Searching\u2026",
+    "noResults": "No results for",
+    "suggestions": "Recommended products",
+    "viewAll": "View all products",
+    "addToCart": "Add to Cart",
+    "soldOut": "Sold Out",
+    "close": "Close search"
+  },
+  "collection": {
+    "products": "products",
+    "product": "product",
+    "empty": "No products found."
+  },
+  "common": {
+    "home": "Home",
+    "viewProduct": "View product",
+    "addToCart": "Add to Cart"
+  }
+}
