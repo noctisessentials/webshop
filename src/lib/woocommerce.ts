@@ -199,9 +199,16 @@ async function fetchRawProducts(): Promise<WCProduct[]> {
     'id,name,slug,type,price,regular_price,sale_price,stock_status,short_description,images,categories,featured'
   )
 
-  const res = await fetch(url.toString(), { next: { revalidate: 900 } })
-  if (!res.ok) {
-    console.error(`[WC] API error ${res.status}`)
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 900 },
+    signal: AbortSignal.timeout(8000),
+  }).catch((err) => {
+    console.error('[WC] Fetch failed:', err)
+    return null
+  })
+
+  if (!res || !res.ok) {
+    console.error(`[WC] API error ${res?.status ?? 'no response'}`)
     return []
   }
   return res.json()
