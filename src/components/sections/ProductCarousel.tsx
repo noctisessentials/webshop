@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import { Link } from '@/i18n/navigation'
+import PlainLink from 'next/link'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/lib/data'
@@ -349,12 +350,12 @@ export function ProductCarousel({
 
         {showViewAllLink && (
           <div className="mt-5 text-center">
-            <Link
+            <PlainLink
               href={viewAllHref}
               className="text-xs font-sans font-semibold uppercase tracking-widest text-muted hover:text-dark transition-colors duration-200 underline underline-offset-4"
             >
               {viewAllLabel}
-            </Link>
+            </PlainLink>
           </div>
         )}
       </div>
