@@ -48,15 +48,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  if (
-    event.type !== 'payment_intent.payment_failed' &&
-    event.type !== 'payment_intent.canceled'
-  ) {
-    return NextResponse.json({ received: true })
-  }
-
-  const paymentIntent = event.data.object as Stripe.PaymentIntent
-
   const WC_URL = process.env.NEXT_PUBLIC_WC_URL
   const WC_KEY = process.env.WC_CONSUMER_KEY
   const WC_SECRET = process.env.WC_CONSUMER_SECRET
@@ -67,6 +58,59 @@ export async function POST(request: Request) {
   }
 
   const credentials = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString('base64')
+
+  // ── payment_intent.succeeded → attach Stripe receipt URL to Omnisend order ──
+  if (event.type === 'payment_intent.succeeded') {
+    const intentId = (event.data.object as Stripe.PaymentIntent).id
+
+    // Retrieve full PaymentIntent with the charge expanded so we get receipt_url
+    const fullIntent = await stripe.paymentIntents.retrieve(intentId, {
+      expand: ['latest_charge'],
+    })
+
+    const charge = fullIntent.latest_charge as Stripe.Charge | null
+    const receiptUrl = charge?.receipt_url ?? null
+
+    if (!receiptUrl) {
+      console.warn('[stripe-webhook] payment_intent.succeeded: no receipt_url for', intentId)
+      return NextResponse.json({ received: true })
+    }
+
+    // Find the WooCommerce order that was created by the order-complete route
+    const wcOrder = await findExistingOrder(WC_URL, credentials, intentId)
+    if (!wcOrder) {
+      // This can happen if the webhook fires before the client-side order-complete call finishes.
+      // Log and return 200 so Stripe doesn't retry — the receipt link is still in Stripe dashboard.
+      console.warn('[stripe-webhook] payment_intent.succeeded: WC order not yet found for', intentId)
+      return NextResponse.json({ received: true })
+    }
+
+    // PATCH the Omnisend order so order-confirmation emails can include the receipt link
+    const omnisendKey = process.env.OMNISEND_API_KEY
+    if (omnisendKey) {
+      await fetch(`https://api.omnisend.com/v3/orders/${wcOrder.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
+        body: JSON.stringify({ orderUrl: receiptUrl }),
+      }).catch((err) => console.error('[stripe-webhook] Omnisend PATCH failed:', err))
+
+      console.log(
+        `[stripe-webhook] Attached receipt URL to Omnisend order ${wcOrder.id}: ${receiptUrl}`
+      )
+    }
+
+    return NextResponse.json({ received: true, orderId: wcOrder.id, receiptUrl })
+  }
+
+  // ── payment_intent.payment_failed / canceled → create failed WC order ────────
+  if (
+    event.type !== 'payment_intent.payment_failed' &&
+    event.type !== 'payment_intent.canceled'
+  ) {
+    return NextResponse.json({ received: true })
+  }
+
+  const paymentIntent = event.data.object as Stripe.PaymentIntent
 
   // Don't create a duplicate if we already logged this intent
   const existing = await findExistingOrder(WC_URL, credentials, paymentIntent.id)
@@ -105,7 +149,6 @@ export async function POST(request: Request) {
       : {}),
   }
 
-  // Add billing info if available (receipt_email is the most we reliably have)
   if (paymentIntent.receipt_email) {
     body.billing = { email: paymentIntent.receipt_email }
   }
