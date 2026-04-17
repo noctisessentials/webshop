@@ -1,29 +1,36 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { SectionFrame } from '@/components/ui/SectionFrame'
 import { useTranslations } from 'next-intl'
+import { TurnstileWidget } from '@/components/ui/TurnstileWidget'
+import { useLocale } from 'next-intl'
 
 export function Newsletter() {
   const t = useTranslations('home.newsletter')
+  const locale = useLocale()
   const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const [honeypot, setHoneypot] = useState('')
+  const [status, setStatus] = useState<'idle' | 'success' | 'already'>('idle')
   const [loading, setLoading] = useState(false)
+  const turnstileToken = useRef<string | null>(null)
+  const onTurnstileToken = useCallback((token: string) => { turnstileToken.current = token }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
     setLoading(true)
     try {
-      await fetch('/api/newsletter', {
+      const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website: honeypot, turnstileToken: turnstileToken.current, locale }),
       })
+      const data = await res.json()
+      setStatus(data.alreadySubscribed ? 'already' : 'success')
     } finally {
       setLoading(false)
-      setSubmitted(true)
     }
   }
 
@@ -49,10 +56,23 @@ export function Newsletter() {
               {t('subtitle')}
             </p>
 
-            {submitted ? (
+            {/* Honeypot + Turnstile — invisible to humans */}
+            <input
+              name="website"
+              type="text"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
+            />
+            <TurnstileWidget onToken={onTurnstileToken} />
+
+            {status !== 'idle' ? (
               <div className="py-4">
                 <p className="font-sans font-semibold text-lg text-light/80">
-                  {t('success')}
+                  {status === 'already' ? t('alreadySubscribed') : t('success')}
                 </p>
               </div>
             ) : (

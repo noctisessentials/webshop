@@ -294,6 +294,7 @@ export default function CheckoutPage() {
       const { clientSecret: cs } = await res.json()
       setClientSecret(cs)
       setStep('payment')
+
       // Meta Pixel: InitiateCheckout
       if (typeof window !== 'undefined' && window.fbq) {
         window.fbq('track', 'InitiateCheckout', {
@@ -301,6 +302,26 @@ export default function CheckoutPage() {
           currency: 'EUR',
           num_items: count,
         })
+      }
+
+      // Omnisend: identify contact + fire $startedCheckout so the
+      // "Abandoned Checkout" automation (trigger: Started checkout) fires
+      // if the customer doesn't complete payment within the configured delay.
+      if (typeof window !== 'undefined' && window.omnisend) {
+        window.omnisend.push(['identify', { email: shipping.email }])
+        window.omnisend.push(['track', '$startedCheckout', {
+          $cartID: `checkout-${shipping.email}`,
+          $currency: 'EUR',
+          $cartTotal: total,
+          $checkoutURL: `${window.location.origin}/checkout`,
+          $lineItems: items.map((i) => ({
+            $productID: String(i.color.wcId),
+            $productTitle: i.product.title,
+            $quantity: i.quantity,
+            $price: i.product.price,
+            $currency: 'EUR',
+          })),
+        }])
       }
     } catch {
       setIntentError('Er ging iets mis. Probeer het opnieuw.')

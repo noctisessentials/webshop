@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useLocale } from 'next-intl'
+import { TurnstileWidget } from '@/components/ui/TurnstileWidget'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
@@ -9,7 +10,9 @@ export default function ContactForm() {
   const locale = useLocale()
   const isEn = locale === 'en'
   const [status, setStatus] = useState<Status>('idle')
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' })
+  const turnstileToken = useRef<string | null>(null)
+  const onTurnstileToken = useCallback((token: string) => { turnstileToken.current = token }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -23,7 +26,7 @@ export default function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, turnstileToken: turnstileToken.current }),
       })
 
       if (res.ok) {
@@ -63,6 +66,18 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Honeypot — hidden from humans, bots fill it in */}
+      <input
+        name="website"
+        type="text"
+        value={form.website}
+        onChange={handleChange}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
+      />
+      <TurnstileWidget onToken={onTurnstileToken} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <label htmlFor="name" className={labelClass}>

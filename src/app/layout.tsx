@@ -119,6 +119,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <img height="1" width="1" style={{ display: 'none' }} src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`} alt="" />
         </noscript>
 
+        {/* Cloudflare Turnstile — invisible bot protection */}
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit"
+          strategy="afterInteractive"
+          async
+          defer
+        />
+
         {/* Omnisend */}
         <Script id="omnisend-tracking" strategy="afterInteractive">
           {`

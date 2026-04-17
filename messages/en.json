@@ -66,6 +66,7 @@
       "placeholder": "Your email address",
       "submit": "Subscribe",
       "success": "You\u2019re on the list. \u2726",
+      "alreadySubscribed": "You\u2019re already subscribed. See you in your inbox!",
       "disclaimer": "No spam. Unsubscribe anytime."
     }
   },

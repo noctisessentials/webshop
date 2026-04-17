@@ -76,13 +76,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true })
     }
 
-    // Find the WooCommerce order that was created by the order-complete route
-    const wcOrder = await findExistingOrder(WC_URL, credentials, intentId)
+    // Find the WooCommerce order — retry up to 5 times (2 s apart, ~10 s total) to handle the
+    // race condition where this webhook fires before the client-side /api/order-complete call
+    // has finished creating the WC order.
+    let wcOrder: WCOrder | undefined
+    for (let attempt = 0; attempt < 5; attempt++) {
+      wcOrder = await findExistingOrder(WC_URL, credentials, intentId)
+      if (wcOrder) break
+      if (attempt < 4) await new Promise((r) => setTimeout(r, 2000))
+    }
+
     if (!wcOrder) {
-      // This can happen if the webhook fires before the client-side order-complete call finishes.
-      // Log and return 200 so Stripe doesn't retry — the receipt link is still in Stripe dashboard.
-      console.warn('[stripe-webhook] payment_intent.succeeded: WC order not yet found for', intentId)
-      return NextResponse.json({ received: true })
+      // Still not found after ~10 s — return 500 so Stripe retries this webhook automatically
+      // with its own exponential backoff (up to 3 days). The receipt URL will not be lost.
+      console.error('[stripe-webhook] payment_intent.succeeded: WC order not found after retries for', intentId)
+      return NextResponse.json({ error: 'WC order not yet available, retrying' }, { status: 500 })
     }
 
     // PATCH the Omnisend order so order-confirmation emails can include the receipt link
@@ -172,6 +180,30 @@ export async function POST(request: Request) {
   console.log(
     `[stripe-webhook] Created failed order #${order.id} for intent ${paymentIntent.id} (${event.type})`
   )
+
+  // Notify Omnisend so the "Failed order" automation can trigger
+  const omnisendKey = process.env.OMNISEND_API_KEY
+  if (omnisendKey && paymentIntent.receipt_email) {
+    await fetch('https://api.omnisend.com/v3/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
+      body: JSON.stringify({
+        orderID: `failed-${paymentIntent.id}`,
+        email: paymentIntent.receipt_email,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        currency: 'EUR',
+        orderSum: paymentIntent.amount / 100,
+        paymentStatus: 'awaitingPayment',
+        fulfillmentStatus: 'unfulfilled',
+        products: lineItems.map(({ wcId, quantity }) => ({
+          productID: String(wcId),
+          quantity,
+          price: 0,
+        })),
+      }),
+    }).catch((err) => console.error('[stripe-webhook] Omnisend failed-order POST error:', err))
+  }
 
   return NextResponse.json({ received: true, orderId: order.id })
 }

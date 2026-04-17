@@ -1,12 +1,35 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { rateLimit } from '@/lib/rate-limit'
+import { verifyTurnstile } from '@/lib/turnstile'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, subject, message } = await request.json()
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+
+    // Layer 2: rate limit — max 5 contact submissions per IP per 10 minutes
+    if (!rateLimit(`contact:${ip}`, 5, 10 * 60 * 1000)) {
+      return NextResponse.json({ error: 'Te veel verzoeken. Probeer het later opnieuw.' }, { status: 429 })
+    }
+
+    const { name, email, subject, message, website, turnstileToken } = await request.json()
+
+    // Layer 1: honeypot — bots fill in the hidden 'website' field
+    if (website) {
+      return NextResponse.json({ ok: true }) // silently discard
+    }
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Layer 3: Cloudflare Turnstile token verification
+    if (turnstileToken) {
+      const valid = await verifyTurnstile(turnstileToken)
+      if (!valid) {
+        return NextResponse.json({ error: 'Bot-verificatie mislukt.' }, { status: 403 })
+      }
     }
 
     const transporter = nodemailer.createTransport({

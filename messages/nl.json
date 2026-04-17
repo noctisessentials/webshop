@@ -66,6 +66,7 @@
       "placeholder": "Jouw e-mailadres",
       "submit": "Aanmelden",
       "success": "Je staat op de lijst. ✦",
+      "alreadySubscribed": "Je staat al ingeschreven. Tot snel in je inbox!",
       "disclaimer": "Geen spam. Uitschrijven kan altijd."
     }
   },
