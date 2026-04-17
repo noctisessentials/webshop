@@ -26,7 +26,29 @@ type CartSuggestion = {
   color: ProductColor
 }
 
-const SUGGESTIONS: CartSuggestion[] = [
+const ALL_SUGGESTIONS: CartSuggestion[] = [
+  {
+    id: 'upsell-kitchen-black',
+    handle: 'pepper-salt-mills-black-white',
+    title: '19-delige keukenset zwart',
+    titleEn: '19-Piece Kitchen Set black',
+    subtitle: 'Perfecte match bij je molens',
+    price: 64.95,
+    image: '/images/products/kitchenware-black.jpg',
+    href: '/products/19-piece-kitchenware-black',
+    color: { name: 'Zwart', slug: 'black', hex: '#1E1D1D', inStock: true },
+  },
+  {
+    id: 'upsell-kitchen-nude',
+    handle: '19-piece-kitchenware-nude',
+    title: '19-delige keukenset nude',
+    titleEn: '19-Piece Kitchen Set nude',
+    subtitle: 'Perfecte match bij je molens',
+    price: 64.95,
+    image: '/images/products/kitchenware-nude.jpg',
+    href: '/products/19-piece-kitchenware-nude',
+    color: { name: 'Nude', slug: 'nude', hex: '#D4B49A', inStock: true },
+  },
   {
     id: 'upsell-mills-black-white',
     handle: 'pepper-salt-mills-black-white',
@@ -36,30 +58,86 @@ const SUGGESTIONS: CartSuggestion[] = [
     price: 66.95,
     image: '/images/products/mills-blackwhite.jpg',
     href: '/products/pepper-salt-mills-black-white',
-    color: {
-      name: 'Zwart wit',
-      slug: 'zwart-wit',
-      hex: '#9E9E9E',
-      inStock: true,
-    },
+    color: { name: 'Zwart wit', slug: 'zwart-wit', hex: '#9E9E9E', inStock: true },
+  },
+  {
+    id: 'upsell-mills-white',
+    handle: 'pepper-salt-mills-white',
+    title: 'Peper- en zoutmolens wit',
+    titleEn: 'Pepper & Salt Mills white',
+    subtitle: 'Perfecte match op je set',
+    price: 66.95,
+    image: '/images/products/mills-white.jpg',
+    href: '/products/pepper-salt-mills-white',
+    color: { name: 'Wit', slug: 'white', hex: '#F5F3F0', inStock: true },
+  },
+  {
+    id: 'upsell-mills-green',
+    handle: 'pepper-salt-mills-green',
+    title: 'Peper- en zoutmolens groen',
+    titleEn: 'Pepper & Salt Mills green',
+    subtitle: 'Perfecte match op je set',
+    price: 66.95,
+    image: '/images/products/mills-green.jpg',
+    href: '/products/pepper-salt-mills-green',
+    color: { name: 'Groen', slug: 'green', hex: '#4A6741', inStock: true },
   },
   {
     id: 'upsell-acacia',
     handle: 'acacia-cutting-board',
     title: 'Acacia snijplank',
     titleEn: 'Acacia Cutting Board',
-    subtitle: 'Warm wood for your countertop',
+    subtitle: 'Warm hout voor je aanrecht',
     price: 76.95,
     image: '/images/products/acacia.jpg',
     href: '/products/acacia-cutting-board',
-    color: {
-      name: 'Acacia',
-      slug: 'acacia',
-      hex: '#C4894A',
-      inStock: true,
-    },
+    color: { name: 'Acacia', slug: 'acacia', hex: '#C4894A', inStock: true },
   },
 ]
+
+function getSuggestions(cartHandles: Set<string>): CartSuggestion[] {
+  const acacia = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-acacia')!
+  const millsBlackWhite = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-mills-black-white')!
+  const millsWhite = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-mills-white')!
+  const millsGreen = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-mills-green')!
+  const kitchenBlack = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-kitchen-black')!
+  const kitchenNude = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-kitchen-nude')!
+
+  const hasKitchenBlack = [...cartHandles].some((h) => h.includes('19-piece-kitchenware-black'))
+  const hasKitchenNude = [...cartHandles].some((h) => h.includes('19-piece-kitchenware-nude'))
+  const hasKitchenGreen = [...cartHandles].some((h) => h.includes('19-piece-kitchenware-green') || h.includes('19-piece-kitchenware-mint'))
+  const hasKitchen = hasKitchenBlack || hasKitchenNude || hasKitchenGreen || [...cartHandles].some((h) => h.includes('19-piece-kitchenware'))
+  const hasMillsBlackWhite = [...cartHandles].some((h) => h.includes('pepper-salt-mills-black-white') || h.includes('pepper-salt-mills-blackwhite'))
+  const hasMillsWhite = [...cartHandles].some((h) => h.includes('pepper-salt-mills-white'))
+  const hasMillsGreen = [...cartHandles].some((h) => h.includes('pepper-salt-mills-green'))
+  const hasMills = hasMillsBlackWhite || hasMillsWhite || hasMillsGreen || [...cartHandles].some((h) => h.includes('pepper-salt-mills'))
+  const hasAcacia = cartHandles.has('acacia-cutting-board')
+
+  const candidates: CartSuggestion[] = []
+
+  if (hasKitchenNude && !hasMills) candidates.push(millsWhite)
+  else if (hasKitchenBlack && !hasMills) candidates.push(millsBlackWhite)
+  else if (hasKitchenGreen && !hasMills) candidates.push(millsGreen)
+  else if (hasKitchen && !hasMills) candidates.push(millsBlackWhite)
+
+  if (hasMillsWhite && !hasKitchen) candidates.push(kitchenNude)
+  else if ((hasMillsBlackWhite || hasMillsGreen) && !hasKitchen) candidates.push(kitchenBlack)
+  else if (hasMills && !hasKitchen) candidates.push(kitchenBlack)
+
+  if (hasAcacia && !hasKitchen) candidates.push(kitchenBlack)
+  if (hasAcacia && !hasMills) candidates.push(millsBlackWhite)
+
+  if (!hasAcacia) candidates.push(acacia)
+  if (!hasMills && !candidates.some((c) => c.id.includes('mills'))) candidates.push(millsBlackWhite)
+  if (!hasKitchen && !candidates.some((c) => c.id.includes('kitchen'))) candidates.push(kitchenBlack)
+
+  const seen = new Set<string>()
+  return candidates.filter((s) => {
+    if (cartHandles.has(s.handle) || seen.has(s.id)) return false
+    seen.add(s.id)
+    return true
+  }).slice(0, 2)
+}
 
 const COLOR_MAP_NL: Record<string, string> = {
   black: 'Zwart',
@@ -151,7 +229,7 @@ export function CartDrawer() {
       : t('freeShippingProgress', { amount: formatPrice(FREE_SHIPPING_THRESHOLD - total) })
 
   const cartHandles = new Set(items.map((item) => item.product.handle))
-  const visibleSuggestions = SUGGESTIONS.filter((suggestion) => !cartHandles.has(suggestion.handle))
+  const visibleSuggestions = getSuggestions(cartHandles)
 
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden'

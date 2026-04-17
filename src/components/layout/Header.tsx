@@ -223,8 +223,7 @@ export function Header() {
             className="absolute left-0 top-0 bottom-0 w-80 max-w-full bg-light flex flex-col"
             style={{ animation: 'slideRight 300ms cubic-bezier(0.25,0.46,0.45,0.94)' }}
           >
-            <div className="flex items-center justify-between px-6 h-16 border-b border-border">
-              <span className="font-serif text-lg font-light">Menu</span>
+            <div className="flex items-center justify-end px-6 h-16 border-b border-border">
               <button
                 onClick={() => setMobileOpen(false)}
                 className="p-1 text-dark"

@@ -132,7 +132,7 @@ function PaymentForm({
     <div className="space-y-4">
       <PaymentElement
         options={{
-          layout: 'tabs',
+          layout: { type: 'accordion', defaultCollapsed: false, spacedAccordionItems: true },
           wallets: { applePay: 'auto', googlePay: 'auto' },
           defaultValues: {
             billingDetails: {
@@ -178,7 +178,7 @@ function PaymentForm({
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, total } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
+  const { items, total, count } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loadingIntent, setLoadingIntent] = useState(false)
@@ -294,6 +294,14 @@ export default function CheckoutPage() {
       const { clientSecret: cs } = await res.json()
       setClientSecret(cs)
       setStep('payment')
+      // Meta Pixel: InitiateCheckout
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'InitiateCheckout', {
+          value: total,
+          currency: 'EUR',
+          num_items: count,
+        })
+      }
     } catch {
       setIntentError('Er ging iets mis. Probeer het opnieuw.')
     } finally {

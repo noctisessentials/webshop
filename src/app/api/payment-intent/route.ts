@@ -29,8 +29,7 @@ export async function POST(request: Request) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency: 'eur',
-      // Payment methods popular in NL/BE market
-      payment_method_types: ['card', 'ideal', 'bancontact', 'klarna'],
+      automatic_payment_methods: { enabled: true },
       receipt_email: email || undefined,
       metadata: {
         // Store line items as JSON for the order-complete step

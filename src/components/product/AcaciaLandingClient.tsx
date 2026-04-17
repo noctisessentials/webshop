@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ComponentType } from 'react'
+import { useState, useRef, type ComponentType } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import * as Accordion from '@radix-ui/react-accordion'
@@ -205,6 +205,7 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
   const router = useRouter()
   const { addItem } = useCart()
 
+  const touchStartXRef = useRef<number | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [openInfoRow, setOpenInfoRow] = useState<
     (typeof ACACIA_INFO_ROWS)[number]['id'] | ''
@@ -276,7 +277,19 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
               </div>
 
               <div className="flex-1">
-                <div className="relative aspect-[3/4] rounded-[20px] overflow-hidden border border-border bg-white">
+                <div
+                  className="relative aspect-[3/4] rounded-[20px] overflow-hidden border border-border bg-white"
+                  onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+                  onTouchEnd={(e) => {
+                    if (touchStartXRef.current === null) return
+                    const delta = touchStartXRef.current - e.changedTouches[0].clientX
+                    if (Math.abs(delta) > 40) {
+                      if (delta > 0) setActiveImageIndex((i) => Math.min(i + 1, galleryImages.length - 1))
+                      else setActiveImageIndex((i) => Math.max(i - 1, 0))
+                    }
+                    touchStartXRef.current = null
+                  }}
+                >
                   <Image
                     src={activeGalleryImage.src}
                     alt={activeGalleryImage.alt}
@@ -286,6 +299,13 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
                     className="object-cover object-center"
                     sizes="(max-width: 1024px) 100vw, 900px"
                   />
+                  {galleryImages.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 md:hidden">
+                      {galleryImages.map((_, i) => (
+                        <div key={i} className={cn('h-1.5 rounded-full transition-all duration-200', i === activeImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50')} />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex md:hidden gap-2 mt-3 overflow-x-auto pb-1">

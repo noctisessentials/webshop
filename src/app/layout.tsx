@@ -2,7 +2,11 @@ import type { Metadata } from 'next'
 import { DM_Sans, Cormorant_Garamond } from 'next/font/google'
 import { getLocale } from 'next-intl/server'
 import Script from 'next/script'
+import { CookieBanner } from '@/components/ui/CookieBanner'
 import './globals.css'
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID
+const META_PIXEL_ID = '933186462850674'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -81,6 +85,41 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="min-h-full flex flex-col antialiased bg-[#F0EDE8]">
         {children}
+        <CookieBanner />
+
+        {/* GA4 Consent Mode v2 — default denied until user accepts */}
+        {GA_ID && (
+          <>
+            <Script id="ga4-consent-default" strategy="beforeInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+                gtag('js', new Date());
+              `}
+            </Script>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+            <Script id="ga4-config" strategy="afterInteractive">
+              {`gtag('config','${GA_ID}',{send_page_view:true});`}
+            </Script>
+          </>
+        )}
+
+        {/* Meta Pixel — revoked by default until consent */}
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`
+            !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+            fbq('consent', 'revoke');
+            fbq('init', '${META_PIXEL_ID}');
+            fbq('track', 'PageView');
+          `}
+        </Script>
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img height="1" width="1" style={{ display: 'none' }} src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`} alt="" />
+        </noscript>
+
+        {/* Omnisend */}
         <Script id="omnisend-tracking" strategy="afterInteractive">
           {`
             window.omnisend = window.omnisend || [];

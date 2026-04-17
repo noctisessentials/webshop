@@ -264,7 +264,7 @@ export function ProductCarousel({
           <div
             ref={scrollRef}
             className="flex gap-4 overflow-x-auto px-6 md:px-10 xl:px-14 pb-2 cursor-grab active:cursor-grabbing select-none [&::-webkit-scrollbar]:hidden"
-            style={{ scrollbarWidth: 'none' }}
+            style={{ scrollbarWidth: 'none', touchAction: 'pan-y' }}
             onMouseLeave={() => {
               onDragEnd()
             }}

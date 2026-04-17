@@ -380,6 +380,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
   const router = useRouter()
   const { addItem } = useCart()
   const activeVideoRef = useRef<HTMLVideoElement | null>(null)
+  const touchStartXRef = useRef<number | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [openInfoRow, setOpenInfoRow] = useState('sleep')
   const [activeSetPartId, setActiveSetPartId] = useState<SetPartId>('messen-schaar')
@@ -510,7 +511,19 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
             </div>
 
             <div className="flex-1">
-              <div className="relative aspect-[3/4] rounded-[20px] overflow-hidden border border-border bg-white">
+              <div
+                className="relative aspect-[3/4] rounded-[20px] overflow-hidden border border-border bg-white"
+                onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+                onTouchEnd={(e) => {
+                  if (touchStartXRef.current === null) return
+                  const delta = touchStartXRef.current - e.changedTouches[0].clientX
+                  if (Math.abs(delta) > 40) {
+                    if (delta > 0) setActiveImageIndex((i) => Math.min(i + 1, galleryItems.length - 1))
+                    else setActiveImageIndex((i) => Math.max(i - 1, 0))
+                  }
+                  touchStartXRef.current = null
+                }}
+              >
                 {activeGalleryItem.type === 'video' ? (
                   <>
                     <video
@@ -546,6 +559,13 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                     className="object-cover object-center"
                     sizes="(max-width: 1024px) 100vw, 900px"
                   />
+                )}
+                {galleryItems.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 md:hidden">
+                    {galleryItems.map((_, i) => (
+                      <div key={i} className={cn('h-1.5 rounded-full transition-all duration-200', i === activeImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50')} />
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -913,7 +933,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                       onClick={() => setActiveSetPartId(part.id)}
                       style={{ animationDelay: `${index * 180}ms` }}
                       className={cn(
-                        'absolute z-10 h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-200 hotspot-bubble',
+                        'absolute z-10 h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-200 hotspot-bubble text-sm font-sans font-bold',
                         part.markerClassName,
                         isActive
                           ? 'border-accent bg-accent text-white shadow-[0_8px_20px_rgba(164,116,76,0.35)]'
@@ -921,7 +941,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                       )}
                       aria-label={part.title}
                     >
-                      <Plus size={16} />
+                      {index + 1}
                     </button>
                   )
                 })}
@@ -930,7 +950,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
 
             <aside className="rounded-[18px] border border-border bg-white p-5 md:p-6">
               <div className="space-y-2">
-                {SET_PARTS.map((part) => {
+                {SET_PARTS.map((part, index) => {
                   const isActive = part.id === activeSetPartId
                   return (
                     <div
@@ -945,23 +965,23 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                         onClick={() => setActiveSetPartId(part.id)}
                         className="w-full text-left"
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          <span className={cn('text-base font-sans', isActive ? 'font-semibold text-accent' : 'text-dark/85')}>
-                            {part.title}
-                          </span>
+                        <div className="flex items-center gap-3">
                           <span
                             className={cn(
-                              'inline-flex h-7 w-7 items-center justify-center rounded-full text-sm transition-colors duration-200',
+                              'inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors duration-200',
                               isActive ? 'bg-accent text-white' : 'bg-surface text-dark'
                             )}
                           >
-                            {isActive ? '−' : '+'}
+                            {index + 1}
+                          </span>
+                          <span className={cn('text-base font-sans', isActive ? 'font-semibold text-accent' : 'text-dark/85')}>
+                            {part.title}
                           </span>
                         </div>
                       </button>
 
                       {isActive && (
-                        <p className="mt-3 text-sm md:text-base font-sans text-dark/85 leading-relaxed">
+                        <p className="mt-3 ml-10 text-sm md:text-base font-sans text-dark/85 leading-relaxed">
                           {part.body}
                         </p>
                       )}
@@ -1041,16 +1061,16 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
             </p>
           </div>
 
-          <div className="overflow-x-auto -mx-4 px-4">
-            <div className="min-w-[980px] max-w-[1120px] mx-auto">
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="min-w-[340px] max-w-[1120px] mx-auto">
 
               {/* Table body */}
               <div className="bg-white rounded-[20px] border border-[#1E1D1D]/12 overflow-hidden">
                 {/* Product column headers */}
-                <div className="grid grid-cols-[2.3fr_1fr_1fr] border-b border-[#EDEBE8]">
-                  <div className="px-6 py-5" />
-                  <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] px-5 py-5 text-center">
-                    <div className="relative mx-auto h-[88px] w-[88px]">
+                <div className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[2.3fr_1fr_1fr] border-b border-[#EDEBE8]">
+                  <div className="px-3 md:px-6 py-4 md:py-5" />
+                  <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] px-3 md:px-5 py-4 md:py-5 text-center w-24 md:w-auto">
+                    <div className="relative mx-auto h-14 w-14 md:h-[88px] md:w-[88px]">
                       <Image
                         src="/content/noctis-houder.webp"
                         alt="Noctis 19-delige set"
@@ -1059,12 +1079,12 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                         sizes="88px"
                       />
                     </div>
-                    <p className="mt-2.5 font-sans font-semibold text-base text-dark leading-snug">
+                    <p className="mt-2 font-sans font-semibold text-xs md:text-base text-dark leading-snug">
                       Noctis set
                     </p>
                   </div>
-                  <div className="border-l border-[#EDEBE8] px-5 py-5 text-center">
-                    <div className="relative mx-auto h-[88px] w-[88px]">
+                  <div className="border-l border-[#EDEBE8] px-3 md:px-5 py-4 md:py-5 text-center w-24 md:w-auto">
+                    <div className="relative mx-auto h-14 w-14 md:h-[88px] md:w-[88px]">
                       <Image
                         src="/content/rommelige-houder.webp"
                         alt="Rommelige houder"
@@ -1073,44 +1093,44 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                         sizes="88px"
                       />
                     </div>
-                    <p className="mt-2.5 font-sans font-semibold text-base text-muted leading-snug">
-                      Rommelige houder
+                    <p className="mt-2 font-sans font-semibold text-xs md:text-base text-muted leading-snug">
+                      Rommelig
                     </p>
                   </div>
                 </div>
 
                 {/* Feature rows */}
                 {COMPARISON_FEATURE_ROWS.map((row) => (
-                  <div key={row.title} className="grid grid-cols-[2.3fr_1fr_1fr] border-b border-[#EDEBE8]">
-                    <div className="px-6 py-5">
-                      <p className="font-sans font-semibold text-[22px] text-dark">{row.title}</p>
-                      <p className="mt-1.5 text-[18px] font-sans text-muted leading-relaxed">{row.subtitle}</p>
+                  <div key={row.title} className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[2.3fr_1fr_1fr] border-b border-[#EDEBE8]">
+                    <div className="px-3 md:px-6 py-4 md:py-5">
+                      <p className="font-sans font-semibold text-sm md:text-[22px] text-dark">{row.title}</p>
+                      <p className="mt-1 text-xs md:text-[18px] font-sans text-muted leading-relaxed">{row.subtitle}</p>
                     </div>
-                    <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] px-5 py-5 flex items-center justify-center">
+                    <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center">
                       <ComparisonMark isPositive={row.noctis} />
                     </div>
-                    <div className="border-l border-[#EDEBE8] px-5 py-5 flex items-center justify-center">
+                    <div className="border-l border-[#EDEBE8] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center">
                       <ComparisonMark isPositive={row.other} />
                     </div>
                   </div>
                 ))}
 
                 {/* Price footer */}
-                <div className="grid grid-cols-[2.3fr_1fr_1fr] bg-[#FAFAF8]">
-                  <div className="px-6 py-5">
-                    <p className="font-sans font-semibold text-[22px] text-dark">Prijsvoordeel</p>
-                    <p className="mt-1.5 text-[18px] font-sans text-muted">Complete set vs losse tools.</p>
+                <div className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[2.3fr_1fr_1fr] bg-[#FAFAF8]">
+                  <div className="px-3 md:px-6 py-4 md:py-5">
+                    <p className="font-sans font-semibold text-sm md:text-[22px] text-dark">Prijsvoordeel</p>
+                    <p className="mt-1 text-xs md:text-[18px] font-sans text-muted">Complete set vs losse tools.</p>
                   </div>
-                  <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] px-5 py-5 flex items-center justify-center text-center">
+                  <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center text-center">
                     <div>
-                      <p className="font-sans text-[24px] font-bold text-dark">{formatPrice(basePrice)}</p>
-                      <p className="text-[16px] font-sans text-muted mt-1">complete set</p>
+                      <p className="font-sans text-base md:text-[24px] font-bold text-dark">{formatPrice(basePrice)}</p>
+                      <p className="text-xs md:text-[16px] font-sans text-muted mt-1">complete set</p>
                     </div>
                   </div>
-                  <div className="border-l border-[#EDEBE8] px-5 py-5 flex items-center justify-center text-center">
+                  <div className="border-l border-[#EDEBE8] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center text-center">
                     <div>
-                      <p className="font-sans text-[24px] font-semibold text-dark">€115,95+</p>
-                      <p className="text-[16px] font-sans text-muted mt-1">aan losse tools</p>
+                      <p className="font-sans text-base md:text-[24px] font-semibold text-dark">€115,95+</p>
+                      <p className="text-xs md:text-[16px] font-sans text-muted mt-1">aan losse tools</p>
                     </div>
                   </div>
                 </div>

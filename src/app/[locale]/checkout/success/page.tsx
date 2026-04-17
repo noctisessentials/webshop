@@ -46,6 +46,16 @@ function SuccessContent() {
           orderNumber: data.orderNumber,
         })
 
+        // Meta Pixel: Purchase
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('track', 'Purchase', {
+            content_ids: [String(data.orderId)],
+            value: data.total ?? 0,
+            currency: 'EUR',
+            num_items: data.itemCount ?? 1,
+          })
+        }
+
         sessionStorage.removeItem('noctis_shipping')
         sessionStorage.removeItem('noctis_cart')
         clearCart?.()

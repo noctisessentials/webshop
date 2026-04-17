@@ -33,7 +33,7 @@ export default async function WinkelPage() {
         <div className="absolute inset-0 bg-dark/58" />
 
         <div className="container-content text-center relative">
-          <p className="text-xs font-sans uppercase tracking-ultra text-accent mb-4">
+          <p className="text-xs font-sans uppercase tracking-ultra text-white/80 mb-4">
             {products.length} {products.length === 1 ? t('product') : t('products')}
           </p>
           <h1

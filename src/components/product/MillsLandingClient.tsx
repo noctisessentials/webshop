@@ -246,6 +246,7 @@ export function MillsLandingClient({ product, upsellProducts }: MillsLandingClie
   const router = useRouter()
   const { addItem } = useCart()
   const activeVideoRef = useRef<HTMLVideoElement | null>(null)
+  const touchStartXRef = useRef<number | null>(null)
 
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [openInfoRow, setOpenInfoRow] = useState<
@@ -366,7 +367,19 @@ export function MillsLandingClient({ product, upsellProducts }: MillsLandingClie
               </div>
 
               <div className="flex-1">
-                <div className="relative aspect-[3/4] rounded-[20px] overflow-hidden border border-border bg-white">
+                <div
+                  className="relative aspect-[3/4] rounded-[20px] overflow-hidden border border-border bg-white"
+                  onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+                  onTouchEnd={(e) => {
+                    if (touchStartXRef.current === null) return
+                    const delta = touchStartXRef.current - e.changedTouches[0].clientX
+                    if (Math.abs(delta) > 40) {
+                      if (delta > 0) setActiveImageIndex((i) => Math.min(i + 1, galleryItems.length - 1))
+                      else setActiveImageIndex((i) => Math.max(i - 1, 0))
+                    }
+                    touchStartXRef.current = null
+                  }}
+                >
                   {activeGalleryItem.type === 'video' ? (
                     <>
                       <video
@@ -402,6 +415,13 @@ export function MillsLandingClient({ product, upsellProducts }: MillsLandingClie
                       className="object-cover object-center"
                       sizes="(max-width: 1024px) 100vw, 900px"
                     />
+                  )}
+                  {galleryItems.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 md:hidden">
+                      {galleryItems.map((_, i) => (
+                        <div key={i} className={cn('h-1.5 rounded-full transition-all duration-200', i === activeImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50')} />
+                      ))}
+                    </div>
                   )}
                 </div>
 
