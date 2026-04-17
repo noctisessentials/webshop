@@ -31,7 +31,7 @@ export default function ContactForm() {
 
       if (res.ok) {
         setStatus('success')
-        setForm({ name: '', email: '', subject: '', message: '' })
+        setForm({ name: '', email: '', subject: '', message: '', website: '' })
       } else {
         setStatus('error')
       }
