@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import crypto from 'crypto'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -205,7 +206,39 @@ export async function POST(request: Request) {
       }).catch(() => {})
     }
 
-    return NextResponse.json({ orderId: order.id, orderNumber: order.number })
+    // Fire Meta CAPI Purchase event (server-side, deduplicates with browser pixel)
+    const capiToken = process.env.META_CAPI_TOKEN
+    if (capiToken) {
+      const eventId = `purchase-${order.id}-${Date.now()}`
+      const hash = (v: string) => crypto.createHash('sha256').update(v.trim().toLowerCase()).digest('hex')
+      fetch(`https://graph.facebook.com/v19.0/933186462850674/events?access_token=${capiToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: [{
+            event_name: 'Purchase',
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: eventId,
+            event_source_url: 'https://noctisessentials.com/nl/checkout/success',
+            action_source: 'website',
+            user_data: {
+              em: hash(shipping.email),
+              fn: hash(shipping.firstName),
+              ln: hash(shipping.lastName),
+              ph: shipping.phone ? hash(shipping.phone.replace(/\D/g, '')) : undefined,
+            },
+            custom_data: {
+              value: paymentIntent.amount / 100,
+              currency: 'EUR',
+              content_ids: [String(order.id)],
+              num_items: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0),
+            },
+          }],
+        }),
+      }).catch(() => {})
+    }
+
+    return NextResponse.json({ orderId: order.id, orderNumber: order.number, total: paymentIntent.amount / 100, itemCount: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0) })
   } catch (err) {
     console.error('[order-complete]', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

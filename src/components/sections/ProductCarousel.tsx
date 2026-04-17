@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from '@/i18n/navigation'
 import PlainLink from 'next/link'
 import Image from 'next/image'
@@ -161,85 +161,73 @@ export function ProductCarousel({
   viewAllHref = '/winkel',
   viewAllLabel = 'Bekijk alle producten',
 }: ProductCarouselProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const posRef = useRef(0)
+  const copyWidthRef = useRef(0)
   const pauseAutoScrollRef = useRef(false)
   const isDraggingRef = useRef(false)
   const movedDuringDragRef = useRef(false)
   const dragStartXRef = useRef(0)
-  const dragStartScrollLeftRef = useRef(0)
+  const dragStartPosRef = useRef(0)
   const rafRef = useRef<number | null>(null)
   const lastTsRef = useRef<number | null>(null)
   const items = buildCarouselItems(products, customProducts)
   const loopItems = items.length > 0 ? [...items, ...items, ...items] : items
 
-  const wrapLoopPosition = useCallback(() => {
-    const scroller = scrollRef.current
-    if (!scroller || items.length <= 1) return
-
-    const copyWidth = scroller.scrollWidth / 3
-    if (copyWidth <= 0) return
-
-    const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth
-    if (scroller.scrollLeft >= copyWidth * 2 || scroller.scrollLeft >= maxScrollLeft - 1) {
-      scroller.scrollLeft -= copyWidth
-    } else if (scroller.scrollLeft <= 1) {
-      scroller.scrollLeft += copyWidth
-    }
+  // Measure after mount and set initial position to middle copy
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track || items.length <= 1) return
+    const cw = track.offsetWidth / 3
+    copyWidthRef.current = cw
+    posRef.current = -cw
+    track.style.transform = `translateX(${-cw}px)`
   }, [items.length])
 
+  function wrapPos(pos: number): number {
+    const cw = copyWidthRef.current
+    if (!cw) return pos
+    if (pos <= -(2 * cw)) return pos + cw
+    if (pos > 0) return pos - cw
+    return pos
+  }
+
+  // RAF auto-scroll via transform — works on iOS unlike scrollLeft
   useEffect(() => {
-    const scroller = scrollRef.current
-    if (!scroller || items.length <= 1) return
-
-    const copyWidth = scroller.scrollWidth / 3
-    if (copyWidth > 0 && scroller.scrollLeft <= 1) {
-      scroller.scrollLeft = copyWidth
-    }
-  }, [items.length, wrapLoopPosition])
-
-  useEffect(() => {
-    const scroller = scrollRef.current
-    if (!scroller || items.length <= 1) return
-
+    if (items.length <= 1) return
     const tick = (ts: number) => {
       if (lastTsRef.current == null) lastTsRef.current = ts
-      const dt = ts - lastTsRef.current
+      const dt = Math.min(ts - lastTsRef.current, 50)
       lastTsRef.current = ts
-
-      if (!pauseAutoScrollRef.current) {
-        scroller.scrollLeft += dt * 0.045
-        wrapLoopPosition()
+      if (!pauseAutoScrollRef.current && trackRef.current && copyWidthRef.current) {
+        posRef.current = wrapPos(posRef.current - dt * 0.045)
+        trackRef.current.style.transform = `translateX(${posRef.current}px)`
       }
-
-      rafRef.current = window.requestAnimationFrame(tick)
+      rafRef.current = requestAnimationFrame(tick)
     }
-
-    rafRef.current = window.requestAnimationFrame(tick)
+    rafRef.current = requestAnimationFrame(tick)
     return () => {
-      if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current)
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
       rafRef.current = null
       lastTsRef.current = null
     }
-  }, [items.length, wrapLoopPosition])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length])
 
   const onDragStart = (clientX: number) => {
-    const scroller = scrollRef.current
-    if (!scroller) return
-
     isDraggingRef.current = true
     movedDuringDragRef.current = false
     dragStartXRef.current = clientX
-    dragStartScrollLeftRef.current = scroller.scrollLeft
+    dragStartPosRef.current = posRef.current
     pauseAutoScrollRef.current = true
   }
 
   const onDragMove = (clientX: number) => {
-    if (!isDraggingRef.current || !scrollRef.current) return
-
+    if (!isDraggingRef.current || !trackRef.current || !copyWidthRef.current) return
     const delta = clientX - dragStartXRef.current
     if (Math.abs(delta) > 3) movedDuringDragRef.current = true
-    scrollRef.current.scrollLeft = dragStartScrollLeftRef.current - delta
-    wrapLoopPosition()
+    posRef.current = wrapPos(dragStartPosRef.current + delta)
+    trackRef.current.style.transform = `translateX(${posRef.current}px)`
   }
 
   const onDragEnd = () => {
@@ -260,37 +248,29 @@ export function ProductCarousel({
           </h2>
         </div>
 
-        <div className="relative">
+        <div
+          className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+          style={{ touchAction: 'pan-y' }}
+          onMouseLeave={onDragEnd}
+          onMouseDown={(e) => onDragStart(e.clientX)}
+          onMouseMove={(e) => onDragMove(e.clientX)}
+          onMouseUp={onDragEnd}
+          onTouchStart={(e) => onDragStart(e.touches[0].clientX)}
+          onTouchMove={(e) => onDragMove(e.touches[0].clientX)}
+          onTouchEnd={onDragEnd}
+          onClickCapture={(e) => {
+            if (movedDuringDragRef.current) {
+              e.preventDefault()
+              e.stopPropagation()
+              movedDuringDragRef.current = false
+            }
+          }}
+          onDragStart={(e) => e.preventDefault()}
+        >
           <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto px-6 md:px-10 xl:px-14 pb-2 cursor-grab active:cursor-grabbing select-none [&::-webkit-scrollbar]:hidden"
-            style={{ scrollbarWidth: 'none', touchAction: 'pan-y' }}
-            onMouseLeave={() => {
-              onDragEnd()
-            }}
-            onMouseDown={(e) => onDragStart(e.clientX)}
-            onMouseMove={(e) => onDragMove(e.clientX)}
-            onMouseUp={onDragEnd}
-            onTouchStart={(e) => {
-              pauseAutoScrollRef.current = true
-              onDragStart(e.touches[0].clientX)
-            }}
-            onTouchMove={(e) => {
-              onDragMove(e.touches[0].clientX)
-            }}
-            onTouchEnd={() => {
-              onDragEnd()
-              setTimeout(() => { pauseAutoScrollRef.current = false }, 1200)
-            }}
-            onScroll={wrapLoopPosition}
-            onClickCapture={(e) => {
-              if (movedDuringDragRef.current) {
-                e.preventDefault()
-                e.stopPropagation()
-                movedDuringDragRef.current = false
-              }
-            }}
-            onDragStart={(e) => e.preventDefault()}
+            ref={trackRef}
+            className="flex gap-4 pb-2 pl-6 md:pl-10 xl:pl-14"
+            style={{ width: 'max-content', willChange: 'transform' }}
           >
             {loopItems.map((item, index) => {
               const discount = getDiscountPercentage(item.price, item.compareAtPrice)

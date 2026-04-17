@@ -8,7 +8,7 @@ import { Check, ChevronRight, Leaf, Minus, Package, Plus, Ruler, ShieldCheck, Tr
 import { Button } from '@/components/ui/Button'
 import { cn, formatPrice } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
-import type { Product, ProductColor } from '@/lib/data'
+import { TESTIMONIALS, type Product, type ProductColor } from '@/lib/data'
 
 type AcaciaLandingClientProps = {
   product: Product
@@ -128,6 +128,37 @@ const RIGHT_FEATURES: AcaciaFeature[] = [
   },
 ]
 
+const ACACIA_EXTRA_TESTIMONIALS = [
+  {
+    id: 'a1',
+    name: 'Lisa V.',
+    rating: 5,
+    text: 'Prachtige planken. De houder is super handig en ze zien er veel duurder uit dan ze zijn.',
+    product: 'Acacia snijplank set',
+    date: 'Maart 2026',
+  },
+  {
+    id: 'a2',
+    name: 'Tom B.',
+    rating: 5,
+    text: 'Super mooie set. De drie maten zijn ideaal, voor elk snijkarwei heb je de juiste maat bij de hand.',
+    product: 'Acacia snijplank set',
+    date: 'April 2026',
+  },
+  {
+    id: 'a3',
+    name: 'Chantal D.',
+    rating: 5,
+    text: 'Al maanden in gebruik en ze zien er nog steeds als nieuw uit. Echt een aanrader voor iedereen die van koken houdt.',
+    product: 'Acacia snijplank set',
+    date: 'Februari 2026',
+  },
+] as const
+
+const ACACIA_PDP_TESTIMONIALS = [...TESTIMONIALS, ...ACACIA_EXTRA_TESTIMONIALS]
+const ACACIA_ROW1_LOOP = [...ACACIA_PDP_TESTIMONIALS, ...ACACIA_PDP_TESTIMONIALS]
+const ACACIA_ROW2_LOOP = [...[...ACACIA_PDP_TESTIMONIALS].reverse(), ...[...ACACIA_PDP_TESTIMONIALS].reverse()]
+
 const ACACIA_INFO_ROWS = [
   {
     id: 'description',
@@ -189,15 +220,63 @@ function getAcaciaGalleryImages(product: Product): { src: string; alt: string }[
 function FeatureItem({ feature }: { feature: AcaciaFeature }) {
   const Icon = feature.icon
   return (
-    <div className="flex items-start gap-4">
-      <span className="inline-flex h-13 w-13 flex-shrink-0 items-center justify-center rounded-full bg-accent text-white">
-        <Icon size={20} />
+    <div className="bg-white rounded-[16px] border border-border p-6 flex flex-col gap-4">
+      <span className="inline-flex h-10 w-10 items-center justify-center text-accent">
+        <Icon size={22} />
       </span>
       <div>
-        <h3 className="font-sans font-semibold text-dark text-[20px] leading-tight">{feature.title}</h3>
-        <p className="mt-1.5 font-sans text-dark/85 text-[17px] leading-relaxed">{feature.body}</p>
+        <h3 className="font-sans font-semibold text-dark text-base leading-tight">{feature.title}</h3>
+        <p className="mt-2 font-sans text-dark/70 text-sm leading-relaxed">{feature.body}</p>
       </div>
     </div>
+  )
+}
+
+function ReviewStars({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5" aria-label={`${rating} van de 5 sterren`}>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <svg key={index} width="13" height="13" viewBox="0 0 13 13" aria-hidden>
+          <path
+            d="M6.5 1l1.17 2.373L10.5 3.8 8.5 5.75l.47 2.737L6.5 7.25 4.03 8.487 4.5 5.75 2.5 3.8l2.83-.427L6.5 1z"
+            fill={index < rating ? '#A4744C' : 'none'}
+            stroke={index < rating ? '#A4744C' : '#D1C5BA'}
+            strokeWidth="0.8"
+          />
+        </svg>
+      ))}
+    </div>
+  )
+}
+
+function AcaciaTestimonialCard({ review }: { review: (typeof ACACIA_PDP_TESTIMONIALS)[number] }) {
+  const initials = review.name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+  return (
+    <article className="flex-shrink-0 w-[320px] md:w-[360px] mx-3 bg-white rounded-[18px] border border-border p-5">
+      <div className="text-accent font-serif font-bold leading-none mb-3" style={{ fontSize: '40px', lineHeight: 1 }}>
+        &ldquo;
+      </div>
+      <blockquote className="text-sm md:text-base font-sans text-dark/85 leading-relaxed line-clamp-4">
+        {review.text}
+      </blockquote>
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-9 w-9 rounded-full bg-surface border border-border flex items-center justify-center flex-shrink-0">
+          <span className="text-xs font-sans font-semibold text-dark/70">{initials}</span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-sans font-semibold text-dark truncate">{review.name}</p>
+          <p className="text-xs font-sans text-muted truncate">{review.product}</p>
+        </div>
+        <div className="ml-auto flex-shrink-0">
+          <ReviewStars rating={review.rating} />
+        </div>
+      </div>
+    </article>
   )
 }
 
@@ -212,6 +291,7 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
   >(ACACIA_INFO_ROWS[0].id)
   const [selectedUpsellIds, setSelectedUpsellIds] = useState<string[]>([])
   const [adding, setAdding] = useState(false)
+  const [testimonialsPaused, setTestimonialsPaused] = useState(false)
 
   const selectedColor = getSelectedColor(product)
   const galleryImages = getAcaciaGalleryImages(product)
@@ -543,7 +623,7 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
         </div>
       </section>
 
-      <section className="bg-light section-py">
+      <section className="bg-surface section-py">
         <div className="container-content">
           <div className="text-center max-w-3xl mx-auto mb-10 md:mb-12">
             <h2 className="font-sans font-semibold text-dark leading-tight" style={{ fontSize: 'clamp(24px, 3vw, 40px)' }}>
@@ -554,26 +634,62 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(260px,420px)_1fr] gap-8 items-start">
-            <div className="space-y-8">
-              {LEFT_FEATURES.map((feature) => (
-                <FeatureItem key={feature.id} feature={feature} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...LEFT_FEATURES, ...RIGHT_FEATURES].map((feature) => (
+              <FeatureItem key={feature.id} feature={feature} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-light section-py overflow-hidden">
+        <div className="container-content">
+          <div className="text-center mb-12">
+            <Image
+              src="/content/trustpilot-logo-sml.png.webp"
+              alt="Trustpilot"
+              width={224}
+              height={48}
+              className="mx-auto mb-4 h-12 w-auto"
+            />
+            <h2
+              className="font-sans font-semibold text-dark tracking-tight"
+              style={{ fontSize: 'clamp(24px, 3vw, 40px)' }}
+            >
+              Geliefd bij keukenliefhebbers
+            </h2>
+            <p className="mt-3 text-sm md:text-base font-sans text-muted">
+              Ontdek waarom duizenden mensen vertrouwen op Noctis in hun keuken.
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="relative -mx-4 md:-mx-8 lg:-mx-12 xl:-mx-18"
+          onMouseEnter={() => setTestimonialsPaused(true)}
+          onMouseLeave={() => setTestimonialsPaused(false)}
+        >
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-gradient-to-r from-light to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-gradient-to-l from-light to-transparent" />
+
+          <div className="overflow-hidden mb-5">
+            <div
+              className="marquee-track"
+              style={{ animationPlayState: testimonialsPaused ? 'paused' : 'running' }}
+            >
+              {ACACIA_ROW1_LOOP.map((review, i) => (
+                <AcaciaTestimonialCard key={`r1-${i}`} review={review} />
               ))}
             </div>
+          </div>
 
-            <div className="relative aspect-[4/5] rounded-[20px] overflow-hidden bg-white border border-border">
-              <Image
-                src="/content/acacia-snijplank-product-foto-scaled.jpg"
-                alt="Noctis acacia snijplank set"
-                fill
-                className="object-contain object-center p-4"
-                sizes="(max-width: 1024px) 100vw, 420px"
-              />
-            </div>
-
-            <div className="space-y-8">
-              {RIGHT_FEATURES.map((feature) => (
-                <FeatureItem key={feature.id} feature={feature} />
+          <div className="overflow-hidden">
+            <div
+              className="marquee-track-reverse"
+              style={{ animationPlayState: testimonialsPaused ? 'paused' : 'running' }}
+            >
+              {ACACIA_ROW2_LOOP.map((review, i) => (
+                <AcaciaTestimonialCard key={`r2-${i}`} review={review} />
               ))}
             </div>
           </div>

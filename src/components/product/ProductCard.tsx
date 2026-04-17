@@ -72,7 +72,7 @@ export function ProductCard({
     >
       {/* Image container */}
       <div
-        className="relative overflow-hidden bg-surface mb-4"
+        className="relative overflow-hidden bg-surface mb-4 border border-border"
         style={{
           borderRadius: '16px',
           aspectRatio: isCarousel ? '3/4' : '4/5',

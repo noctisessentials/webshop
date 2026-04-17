@@ -12,7 +12,7 @@ import { useLocale } from 'next-intl'
 
 type LanguageCode = 'nl' | 'en'
 
-function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
+function LanguageSwitcher({ compact = false, dropUp = false }: { compact?: boolean; dropUp?: boolean }) {
   const locale = useLocale() as LanguageCode
   const router = useRouter()
   const pathname = usePathname()
@@ -44,7 +44,7 @@ function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 min-w-[84px] rounded-xl border border-border bg-white shadow-[0_10px_30px_rgba(30,29,29,0.10)] p-1.5 z-50">
+          <div className={cn('absolute right-0 min-w-[84px] rounded-xl border border-border bg-white shadow-[0_10px_30px_rgba(30,29,29,0.10)] p-1.5 z-50', dropUp ? 'bottom-full mb-2' : 'mt-2')}>
             {(['nl', 'en'] as LanguageCode[]).map((code) => (
               <button
                 key={code}
@@ -250,7 +250,7 @@ export function Header() {
               <p className="text-xs font-sans text-muted tracking-wide">
                 {t('mobileFooter')}
               </p>
-              <LanguageSwitcher />
+              <LanguageSwitcher dropUp />
             </div>
           </div>
         </div>

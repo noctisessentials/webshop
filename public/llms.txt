@@ -1,0 +1,118 @@
+# Noctis — llms.txt
+
+## Over Noctis
+Noctis is een Nederlands direct-to-consumer kitchenware merk, actief in Nederland en België. Het merk richt zich op stijlvolle, minimalistische keukentools die zorgen voor visuele rust, functionaliteit en een gevoel van eenheid in de keuken.
+
+De focus ligt op producten die niet alleen praktisch zijn, maar ook bijdragen aan een esthetisch georganiseerde leefomgeving.
+
+## Kernpositionering
+- Premium uitstraling zonder premium prijs
+- Eén aankoop = complete visuele en functionele upgrade
+- Gericht op esthetiek, rust en gebruiksgemak
+- Ontworpen voor moderne huishoudens (25–45 jaar)
+
+## Producten
+
+### 19-delige keukenset
+Complete keukenset met siliconen keukengerei, messen, schaar, snijplank en houder.
+
+- Materiaal: BPA-vrije siliconen + RVS kern
+- Geschikt voor antiaanbakpannen
+- Kleuren: zwart, nude, grijs, roze, groen
+- Inhoud: 19 onderdelen (koken + snijden + serveren)
+- Verpakking: luxe doos, direct klaar voor gebruik of cadeau
+
+Belofte:
+Een volledige keukenupgrade in één set — geen losse tools, geen mismatch.
+
+Let op:
+Niet vaatwasserbestendig — handwas aanbevolen voor langdurige kwaliteit.
+
+### Elektrische peper- en zoutmolens
+USB-C oplaadbare molens met instelbare maalgraad en LED-verlichting.
+
+- Gebruik: éénhands bediening
+- Kleuren: zwart, wit, groen, zwart/wit set
+- Design: modern en minimalistisch
+
+### Acacia snijplank set
+Set van 3 massief houten snijplanken met bijpassende standaard.
+
+- Materiaal: acaciahout
+- Inclusief: display standaard (goudkleurig)
+- Gebruik: snijden + presentatie
+
+## Doelgroep
+- Vrouwen en mannen (25–45 jaar)
+- Interesse in interieur, koken en esthetiek
+- Waardeert rust, orde en design in huis
+- Zoekt praktische producten die er ook goed uitzien
+
+## Use Cases
+- Keuken upgrade zonder losse aankopen
+- Housewarming of cadeau
+- Visueel georganiseerde keuken
+- Dagelijks koken met stijlvol gereedschap
+
+## Belangrijkste Problemen die Noctis oplost
+- Mismatched keukentools
+- Rommelige lades en visuele chaos
+- Onpraktische of panneschadelijke tools
+- Gebrek aan samenhang in de keuken
+
+## Sitepagina's
+
+- / — Homepage
+- /winkel — Productoverzicht (NL)
+- /shop — Productoverzicht (EN)
+
+- /19-delige-keukenset — Landingpagina keukenset (NL)
+- /19-piece-kitchen-set — Landingpagina keukenset (EN)
+
+- /peper-en-zoutmolens — Landingpagina molens (NL)
+- /pepper-salt-mills — Landingpagina molens (EN)
+
+- /acacia-snijplank — Landingpagina snijplanken (NL)
+- /acacia-cutting-board — Landingpagina snijplanken (EN)
+
+- /product/[handle] — Individuele productpagina's
+
+- /over-ons — Over ons
+- /about — About
+
+- /contact — Contact
+- /veelgestelde-vragen — FAQ (NL)
+- /faq — FAQ (EN)
+
+- /retourneren — Retourbeleid
+- /returns — Returns
+
+- /verzendbeleid — Verzendbeleid
+- /shipping-policy — Shipping
+
+- /privacybeleid — Privacy
+- /privacy-policy — Privacy
+
+- /algemene-voorwaarden — Terms
+- /terms-and-conditions — Terms
+
+- /blog — Blog
+- /account — Klantaccount
+- /checkout — Checkout
+
+## Technische Informatie
+- Platform: WordPress (WooCommerce) + Next.js (landing pages)
+- Taal: Nederlands (primair), Engels beschikbaar
+- Betaalmethoden: iDEAL, Bancontact, creditcard, Klarna
+- Verzending: snelle levering vanuit Nederland
+- Retour: 14 dagen retourbeleid
+
+## Merkwaarden
+- Rust en eenvoud
+- Esthetiek en functionaliteit
+- Consistentie in design
+- Toegankelijke luxe
+
+## Contact
+- Website: https://noctisessentials.com
+- E-mail: info@noctisessentials.com
