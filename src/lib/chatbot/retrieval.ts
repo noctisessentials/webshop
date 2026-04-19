@@ -1,7 +1,11 @@
-import type { ChatFAQItem } from '@/lib/chatbot/knowledge'
+export type RetrievalItem = {
+  id: string
+  q: string
+  a: string
+}
 
 type ScoredFAQ = {
-  item: ChatFAQItem
+  item: RetrievalItem
   score: number
 }
 
@@ -46,7 +50,7 @@ function phraseScore(query: string, target: string): number {
   return t.includes(longest) ? 0.3 : 0
 }
 
-export function rankFAQs(query: string, faqs: ChatFAQItem[], limit = 4): ScoredFAQ[] {
+export function rankFAQs(query: string, faqs: RetrievalItem[], limit = 4): ScoredFAQ[] {
   const queryTokens = tokenize(query)
 
   return faqs

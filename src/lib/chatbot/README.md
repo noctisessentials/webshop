@@ -1,19 +1,19 @@
 # Chatbot Knowledge + Guardrails
 
-This chatbot is configured to answer **only** from the FAQ knowledge in:
+This chatbot is configured to answer **only** from the knowledge base in:
 
-- `src/lib/chatbot/knowledge.ts`
+- `src/lib/chatbot/knowledge-base.ts`
 
 ## Update knowledge
 
-1. Edit `FAQ_GROUPS_NL` and `FAQ_GROUPS_EN` in `knowledge.ts`.
-2. Keep answers factual and policy-safe.
-3. The FAQ page (`/veelgestelde-vragen`) and chatbot both use this file, so content stays in sync.
+1. Edit `NOCTIS_KNOWLEDGE_BASE` and `CHATBOT_KNOWLEDGE_ITEMS` in `knowledge-base.ts`.
+2. Keep facts strict and policy-safe.
+3. If a user question is not covered by this file, the chatbot escalates to a human.
 
 ## Environment variables
 
 - `OPENAI_API_KEY` (required for OpenAI responses)
-- `OPENAI_CHAT_MODEL` (optional, default: `gpt-4.1-mini`)
+- `OPENAI_CHAT_MODEL` (optional, default: `gpt-4.1`)
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_SECURE`
@@ -24,6 +24,6 @@ This chatbot is configured to answer **only** from the FAQ knowledge in:
 
 ## Safety behavior
 
-- If a user asks outside FAQ knowledge, chatbot escalates instead of guessing.
+- If a user asks outside knowledge, chatbot escalates instead of guessing.
 - If user asks for a real person, chatbot immediately offers escalation form.
 - Escalation form asks for name + email and confirms response within 24 hours.

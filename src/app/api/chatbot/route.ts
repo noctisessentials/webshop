@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { CHATBOT_POLICIES, getChatbotFAQItems } from '@/lib/chatbot/knowledge'
+import { CHATBOT_POLICIES } from '@/lib/chatbot/knowledge'
+import { NOCTIS_KNOWLEDGE_BASE, getChatbotKnowledgeItems } from '@/lib/chatbot/knowledge-base'
 import { rankFAQs } from '@/lib/chatbot/retrieval'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -14,7 +15,7 @@ type ChatbotJson = {
   reply: string
   needsEscalation: boolean
   reason?: string
-  sourceFaqIds?: string[]
+  sourceKnowledgeIds?: string[]
 }
 
 type OpenAIChoice = {
@@ -89,11 +90,11 @@ function escalationReply(locale: 'nl' | 'en', reason?: string) {
     needsEscalation: true,
     suggestEscalationForm: true,
     reason,
-    sourceFaqIds: [] as string[],
+    sourceKnowledgeIds: [] as string[],
   }
 }
 
-function deterministicFaqReply(locale: 'nl' | 'en', answer: string, faqId: string) {
+function deterministicKnowledgeReply(locale: 'nl' | 'en', answer: string, knowledgeId: string) {
   return {
     reply:
       locale === 'en'
@@ -101,12 +102,12 @@ function deterministicFaqReply(locale: 'nl' | 'en', answer: string, faqId: strin
         : `${answer}\n\nAls je wilt, kan ik je alsnog doorzetten naar een medewerker.`,
     needsEscalation: false,
     suggestEscalationForm: false,
-    sourceFaqIds: [faqId],
+    sourceKnowledgeIds: [knowledgeId],
   }
 }
 
-function buildKnowledgeSnippet(locale: 'nl' | 'en', ids: string[]) {
-  const items = getChatbotFAQItems(locale).filter((item) => ids.includes(item.id))
+function buildKnowledgeSnippet(ids: string[]) {
+  const items = getChatbotKnowledgeItems().filter((item) => ids.includes(item.id))
   return items.map((item) => `[${item.id}] Q: ${item.q}\nA: ${item.a}`).join('\n\n')
 }
 
@@ -152,51 +153,61 @@ export async function POST(request: Request) {
       return NextResponse.json(escalationReply(locale, 'human-request'))
     }
 
-    const ranked = rankFAQs(latestUserMessage, getChatbotFAQItems(locale), 4)
+    const ranked = rankFAQs(latestUserMessage, getChatbotKnowledgeItems(), 5)
     const top = ranked[0]
 
-    if (!top || top.score < 0.16) {
+    if (!top || top.score < 0.12) {
       return NextResponse.json(escalationReply(locale, 'no-grounding-match'))
     }
 
-    const sourceFaqIds = ranked.filter((item) => item.score >= 0.11).map((item) => item.item.id)
-    if (sourceFaqIds.length === 0) {
+    const sourceKnowledgeIds = ranked.filter((item) => item.score >= 0.09).map((item) => item.item.id)
+    if (sourceKnowledgeIds.length === 0) {
       return NextResponse.json(escalationReply(locale, 'no-strong-candidates'))
     }
 
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
       // Safe fallback for local development if OpenAI key is not configured.
-      return NextResponse.json(deterministicFaqReply(locale, top.item.a, top.item.id))
+      return NextResponse.json(deterministicKnowledgeReply(locale, top.item.a, top.item.id))
     }
 
     const model = process.env.OPENAI_CHAT_MODEL ?? 'gpt-4.1'
 
-    const knowledgeSnippet = buildKnowledgeSnippet(locale, sourceFaqIds)
+    const knowledgeSnippet = buildKnowledgeSnippet(sourceKnowledgeIds)
     const recentMessages = messages.slice(-6)
 
     const systemPrompt =
       locale === 'en'
         ? [
             'You are Noctis Essentials customer support.',
-            'ONLY use facts that exist in the FAQ knowledge snippets provided below.',
+            'ONLY use facts that exist in the knowledge provided below.',
             'If the user asks anything that is not fully covered by knowledge, set needsEscalation=true.',
             'Never guess, infer policy details, or invent timelines.',
-            'Keep answers short, friendly, and actionable.',
-            'Output JSON only with keys: reply, needsEscalation, reason, sourceFaqIds.',
+            'If you can answer, use a calm, helpful, understanding and never-pushy tone.',
+            'The product can be functional AND emotional. You may mention benefits only if they are explicitly in knowledge.',
+            'Answer in the same language as the user message.',
+            'Output JSON only with keys: reply, needsEscalation, reason, sourceKnowledgeIds.',
             '',
-            'FAQ KNOWLEDGE:',
+            'FULL KNOWLEDGE BASE:',
+            NOCTIS_KNOWLEDGE_BASE,
+            '',
+            'RELEVANT KNOWLEDGE SNIPPETS:',
             knowledgeSnippet,
           ].join('\n')
         : [
             'Je bent klantenservice van Noctis Essentials.',
-            'Gebruik ALLEEN feiten die in de FAQ-kennis hieronder staan.',
+            'Gebruik ALLEEN feiten die in de kennis hieronder staan.',
             'Als de vraag niet volledig door die kennis wordt gedekt, zet needsEscalation=true.',
             'Nooit gokken, geen extra beleidsdetails verzinnen en geen aannames doen.',
-            'Houd antwoorden kort, vriendelijk en praktisch.',
-            'Geef alleen JSON terug met de velden: reply, needsEscalation, reason, sourceFaqIds.',
+            'Als je kunt antwoorden, gebruik een kalme, behulpzame, begripvolle en niet-opdringerige toon.',
+            'Het product is functioneel EN emotioneel. Benoem voordelen alleen als ze expliciet in de kennis staan.',
+            'Antwoord in dezelfde taal als de vraag van de gebruiker.',
+            'Geef alleen JSON terug met de velden: reply, needsEscalation, reason, sourceKnowledgeIds.',
             '',
-            'FAQ KENNIS:',
+            'VOLLEDIGE KENNISBASIS:',
+            NOCTIS_KNOWLEDGE_BASE,
+            '',
+            'RELEVANTE KENNISFRAGMENTEN:',
             knowledgeSnippet,
           ].join('\n')
 
@@ -224,7 +235,7 @@ export async function POST(request: Request) {
     if (!openAiResponse.ok) {
       const errText = await openAiResponse.text()
       console.error('[chatbot] openai_error', errText)
-      return NextResponse.json(deterministicFaqReply(locale, top.item.a, top.item.id))
+      return NextResponse.json(deterministicKnowledgeReply(locale, top.item.a, top.item.id))
     }
 
     const payload = (await openAiResponse.json()) as OpenAIChatResponse
@@ -232,11 +243,11 @@ export async function POST(request: Request) {
     const parsed = parseJsonObject(raw)
 
     if (!parsed || typeof parsed.reply !== 'string' || typeof parsed.needsEscalation !== 'boolean') {
-      return NextResponse.json(deterministicFaqReply(locale, top.item.a, top.item.id))
+      return NextResponse.json(deterministicKnowledgeReply(locale, top.item.a, top.item.id))
     }
 
-    const validSourceIds = Array.isArray(parsed.sourceFaqIds)
-      ? parsed.sourceFaqIds.filter((id) => typeof id === 'string' && sourceFaqIds.includes(id))
+    const validSourceIds = Array.isArray(parsed.sourceKnowledgeIds)
+      ? parsed.sourceKnowledgeIds.filter((id) => typeof id === 'string' && sourceKnowledgeIds.includes(id))
       : []
 
     if (parsed.needsEscalation) {
@@ -244,14 +255,14 @@ export async function POST(request: Request) {
     }
 
     if (validSourceIds.length === 0) {
-      return NextResponse.json(deterministicFaqReply(locale, top.item.a, top.item.id))
+      return NextResponse.json(deterministicKnowledgeReply(locale, top.item.a, top.item.id))
     }
 
     return NextResponse.json({
       reply: parsed.reply.trim().slice(0, 900),
       needsEscalation: false,
       suggestEscalationForm: false,
-      sourceFaqIds: validSourceIds,
+      sourceKnowledgeIds: validSourceIds,
     })
   } catch (error) {
     console.error('[chatbot]', error)
