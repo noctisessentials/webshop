@@ -60,9 +60,9 @@ const LOCAL_EXTRA_IMAGES: Record<string, { src: string; alt: string }[]> = {
     { src: '/images/pdp/kitchen-set-pink/pollepels.webp',   alt: '19-delige keukenset Roze — pollepels' },
   ],
   'nude': [
-    { src: '/images/pdp/kitchen-set-nude/lifestyle.webp',   alt: '19-delige keukenset Nude — lifestyle' },
-    { src: '/images/pdp/kitchen-set-nude/messen.webp',      alt: '19-delige keukenset Nude — messen' },
-    { src: '/images/pdp/kitchen-set-nude/pollepels.webp',   alt: '19-delige keukenset Nude — pollepels' },
+    { src: '/images/pdp/kitchen-set-nude/lifestyle-new.webp', alt: '19-delige keukenset Nude — lifestyle' },
+    { src: '/images/pdp/kitchen-set-nude/messen.webp',        alt: '19-delige keukenset Nude — messen' },
+    { src: '/images/pdp/kitchen-set-nude/pollepels.webp',     alt: '19-delige keukenset Nude — pollepels' },
   ],
   'grey': [
     { src: '/images/pdp/kitchen-set-grey/lifestyle.webp',   alt: '19-delige keukenset Grijs — lifestyle' },

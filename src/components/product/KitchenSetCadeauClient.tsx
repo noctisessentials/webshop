@@ -342,7 +342,7 @@ export function KitchenSetCadeauClient({ product, upsellProducts }: Props) {
             <div className="grid grid-cols-2 gap-3">
               {[
                 { src: '/images/pdp/kitchen-set-black/main.jpg', alt: '19-delige keukenset zwart' },
-                { src: '/images/pdp/kitchen-set-nude/lifestyle.webp', alt: 'Keukenset lifestyle' },
+                { src: '/images/pdp/kitchen-set-nude/lifestyle-new.webp', alt: 'Keukenset lifestyle' },
                 { src: '/images/pdp/kitchen-set-black/zwart-messen.webp', alt: 'Messen' },
                 { src: '/images/pdp/kitchen-set-black/zwart-pollepels.webp', alt: 'Tools' },
               ].map((img, i) => (
