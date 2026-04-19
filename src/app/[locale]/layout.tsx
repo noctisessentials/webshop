@@ -5,6 +5,7 @@ import { AnnouncementBar } from '@/components/layout/AnnouncementBar'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CartDrawer } from '@/components/ui/CartDrawer'
+import { ChatWidget } from '@/components/ui/ChatWidget'
 import { routing } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
 
@@ -35,6 +36,7 @@ export default async function LocaleLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <CartDrawer />
+        <ChatWidget />
       </CartProvider>
     </NextIntlClientProvider>
   )
