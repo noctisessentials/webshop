@@ -44,18 +44,18 @@ const getColorData = (c: ProductColor) =>
 
 function defaultColor(p: Product): ProductColor {
   return (
+    p.colors.find((c) => /pink|roze/.test(`${c.slug} ${c.name}`.toLowerCase())) ??
     p.colors.find((c) => c.wcSlug === p.handle) ??
-    p.colors.find((c) => /nude/.test(`${c.slug} ${c.name}`.toLowerCase())) ??
     p.colors[0]
   )
 }
 
 // ─── static data ─────────────────────────────────────────────────────────────
 
-const GALLERY_LARGE = '/images/pdp/kitchen-set-nude/lifestyle-vrouw.webp'
+const GALLERY_LARGE = '/content/grid-top-left.webp'
 const GALLERY_SMALLS = [
-  '/images/pdp/kitchen-set-nude/messen.webp',
-  '/images/pdp/kitchen-set-nude/pollepels.webp',
+  '/content/grid-top-right.webp',
+  '/content/grid-middle-right.webp',
 ]
 const GALLERY_ROW = [
   { src: '/images/pdp/kitchen-set-black/lifestyle-vrouw.webp', alt: 'Zwarte set' },
@@ -68,16 +68,19 @@ const SET_PARTS = [
     id: 'messen-schaar' as const,
     title: '5 messen & schaar',
     body: 'Een complete basis met koksmes, broodmes, santoku, universeel mes, schilmes en een stevige keukenschaar.',
+    markerClassName: 'top-[22%] left-[40%]',
   },
   {
     id: 'tools' as const,
     title: '11 siliconen tools',
     body: 'Van spatel en pollepel tot garde en tang. Alle tools die je dagelijks gebruikt, in dezelfde rustige stijl.',
+    markerClassName: 'top-[22%] right-[36%]',
   },
   {
     id: 'houder-snijplank' as const,
     title: 'Houder & snijplank',
     body: 'De houder houdt alles overzichtelijk op je aanrecht. De snijplank maakt de set direct functioneel en compleet.',
+    markerClassName: 'bottom-[16%] left-1/2 -translate-x-1/2',
   },
 ] as const
 
@@ -177,10 +180,7 @@ export function KitchenSetStijlClient({ product }: Props) {
 
       {/* ── S1 HERO — 50/50 ──────────────────────────────────────────────────── */}
       <section className="grid grid-cols-1 lg:grid-cols-2 min-h-[90vh]">
-        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-16 py-20 lg:py-0 order-2 lg:order-1">
-          <p className="text-[10px] font-sans font-semibold uppercase tracking-[0.24em] text-accent mb-6">
-            19-delige keukenset
-          </p>
+        <div className="flex flex-col justify-center items-start px-12 md:px-20 lg:px-24 py-20 lg:py-0 order-2 lg:order-1">
           <h1
             className="font-sans font-bold text-dark leading-[1.03] mb-4"
             style={{ fontSize: 'clamp(36px, 4vw, 60px)' }}
@@ -200,7 +200,7 @@ export function KitchenSetStijlClient({ product }: Props) {
           <Button
             variant="accent"
             size="lg"
-            className="self-start mb-3"
+            className="mb-3"
             onClick={() => document.getElementById('kies-kleur')?.scrollIntoView({ behavior: 'smooth' })}
           >
             Ontdek jouw kleur
@@ -212,7 +212,7 @@ export function KitchenSetStijlClient({ product }: Props) {
 
         <div className="relative min-h-[60vw] lg:min-h-0 order-1 lg:order-2">
           <Image
-            src="/images/pdp/kitchen-set-nude/lifestyle-vrouw.webp"
+            src="/content/hero-19-delige-keukenset-stijl.webp"
             alt="Noctis keukenset lifestyle"
             fill
             priority
@@ -224,22 +224,22 @@ export function KitchenSetStijlClient({ product }: Props) {
       </section>
 
       {/* ── S3 EMOTIONAL HOOK ────────────────────────────────────────────────── */}
-      <section className="py-28 md:py-40 px-6 text-center">
+      <section className="py-16 md:py-24 px-6 text-center">
         <p
-          className="font-sans font-bold text-dark mb-3"
+          className="font-sans font-bold text-dark mb-1"
           style={{ fontSize: 'clamp(24px, 3vw, 44px)' }}
         >
           Je ziet het misschien niet meteen.
         </p>
         <p
-          className="font-normal italic mb-4"
-          style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(20px, 2.5vw, 36px)', color: '#A4744C' }}
+          className="font-normal italic mb-2"
+          style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(25px, 3.1vw, 45px)', color: '#A4744C' }}
         >
           Maar je voelt het wel.
         </p>
         <p
-          className="font-sans text-dark/55"
-          style={{ fontSize: 'clamp(14px, 1.4vw, 20px)' }}
+          className="font-sans text-dark/50"
+          style={{ fontSize: 'clamp(11px, 0.9vw, 14px)' }}
         >
           Een keuken klopt pas… als alles samenkomt.
         </p>
@@ -313,7 +313,7 @@ export function KitchenSetStijlClient({ product }: Props) {
             return (
               <div
                 key={v.src}
-                className="relative flex-shrink-0 w-[120px] md:w-[160px] aspect-[9/16] rounded-[12px] overflow-hidden bg-dark"
+                className="relative flex-shrink-0 w-[150px] md:w-[200px] aspect-[9/16] rounded-[12px] overflow-hidden bg-dark"
               >
                 <video
                   ref={ref as React.RefObject<HTMLVideoElement>}
@@ -342,19 +342,39 @@ export function KitchenSetStijlClient({ product }: Props) {
       {/* ── S6 PRODUCT REVEAL — met wat zit erin tabs ────────────────────────── */}
       <section className="py-16 md:py-24 px-4 md:px-8 bg-white">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-          <div className="relative aspect-[4/3] rounded-[20px] overflow-hidden bg-[#F8F5F1]">
-            <Image
-              src="/content/transp-set-nude-website-banner.webp"
-              alt="Alle 19 tools van de Noctis keukenset"
-              fill
-              className="object-contain object-center p-8"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+          <div className="relative rounded-[20px] border border-[#E8E4DE] bg-[#F8F5F1] p-4">
+            <div className="relative aspect-[4/3] rounded-[14px] overflow-hidden bg-[#F8F5F1]">
+              <Image
+                src="/content/transp-set-nude-website-banner.webp"
+                alt="Alle 19 tools van de Noctis keukenset"
+                fill
+                className="object-contain object-center"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              {SET_PARTS.map((part, index) => {
+                const isActive = part.id === activeSetPartId
+                return (
+                  <button
+                    key={part.id}
+                    type="button"
+                    onClick={() => setActiveSetPartId(part.id)}
+                    style={{ animationDelay: `${index * 180}ms` }}
+                    className={cn(
+                      'absolute z-10 h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-200 hotspot-bubble text-sm font-sans font-bold',
+                      part.markerClassName,
+                      isActive
+                        ? 'border-accent bg-accent text-white shadow-[0_8px_20px_rgba(164,116,76,0.35)]'
+                        : 'border-[#1F2937]/20 bg-[#1F2937] text-white hover:bg-[#111827]'
+                    )}
+                    aria-label={part.title}
+                  >
+                    {index + 1}
+                  </button>
+                )
+              })}
+            </div>
           </div>
           <div>
-            <p className="text-[10px] font-sans font-semibold uppercase tracking-[0.24em] text-accent mb-4">
-              De set
-            </p>
             <h2
               className="font-sans font-bold text-dark leading-tight mb-1"
               style={{ fontSize: 'clamp(24px, 2.8vw, 40px)' }}
@@ -362,12 +382,12 @@ export function KitchenSetStijlClient({ product }: Props) {
               Alles wat je nodig hebt.
             </h2>
             <p
-              className="font-normal italic mb-4"
+              className="font-normal italic mb-3"
               style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 2.6vw, 38px)', color: '#A4744C' }}
             >
               In één set.
             </p>
-            <p className="font-sans text-dark/50 text-base leading-relaxed mb-6">
+            <p className="font-sans text-dark/50 text-base leading-relaxed mb-5">
               Geen losse tools. Geen mismatch. Gewoon compleet.
             </p>
 
@@ -626,13 +646,13 @@ export function KitchenSetStijlClient({ product }: Props) {
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2
-              className="font-sans font-bold text-dark leading-tight mb-1"
+              className="font-sans font-bold text-dark leading-none mb-1"
               style={{ fontSize: 'clamp(28px, 3.5vw, 50px)' }}
             >
-              Een keuken die er
+              Een keuken die eindelijk
             </h2>
             <p
-              className="font-normal italic mb-6"
+              className="font-normal italic mb-5"
               style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(28px, 3.5vw, 52px)', color: '#A4744C' }}
             >
               gewoon klopt.
@@ -643,7 +663,14 @@ export function KitchenSetStijlClient({ product }: Props) {
             <Button variant="accent" size="xl" onClick={() => router.push('/19-delige-keukenset')}>
               Bestel jouw set
             </Button>
-            <p className="text-xs font-sans text-dark/25 mt-4">5.000+ tevreden klanten</p>
+            <div className="mt-4 flex items-center gap-2">
+              <div className="flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span key={i} className="text-sm text-[#00B67A]">★</span>
+                ))}
+              </div>
+              <p className="text-sm font-sans font-medium text-dark/60">5.000+ tevreden klanten</p>
+            </div>
           </div>
           <div className="relative aspect-[4/5] rounded-[20px] overflow-hidden">
             <Image
