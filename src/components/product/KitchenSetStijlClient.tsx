@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Minus, Palette, Plus, ShieldCheck, Sparkles, Truck, Volume2, VolumeX } from 'lucide-react'
+import { Minus, Palette, Pause, Play, Plus, ShieldCheck, Sparkles, Truck, Volume2, VolumeX } from 'lucide-react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { Button } from '@/components/ui/Button'
 import { cn, formatPrice } from '@/lib/utils'
@@ -58,7 +58,7 @@ const GALLERY_SMALLS = [
   '/content/grid-middle-right.webp',
 ]
 const GALLERY_ROW = [
-  { src: '/images/pdp/kitchen-set-black/lifestyle-vrouw.webp', alt: 'Zwarte set' },
+  { src: '/images/pdp/kitchen-set-nude/lifestyle-new.webp',    alt: 'Nude set' },
   { src: '/images/pdp/kitchen-set-pink/lifestyle.webp',        alt: 'Roze set' },
   { src: '/images/pdp/kitchen-set-mint/lifestyle.webp',        alt: 'Mintgroene set' },
 ]
@@ -145,10 +145,13 @@ export function KitchenSetStijlClient({ product }: Props) {
   const [activeSetPartId, setActiveSetPartId] = useState<SetPartId>('messen-schaar')
   const [testimonialsPaused, setTestimonialsPaused] = useState(false)
 
-  // Video mute states
+  // Video states
   const [muted0, setMuted0] = useState(true)
   const [muted1, setMuted1] = useState(true)
   const [muted2, setMuted2] = useState(true)
+  const [playing0, setPlaying0] = useState(true)
+  const [playing1, setPlaying1] = useState(false)
+  const [playing2, setPlaying2] = useState(false)
   const vid0 = useRef<HTMLVideoElement>(null)
   const vid1 = useRef<HTMLVideoElement>(null)
   const vid2 = useRef<HTMLVideoElement>(null)
@@ -165,8 +168,19 @@ export function KitchenSetStijlClient({ product }: Props) {
     if (idx === 2) { const m = !muted2; setMuted2(m); if (vid2.current) vid2.current.muted = m }
   }
 
-  const videoRefs  = [vid0, vid1, vid2]
-  const mutedState = [muted0, muted1, muted2]
+  const togglePlay = (idx: number) => {
+    const refs = [vid0, vid1, vid2]
+    const setters = [setPlaying0, setPlaying1, setPlaying2]
+    const states = [playing0, playing1, playing2]
+    const ref = refs[idx].current
+    if (!ref) return
+    if (states[idx]) { ref.pause(); setters[idx](false) }
+    else              { ref.play();  setters[idx](true)  }
+  }
+
+  const videoRefs   = [vid0, vid1, vid2]
+  const mutedState  = [muted0, muted1, muted2]
+  const playingState = [playing0, playing1, playing2]
 
   const handleAddToCart = async () => {
     setAdding(true)
@@ -180,7 +194,8 @@ export function KitchenSetStijlClient({ product }: Props) {
 
       {/* ── S1 HERO — 50/50 ──────────────────────────────────────────────────── */}
       <section className="grid grid-cols-1 lg:grid-cols-2 min-h-[90vh]">
-        <div className="flex flex-col justify-center items-start px-12 md:px-20 lg:px-24 py-20 lg:py-0 order-2 lg:order-1">
+        <div className="flex flex-col justify-center items-center px-8 md:px-12 py-20 lg:py-0 order-2 lg:order-1">
+          <div className="w-full max-w-sm">
           <h1
             className="font-sans font-bold text-dark leading-[1.03] mb-4"
             style={{ fontSize: 'clamp(36px, 4vw, 60px)' }}
@@ -208,6 +223,7 @@ export function KitchenSetStijlClient({ product }: Props) {
           <p className="text-[11px] font-sans text-dark/35 tracking-wide">
             Gratis verzending · Morgen in huis · 14 dagen retour
           </p>
+          </div>
         </div>
 
         <div className="relative min-h-[60vw] lg:min-h-0 order-1 lg:order-2">
@@ -301,15 +317,18 @@ export function KitchenSetStijlClient({ product }: Props) {
           </p>
         </div>
 
-        {/* Videos — small compact cards */}
-        <div className="flex justify-center gap-3 px-4 md:px-8">
+        {/* Videos — scrollable on mobile, centered on desktop */}
+        <div className="flex gap-3 px-4 md:px-8 overflow-x-auto md:overflow-visible md:justify-center scrollbar-hide"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {[vid0, vid1, vid2].map((ref, i) => {
             const v = [
-              { src: '/videos/19-delige-set-pdp-video.webm', autoplay: true },
-              { src: '/videos/nude-grab-set-comp.mp4',       autoplay: false },
-              { src: '/videos/spatel-pan-grijs.mp4',         autoplay: false },
+              { src: '/videos/ugc-1.mp4', autoplay: true },
+              { src: '/videos/ugc-2.mp4', autoplay: false },
+              { src: '/videos/ugc-3.mp4', autoplay: false },
             ][i]
-            const isMuted = mutedState[i]
+            const isMuted   = mutedState[i]
+            const isPlaying = playingState[i]
             return (
               <div
                 key={v.src}
@@ -325,6 +344,16 @@ export function KitchenSetStijlClient({ product }: Props) {
                   playsInline
                   preload="metadata"
                 />
+                {/* Play/pause — bottom left */}
+                <button
+                  type="button"
+                  onClick={() => togglePlay(i)}
+                  aria-label={isPlaying ? 'Pauzeren' : 'Afspelen'}
+                  className="absolute left-2 bottom-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white backdrop-blur-sm transition-transform duration-200 hover:scale-105"
+                >
+                  {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+                </button>
+                {/* Mute — bottom right */}
                 <button
                   type="button"
                   onClick={() => toggleMute(i)}
