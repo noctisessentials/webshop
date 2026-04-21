@@ -284,7 +284,7 @@ export function KitchenSetCadeauClient({ product, upsellProducts }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative aspect-square rounded-[24px] overflow-hidden border border-border">
               <Image
-                src="/images/pdp/kitchen-set-black/lifestyle-vrouw.webp"
+                src="/images/pdp/kitchen-set-black/lifestyle-new.webp"
                 alt="Noctis keukenset als cadeau"
                 fill
                 className="object-cover object-center"

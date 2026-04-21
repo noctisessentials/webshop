@@ -32,7 +32,7 @@ const BLACK_GALLERY_IMAGES: GalleryMediaItem[] = [
   },
   {
     type: 'image',
-    src: '/images/pdp/kitchen-set-black/lifestyle-vrouw.webp',
+    src: '/images/pdp/kitchen-set-black/lifestyle-new.webp',
     alt: '19-delige keukenset zwart - lifestyle',
   },
   {
