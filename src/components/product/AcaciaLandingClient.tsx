@@ -421,18 +421,17 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
             </div>
 
             <aside className="self-start rounded-[18px] border border-border bg-white p-5 md:p-6 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className={`text-xs ${i < 4 ? 'text-[#16A34A]' : 'text-[#16A34A]/60'}`}>
-                      ★
-                    </span>
-                  ))}
-                </div>
+              <a
+                href="https://www.trustpilot.com/review/noctisessentials.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <Image src="/content/stars-4.5.svg" alt="4.4 sterren op Trustpilot" width={96} height={18} className="h-[18px] w-auto" />
                 <p className="text-xs font-sans text-dark">
-                  4,5/5 <span className="text-muted">Gebaseerd op 32 beoordelingen</span>
+                  4,4/5 <span className="text-muted">Gebaseerd op 37 reviews</span>
                 </p>
-              </div>
+              </a>
 
               <h1 className="font-sans font-bold text-dark leading-tight" style={{ fontSize: 'clamp(16px, 1.8vw, 22px)' }}>
                 Acacia snijplank
@@ -707,6 +706,22 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="container-content mt-10 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Image src="/content/stars-4.5.svg" alt="4.4 sterren op Trustpilot" width={96} height={18} className="h-[18px] w-auto" />
+            <span className="text-sm font-sans text-dark/60">4,4/5 · 37 reviews</span>
+          </div>
+          <a
+            href="https://www.trustpilot.com/review/noctisessentials.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-[#E0DCD7] bg-white px-6 py-3 text-sm font-sans font-medium text-dark hover:border-dark/40 transition-colors duration-200"
+          >
+            Lees alle reviews op Trustpilot
+            <span className="text-dark/30">→</span>
+          </a>
         </div>
       </section>
 

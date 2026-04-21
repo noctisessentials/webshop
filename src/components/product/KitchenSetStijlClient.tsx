@@ -20,11 +20,11 @@ const DUTCH: Record<string, string> = {
 
 const COLOR_DATA: Record<string, { img: string; desc: string }> = {
   nude:         { img: '/images/pdp/kitchen-set-nude/lifestyle-new.webp',   desc: 'Warm en tijdloos. Past bij hout, beige en marmer.' },
-  black:        { img: '/images/pdp/kitchen-set-black/lifestyle-vrouw.webp', desc: 'Strak en modern. Werkt in elke keuken.' },
-  zwart:        { img: '/images/pdp/kitchen-set-black/lifestyle-vrouw.webp', desc: 'Strak en modern. Werkt in elke keuken.' },
-  grey:         { img: '/images/pdp/kitchen-set-grey/lifestyle.webp',        desc: 'Rustig en veelzijdig. Combineert met alles.' },
-  gray:         { img: '/images/pdp/kitchen-set-grey/lifestyle.webp',        desc: 'Rustig en veelzijdig. Combineert met alles.' },
-  grijs:        { img: '/images/pdp/kitchen-set-grey/lifestyle.webp',        desc: 'Rustig en veelzijdig. Combineert met alles.' },
+  black:        { img: '/images/pdp/kitchen-set-black/lifestyle-new.webp',  desc: 'Strak en modern. Werkt in elke keuken.' },
+  zwart:        { img: '/images/pdp/kitchen-set-black/lifestyle-new.webp',  desc: 'Strak en modern. Werkt in elke keuken.' },
+  grey:         { img: '/images/pdp/kitchen-set-grey/lifestyle-new.webp',    desc: 'Rustig en veelzijdig. Combineert met alles.' },
+  gray:         { img: '/images/pdp/kitchen-set-grey/lifestyle-new.webp',    desc: 'Rustig en veelzijdig. Combineert met alles.' },
+  grijs:        { img: '/images/pdp/kitchen-set-grey/lifestyle-new.webp',    desc: 'Rustig en veelzijdig. Combineert met alles.' },
   pink:         { img: '/images/pdp/kitchen-set-pink/lifestyle.webp',        desc: 'Fris en vrouwelijk. Een subtiel accent.' },
   roze:         { img: '/images/pdp/kitchen-set-pink/lifestyle.webp',        desc: 'Fris en vrouwelijk. Een subtiel accent.' },
   mint:         { img: '/images/pdp/kitchen-set-mint/lifestyle.webp',        desc: 'Fris en speels. Brengt leven in je keuken.' },

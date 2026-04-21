@@ -50,7 +50,7 @@ const LOCAL_IMAGES: Record<string, string> = {
 // images[3] = pollepels / detail
 const LOCAL_EXTRA_IMAGES: Record<string, { src: string; alt: string }[]> = {
   'black': [
-    { src: '/images/pdp/kitchen-set-black/lifestyle-vrouw.webp', alt: '19-delige keukenset Zwart — lifestyle' },
+    { src: '/images/pdp/kitchen-set-black/lifestyle-new.webp',   alt: '19-delige keukenset Zwart — lifestyle' },
     { src: '/images/pdp/kitchen-set-black/zwart-messen.webp',    alt: '19-delige keukenset Zwart — messen' },
     { src: '/images/pdp/kitchen-set-black/zwart-pollepels.webp', alt: '19-delige keukenset Zwart — pollepels' },
   ],
@@ -65,9 +65,9 @@ const LOCAL_EXTRA_IMAGES: Record<string, { src: string; alt: string }[]> = {
     { src: '/images/pdp/kitchen-set-nude/pollepels.webp',     alt: '19-delige keukenset Nude — pollepels' },
   ],
   'grey': [
-    { src: '/images/pdp/kitchen-set-grey/lifestyle.webp',   alt: '19-delige keukenset Grijs — lifestyle' },
-    { src: '/images/pdp/kitchen-set-grey/messen.webp',      alt: '19-delige keukenset Grijs — messen' },
-    { src: '/images/pdp/kitchen-set-grey/pollepels.webp',   alt: '19-delige keukenset Grijs — pollepels' },
+    { src: '/images/pdp/kitchen-set-grey/lifestyle-new.webp', alt: '19-delige keukenset Grijs — lifestyle' },
+    { src: '/images/pdp/kitchen-set-grey/messen.webp',        alt: '19-delige keukenset Grijs — messen' },
+    { src: '/images/pdp/kitchen-set-grey/pollepels.webp',     alt: '19-delige keukenset Grijs — pollepels' },
   ],
   'mint green': [
     { src: '/images/pdp/kitchen-set-mint/lifestyle.webp',   alt: '19-delige keukenset Mintgroen — lifestyle' },
