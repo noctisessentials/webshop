@@ -6,6 +6,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
 })
 
+// In-flight deduplication: if two requests arrive simultaneously for the same
+// paymentIntentId, the second one waits for the first and returns its result.
+const inFlight = new Map<string, Promise<{ id: number; number: string }>>()
+
 type ShippingAddress = {
   firstName: string
   lastName: string
@@ -98,6 +102,22 @@ export async function POST(request: Request) {
       })
     }
 
+    // If another request is already creating this order, wait for it
+    if (inFlight.has(paymentIntentId)) {
+      const order = await inFlight.get(paymentIntentId)!
+      return NextResponse.json({ orderId: order.id, orderNumber: order.number })
+    }
+
+    // Register in-flight promise before the async WC call so concurrent
+    // requests with the same paymentIntentId wait instead of creating a second order.
+    let resolveInFlight!: (o: { id: number; number: string }) => void
+    let rejectInFlight!: (e: unknown) => void
+    const inFlightPromise = new Promise<{ id: number; number: string }>((res, rej) => {
+      resolveInFlight = res
+      rejectInFlight = rej
+    })
+    inFlight.set(paymentIntentId, inFlightPromise)
+
     // Create the WooCommerce order with status "processing" (paid)
     const res = await fetch(`${WC_URL}/wp-json/wc/v3/orders`, {
       method: 'POST',
@@ -151,10 +171,14 @@ export async function POST(request: Request) {
     if (!res.ok) {
       const err = await res.text()
       console.error('[order-complete] WC order creation failed:', err)
+      rejectInFlight(new Error('WC creation failed'))
+      inFlight.delete(paymentIntentId)
       return NextResponse.json({ error: 'Failed to create order' }, { status: 502 })
     }
 
     const order = await res.json()
+    resolveInFlight({ id: order.id, number: order.number })
+    inFlight.delete(paymentIntentId)
 
     // Sync contact + order to Omnisend
     const omnisendKey = process.env.OMNISEND_API_KEY

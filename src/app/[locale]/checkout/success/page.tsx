@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useRouter, Link } from '@/i18n/navigation'
 import { CheckCircle, Package, Mail } from 'lucide-react'
@@ -18,12 +18,15 @@ function SuccessContent() {
   const [order, setOrder] = useState<OrderState>({ status: 'loading' })
 
   const paymentIntentId = searchParams.get('payment_intent')
+  const calledRef = useRef(false)
 
   useEffect(() => {
     if (!paymentIntentId) {
       router.replace('/')
       return
     }
+    if (calledRef.current) return
+    calledRef.current = true
 
     async function completeOrder() {
       try {
@@ -117,7 +120,7 @@ function SuccessContent() {
                   {
                     icon: Mail,
                     title: 'Bevestigingsmail',
-                    body: 'Je ontvangt binnen enkele minuten een bevestiging in je inbox.',
+                    body: 'Je ontvangt binnen enkele minuten een bevestiging in je inbox. Niets ontvangen? Controleer je spam of ongewenste e-mail (vooral bij Outlook). Nog steeds niets? Neem contact met ons op via info@noctisessentials.com.',
                   },
                   {
                     icon: Package,

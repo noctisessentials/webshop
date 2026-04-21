@@ -8,7 +8,7 @@ import { Check, ChevronRight, Minus, Pause, Play, Plus, ShieldCheck, Truck } fro
 import { Button } from '@/components/ui/Button'
 import { cn, formatPrice } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
-import { TESTIMONIALS, type Product, type ProductColor } from '@/lib/data'
+import { type Product, type ProductColor } from '@/lib/data'
 
 type MillsLandingClientProps = {
   product: Product
@@ -146,34 +146,57 @@ const MILLS_INFO_ROWS = [
   },
 ] as const
 
-const MILLS_EXTRA_TESTIMONIALS = [
+const MILLS_PDP_TESTIMONIALS = [
   {
-    id: 'm1',
+    id: 'm-1',
     name: 'Florian R.',
     rating: 5,
-    text: 'Eindelijk molens die niet rommelig uitzien op het aanrecht. Ze staan altijd goed en werken perfect.',
+    text: 'Eindelijk molens die niet rommelig ogen op het aanrecht. Ze staan altijd mooi en malen heel gelijkmatig.',
     product: 'Peper- en zoutmolens zwart wit',
     date: 'April 2026',
   },
   {
-    id: 'm2',
+    id: 'm-2',
     name: 'Yasmin H.',
     rating: 5,
-    text: 'De LED is zo handig — ik gebruik ze elke avond. Het design is ook gewoon heel mooi.',
+    text: 'De LED is echt handig in de avond en de knop werkt super soepel. Ontwerp voelt luxe aan.',
     product: 'Peper- en zoutmolens groen',
     date: 'Maart 2026',
   },
   {
-    id: 'm3',
+    id: 'm-3',
     name: 'Koen L.',
     rating: 5,
-    text: 'Cadeau gekregen en direct verliefd op. USB-C opladen is perfect. Nooit meer gedoe met batterijen.',
+    text: 'Cadeau gekregen en direct blij mee. USB-C opladen is top, geen gedoe meer met losse batterijen.',
     product: 'Peper- en zoutmolens zwart wit',
     date: 'Februari 2026',
   },
+  {
+    id: 'm-4',
+    name: 'Ilse P.',
+    rating: 5,
+    text: 'De maalgraad is makkelijk in te stellen en ze voelen stevig in de hand. We gebruiken ze elke dag.',
+    product: 'Peper- en zoutmolens zwart',
+    date: 'Januari 2026',
+  },
+  {
+    id: 'm-5',
+    name: 'Ruben T.',
+    rating: 5,
+    text: 'Binnen twee dagen binnen en direct in gebruik. Ze zijn stil, snel en staan heel strak op het aanrecht.',
+    product: 'Peper- en zoutmolens wit',
+    date: 'December 2025',
+  },
+  {
+    id: 'm-6',
+    name: 'Sahar B.',
+    rating: 5,
+    text: 'Heel blij met de groene set. Kleur is in het echt net zo mooi als op de site en het malen is super consistent.',
+    product: 'Peper- en zoutmolens groen',
+    date: 'November 2025',
+  },
 ] as const
 
-const MILLS_PDP_TESTIMONIALS = [...TESTIMONIALS, ...MILLS_EXTRA_TESTIMONIALS]
 const MILLS_ROW1_LOOP = [...MILLS_PDP_TESTIMONIALS, ...MILLS_PDP_TESTIMONIALS]
 const MILLS_ROW2_LOOP = [...[...MILLS_PDP_TESTIMONIALS].reverse(), ...[...MILLS_PDP_TESTIMONIALS].reverse()]
 
@@ -195,12 +218,6 @@ function ReviewStars({ rating }: { rating: number }) {
 }
 
 function MillsTestimonialCard({ review }: { review: (typeof MILLS_PDP_TESTIMONIALS)[number] }) {
-  const initials = review.name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
   return (
     <article className="flex-shrink-0 w-[320px] md:w-[360px] mx-3 bg-white rounded-[18px] border border-border p-5">
       <div className="text-accent font-serif font-bold leading-none mb-3" style={{ fontSize: '40px', lineHeight: 1 }}>
@@ -209,13 +226,10 @@ function MillsTestimonialCard({ review }: { review: (typeof MILLS_PDP_TESTIMONIA
       <blockquote className="text-sm md:text-base font-sans text-dark/85 leading-relaxed line-clamp-4">
         {review.text}
       </blockquote>
-      <div className="mt-4 flex items-center gap-3">
-        <div className="h-9 w-9 rounded-full bg-surface border border-border flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-sans font-semibold text-dark/70">{initials}</span>
-        </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-sans font-semibold text-dark truncate">{review.name}</p>
-          <p className="text-xs font-sans text-muted truncate">{review.product}</p>
+          <p className="text-xs font-sans text-muted truncate">{review.product} · {review.date}</p>
         </div>
         <div className="ml-auto flex-shrink-0">
           <ReviewStars rating={review.rating} />

@@ -8,7 +8,7 @@ import { Check, ChevronRight, Leaf, Minus, Package, Plus, Ruler, ShieldCheck, Tr
 import { Button } from '@/components/ui/Button'
 import { cn, formatPrice } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
-import { TESTIMONIALS, type Product, type ProductColor } from '@/lib/data'
+import { type Product, type ProductColor } from '@/lib/data'
 
 type AcaciaLandingClientProps = {
   product: Product
@@ -128,34 +128,57 @@ const RIGHT_FEATURES: AcaciaFeature[] = [
   },
 ]
 
-const ACACIA_EXTRA_TESTIMONIALS = [
+const ACACIA_PDP_TESTIMONIALS = [
   {
-    id: 'a1',
+    id: 'a-1',
     name: 'Lisa V.',
     rating: 5,
-    text: 'Prachtige planken. De houder is super handig en ze zien er veel duurder uit dan ze zijn.',
-    product: 'Acacia snijplank set',
-    date: 'Maart 2026',
-  },
-  {
-    id: 'a2',
-    name: 'Tom B.',
-    rating: 5,
-    text: 'Super mooie set. De drie maten zijn ideaal, voor elk snijkarwei heb je de juiste maat bij de hand.',
+    text: 'Prachtige planken. De houder is heel handig en de set ziet er veel duurder uit dan de prijs doet vermoeden.',
     product: 'Acacia snijplank set',
     date: 'April 2026',
   },
   {
-    id: 'a3',
+    id: 'a-2',
+    name: 'Tom B.',
+    rating: 5,
+    text: 'De drie maten zijn echt ideaal. Voor elk snijwerk pak je automatisch de juiste plank.',
+    product: 'Acacia snijplank set',
+    date: 'Maart 2026',
+  },
+  {
+    id: 'a-3',
     name: 'Chantal D.',
     rating: 5,
-    text: 'Al maanden in gebruik en ze zien er nog steeds als nieuw uit. Echt een aanrader voor iedereen die van koken houdt.',
+    text: 'Al maanden in gebruik en nog steeds mooi vlak. Ook fijn dat mijn messen scherp blijven.',
     product: 'Acacia snijplank set',
     date: 'Februari 2026',
   },
+  {
+    id: 'a-4',
+    name: 'Rens H.',
+    rating: 5,
+    text: 'De sapgroef werkt goed bij vlees en fruit, geen nat aanrecht meer. Kwaliteit van het hout is top.',
+    product: 'Acacia snijplank set',
+    date: 'Januari 2026',
+  },
+  {
+    id: 'a-5',
+    name: 'Marleen C.',
+    rating: 5,
+    text: 'Staat prachtig op het aanrecht en is tegelijk super praktisch. We gebruiken de middelste plank het vaakst.',
+    product: 'Acacia snijplank set',
+    date: 'December 2025',
+  },
+  {
+    id: 'a-6',
+    name: 'Jordi K.',
+    rating: 5,
+    text: 'Voor het eerst een houten set gekocht en geen seconde spijt. Robuust, netjes afgewerkt en makkelijk schoon te houden.',
+    product: 'Acacia snijplank set',
+    date: 'November 2025',
+  },
 ] as const
 
-const ACACIA_PDP_TESTIMONIALS = [...TESTIMONIALS, ...ACACIA_EXTRA_TESTIMONIALS]
 const ACACIA_ROW1_LOOP = [...ACACIA_PDP_TESTIMONIALS, ...ACACIA_PDP_TESTIMONIALS]
 const ACACIA_ROW2_LOOP = [...[...ACACIA_PDP_TESTIMONIALS].reverse(), ...[...ACACIA_PDP_TESTIMONIALS].reverse()]
 
@@ -250,12 +273,6 @@ function ReviewStars({ rating }: { rating: number }) {
 }
 
 function AcaciaTestimonialCard({ review }: { review: (typeof ACACIA_PDP_TESTIMONIALS)[number] }) {
-  const initials = review.name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
   return (
     <article className="flex-shrink-0 w-[320px] md:w-[360px] mx-3 bg-white rounded-[18px] border border-border p-5">
       <div className="text-accent font-serif font-bold leading-none mb-3" style={{ fontSize: '40px', lineHeight: 1 }}>
@@ -264,13 +281,10 @@ function AcaciaTestimonialCard({ review }: { review: (typeof ACACIA_PDP_TESTIMON
       <blockquote className="text-sm md:text-base font-sans text-dark/85 leading-relaxed line-clamp-4">
         {review.text}
       </blockquote>
-      <div className="mt-4 flex items-center gap-3">
-        <div className="h-9 w-9 rounded-full bg-surface border border-border flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-sans font-semibold text-dark/70">{initials}</span>
-        </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-sans font-semibold text-dark truncate">{review.name}</p>
-          <p className="text-xs font-sans text-muted truncate">{review.product}</p>
+          <p className="text-xs font-sans text-muted truncate">{review.product} · {review.date}</p>
         </div>
         <div className="ml-auto flex-shrink-0">
           <ReviewStars rating={review.rating} />

@@ -210,7 +210,6 @@ export default function CheckoutPage() {
     'firstName',
     'lastName',
     'email',
-    'phone',
     'address1',
     'houseNumber',
     'city',
@@ -374,8 +373,12 @@ export default function CheckoutPage() {
                   <Field label="E-mailadres" required>
                     <input type="email" value={shipping.email} onChange={set('email')} required placeholder="jij@voorbeeld.nl" />
                   </Field>
-                  <Field label="Telefoon" required>
-                    <input type="tel" value={shipping.phone} onChange={set('phone')} required placeholder="+31 6 12345678" />
+                  <p className="text-xs font-sans text-muted/70 -mt-2">
+                    Controleer je spam of ongewenste e-mail als je geen bevestiging ontvangt (vooral bij Outlook).{' '}
+                    <a href="mailto:info@noctisessentials.com" className="underline underline-offset-2 hover:text-dark transition-colors">Niet ontvangen? Neem contact op.</a>
+                  </p>
+                  <Field label="Telefoon (optioneel)">
+                    <input type="tel" value={shipping.phone} onChange={set('phone')} placeholder="+31 6 12345678" />
                   </Field>
                   <label className="flex items-start gap-2.5 rounded-lg border border-border bg-surface/30 px-3 py-2.5 cursor-pointer">
                     <input

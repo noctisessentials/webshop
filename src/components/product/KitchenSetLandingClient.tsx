@@ -8,7 +8,7 @@ import * as Accordion from '@radix-ui/react-accordion'
 import { Button } from '@/components/ui/Button'
 import { cn, formatPrice } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
-import { TESTIMONIALS, type Product, type ProductColor } from '@/lib/data'
+import { type Product, type ProductColor } from '@/lib/data'
 
 type GalleryMediaItem = {
   type: 'image' | 'video'
@@ -188,36 +188,59 @@ const DUTCH_COLOR_MAP: Record<string, string> = {
   mintgroen: 'Mintgroen',
 }
 
-const PDP_EXTRA_TESTIMONIALS = [
+const KITCHEN_SET_PDP_TESTIMONIALS = [
   {
-    id: '4',
+    id: 'ks-1',
     name: 'Sanne M.',
     rating: 5,
-    text: 'Sinds we de set hebben, oogt ons aanrecht eindelijk rustig. Alles heeft een vaste plek en dat scheelt elke dag tijd.',
+    text: 'Sinds we de set hebben oogt ons aanrecht eindelijk rustig. Alles heeft een vaste plek en koken gaat echt sneller.',
     product: '19-delige keukenset in zwart',
     date: 'April 2026',
   },
   {
-    id: '5',
-    name: 'Rachid A.',
+    id: 'ks-2',
+    name: 'Nina K.',
     rating: 5,
-    text: 'De peper- en zoutmolens samen met de set besteld. Kwaliteit voelt premium en het staat echt mooi in onze open keuken.',
-    product: 'Peper- en zoutmolens zwart wit',
+    text: 'Ik was bang dat het vooral mooi zou zijn, maar hij is ook heel praktisch. Vooral de grip en het materiaal voelen premium.',
+    product: '19-delige keukenset in nude',
     date: 'Maart 2026',
   },
   {
-    id: '6',
-    name: 'Nina K.',
+    id: 'ks-3',
+    name: 'Marike B.',
     rating: 5,
-    text: 'Ik was bang dat het vooral mooi zou zijn, maar het werkt ook echt fijn in gebruik. Vooral de grip en het materiaal zijn top.',
+    text: 'De set kwam prachtig verpakt aan, echt alsof je een cadeau uitpakt. Kwaliteit is precies wat je verwacht in deze prijsklasse.',
+    product: '19-delige keukenset in roze',
+    date: 'Februari 2026',
+  },
+  {
+    id: 'ks-4',
+    name: 'Ludo V.',
+    rating: 5,
+    text: 'We kozen de mintgroene set voor ons nieuwe appartement en hij staat exact zo stijlvol als op de foto. Heel tevreden.',
+    product: '19-delige keukenset in mintgroen',
+    date: 'Januari 2026',
+  },
+  {
+    id: 'ks-5',
+    name: 'Emma R.',
+    rating: 5,
+    text: 'Elke ochtend word ik blij van het aanrecht. De set voelt stevig en niets ziet er goedkoop uit.',
+    product: '19-delige keukenset in grijs',
+    date: 'December 2025',
+  },
+  {
+    id: 'ks-6',
+    name: 'Fleur D.',
+    rating: 5,
+    text: 'Had ik dit maar eerder gedaan. We gebruiken bijna elk onderdeel dagelijks en alles blijft netjes georganiseerd.',
     product: '19-delige keukenset in nude',
     date: 'Februari 2026',
   },
 ] as const
 
-const PDP_TESTIMONIALS = [...TESTIMONIALS, ...PDP_EXTRA_TESTIMONIALS]
-const TESTIMONIAL_ROW1 = PDP_TESTIMONIALS
-const TESTIMONIAL_ROW2 = [...PDP_TESTIMONIALS].reverse()
+const TESTIMONIAL_ROW1 = KITCHEN_SET_PDP_TESTIMONIALS
+const TESTIMONIAL_ROW2 = [...KITCHEN_SET_PDP_TESTIMONIALS].reverse()
 const TESTIMONIAL_ROW1_LOOP = [...TESTIMONIAL_ROW1, ...TESTIMONIAL_ROW1]
 const TESTIMONIAL_ROW2_LOOP = [...TESTIMONIAL_ROW2, ...TESTIMONIAL_ROW2]
 
@@ -317,15 +340,7 @@ function ComparisonMark({ isPositive }: { isPositive: boolean }) {
   )
 }
 
-function TestimonialCard({ review }: { review: (typeof PDP_TESTIMONIALS)[number] }) {
-  // Initials avatar from name
-  const initials = review.name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-
+function TestimonialCard({ review }: { review: (typeof KITCHEN_SET_PDP_TESTIMONIALS)[number] }) {
   return (
     <article className="flex-shrink-0 w-[320px] md:w-[360px] mx-3 bg-white rounded-[18px] border border-border p-5">
       {/* Big quote mark */}
@@ -335,14 +350,10 @@ function TestimonialCard({ review }: { review: (typeof PDP_TESTIMONIALS)[number]
       <blockquote className="text-sm md:text-base font-sans text-dark/85 leading-relaxed line-clamp-4">
         {review.text}
       </blockquote>
-      <div className="mt-4 flex items-center gap-3">
-        {/* Initials avatar */}
-        <div className="h-9 w-9 rounded-full bg-surface border border-border flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-sans font-semibold text-dark/70">{initials}</span>
-        </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-sans font-semibold text-dark truncate">{review.name}</p>
-          <p className="text-xs font-sans text-muted truncate">{review.product}</p>
+          <p className="text-xs font-sans text-muted truncate">{review.product} · {review.date}</p>
         </div>
         <div className="ml-auto flex-shrink-0">
           <ReviewStars rating={review.rating} />
