@@ -13,9 +13,22 @@ type LineItem = {
   price: number // unit price in EUR
 }
 
+type ShippingData = {
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string
+  address1: string
+  address2?: string
+  city: string
+  postcode: string
+  country: string
+  newsletterOptIn?: boolean
+}
+
 export async function POST(request: Request) {
   try {
-    const { items, email }: { items: LineItem[]; email?: string } = await request.json()
+    const { items, email, shipping }: { items: LineItem[]; email?: string; shipping?: ShippingData } = await request.json()
 
     if (!items?.length) {
       return NextResponse.json({ error: 'No items' }, { status: 400 })
@@ -32,10 +45,11 @@ export async function POST(request: Request) {
       payment_method_types: ['ideal', 'card', 'bancontact', 'klarna'],
       receipt_email: email || undefined,
       metadata: {
-        // Store line items as JSON for the order-complete step
         line_items: JSON.stringify(
           items.map((i) => ({ wcId: i.wcId, title: i.title, colorName: i.colorName, quantity: i.quantity, price: i.price }))
         ),
+        // Store shipping so the webhook can create a WC order if the browser never reaches /success
+        ...(shipping ? { shipping: JSON.stringify(shipping) } : {}),
       },
     })
 

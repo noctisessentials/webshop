@@ -279,6 +279,7 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: shipping.email,
+          shipping: { ...shipping, address1: `${shipping.address1} ${shipping.houseNumber}`.trim(), newsletterOptIn },
           items: items.map((i) => ({
             wcId: i.color.wcId,
             title: i.product.title,
