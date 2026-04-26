@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { useRouter, Link } from '@/i18n/navigation'
 import { CheckCircle, Package, Mail } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
+import { getStoredUTMs, clearUTMs } from '@/lib/utm'
 
 type OrderState =
   | { status: 'loading' }
@@ -40,7 +41,7 @@ function SuccessContent() {
         const res = await fetch('/api/order-complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentIntentId, shipping }),
+          body: JSON.stringify({ paymentIntentId, shipping, utm: getStoredUTMs() }),
         })
 
         if (!res.ok) throw new Error('Order creation failed')
@@ -65,6 +66,7 @@ function SuccessContent() {
         localStorage.removeItem('noctis_shipping')
         sessionStorage.removeItem('noctis_shipping')
         sessionStorage.removeItem('noctis_cart')
+        clearUTMs()
         clearCart?.()
       } catch (err) {
         console.error(err)

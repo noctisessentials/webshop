@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import type { UTMData } from '@/lib/utm'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -28,7 +29,7 @@ type ShippingData = {
 
 export async function POST(request: Request) {
   try {
-    const { items, email, shipping }: { items: LineItem[]; email?: string; shipping?: ShippingData } = await request.json()
+    const { items, email, shipping, utm }: { items: LineItem[]; email?: string; shipping?: ShippingData; utm?: UTMData | null } = await request.json()
 
     if (!items?.length) {
       return NextResponse.json({ error: 'No items' }, { status: 400 })
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
         ),
         // Store shipping so the webhook can create a WC order if the browser never reaches /success
         ...(shipping ? { shipping: JSON.stringify(shipping) } : {}),
+        // Store UTMs so the webhook can set order attribution if the browser never reaches /success
+        ...(utm ? { utm: JSON.stringify(utm) } : {}),
       },
     })
 

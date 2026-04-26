@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CartDrawer } from '@/components/ui/CartDrawer'
 import { ChatWidget } from '@/components/ui/ChatWidget'
+import { UTMCapture } from '@/components/UTMCapture'
 import { routing } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
 
@@ -37,6 +38,7 @@ export default async function LocaleLayout({
         <Footer />
         <CartDrawer />
         <ChatWidget />
+        <UTMCapture />
       </CartProvider>
     </NextIntlClientProvider>
   )

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import crypto from 'crypto'
+import { utmToWCMeta } from '@/lib/utm'
+import type { UTMData } from '@/lib/utm'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -68,7 +70,8 @@ export async function POST(request: Request) {
     const {
       paymentIntentId,
       shipping,
-    }: { paymentIntentId: string; shipping: ShippingAddress | null } = await request.json()
+      utm,
+    }: { paymentIntentId: string; shipping: ShippingAddress | null; utm?: UTMData | null } = await request.json()
 
     // Verify the payment actually succeeded
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
@@ -140,16 +143,10 @@ export async function POST(request: Request) {
         payment_method_title: 'Stripe',
         set_paid: true,
         transaction_id: paymentIntentId,
-        ...(shipping.newsletterOptIn
-          ? {
-              meta_data: [
-                {
-                  key: 'newsletter_opt_in',
-                  value: 'yes',
-                },
-              ],
-            }
-          : {}),
+        meta_data: [
+          ...(shipping.newsletterOptIn ? [{ key: 'newsletter_opt_in', value: 'yes' }] : []),
+          ...(utm ? utmToWCMeta(utm) : []),
+        ],
         billing: {
           first_name: shipping.firstName,
           last_name: shipping.lastName,

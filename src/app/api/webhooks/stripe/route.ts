@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { utmToWCMeta } from '@/lib/utm'
+import type { UTMData } from '@/lib/utm'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -79,6 +81,8 @@ export async function POST(request: Request) {
       const lineItems: LineItem[] = JSON.parse(fullIntent.metadata.line_items ?? '[]')
       const shippingRaw = fullIntent.metadata.shipping
       const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
+      const utmRaw = fullIntent.metadata.utm
+      const utm: UTMData | null = utmRaw ? JSON.parse(utmRaw) : null
 
       if (lineItems.length > 0) {
         const orderBody: Record<string, unknown> = {
@@ -88,6 +92,7 @@ export async function POST(request: Request) {
           set_paid: true,
           transaction_id: intentId,
           line_items: lineItems.map(({ wcId, quantity }) => ({ product_id: wcId, quantity })),
+          ...(utm ? { meta_data: utmToWCMeta(utm) } : {}),
         }
 
         if (shipping) {

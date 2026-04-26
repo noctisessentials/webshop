@@ -9,6 +9,7 @@ import { formatPrice } from '@/lib/utils'
 import { useRouter } from '@/i18n/navigation'
 import { Link } from '@/i18n/navigation'
 import { ChevronLeft, Lock, Truck, ShieldCheck, RotateCcw } from 'lucide-react'
+import { getStoredUTMs } from '@/lib/utm'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -281,6 +282,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           email: shipping.email,
           shipping: { ...shipping, address1: `${shipping.address1} ${shipping.houseNumber}`.trim(), newsletterOptIn },
+          utm: getStoredUTMs(),
           items: items.map((i) => ({
             wcId: i.color.wcId,
             title: i.product.title,
