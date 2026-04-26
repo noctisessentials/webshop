@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     const {
       paymentIntentId,
       shipping,
-    }: { paymentIntentId: string; shipping: ShippingAddress } = await request.json()
+    }: { paymentIntentId: string; shipping: ShippingAddress | null } = await request.json()
 
     // Verify the payment actually succeeded
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
@@ -99,7 +99,16 @@ export async function POST(request: Request) {
       return NextResponse.json({
         orderId: existingOrder.id,
         orderNumber: existingOrder.number,
+        total: paymentIntent.amount / 100,
+        itemCount: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0),
       })
+    }
+
+    // Shipping is required to create a new order — if it's missing and no existing order was
+    // found, the webhook hasn't fired yet or something else went wrong.
+    if (!shipping) {
+      console.error('[order-complete] No shipping data and no existing WC order for', paymentIntentId)
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     // If another request is already creating this order, wait for it

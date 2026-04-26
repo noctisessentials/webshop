@@ -262,7 +262,8 @@ export default function CheckoutPage() {
       newsletterOptIn,
     }
 
-    sessionStorage.setItem('noctis_shipping', JSON.stringify(shippingForOrder))
+    // Use localStorage so shipping survives cross-origin payment redirects (iDEAL, Klarna, Bancontact)
+    localStorage.setItem('noctis_shipping', JSON.stringify(shippingForOrder))
     sessionStorage.setItem('noctis_cart', JSON.stringify(
       items.map((i) => ({
         wcId: i.color.wcId,

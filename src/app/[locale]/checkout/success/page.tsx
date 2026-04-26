@@ -30,9 +30,12 @@ function SuccessContent() {
 
     async function completeOrder() {
       try {
-        const shippingRaw = sessionStorage.getItem('noctis_shipping')
-        if (!shippingRaw) throw new Error('Missing shipping data')
-        const shipping = JSON.parse(shippingRaw)
+        // localStorage survives cross-origin redirects (iDEAL, Klarna, Bancontact);
+        // sessionStorage may be cleared on mobile during payment redirect
+        const shippingRaw =
+          localStorage.getItem('noctis_shipping') ??
+          sessionStorage.getItem('noctis_shipping')
+        const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
 
         const res = await fetch('/api/order-complete', {
           method: 'POST',
@@ -59,6 +62,7 @@ function SuccessContent() {
           })
         }
 
+        localStorage.removeItem('noctis_shipping')
         sessionStorage.removeItem('noctis_shipping')
         sessionStorage.removeItem('noctis_cart')
         clearCart?.()
@@ -75,7 +79,9 @@ function SuccessContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentIntentId])
 
-  const shippingRaw = typeof window !== 'undefined' ? sessionStorage.getItem('noctis_shipping') : null
+  const shippingRaw = typeof window !== 'undefined'
+    ? (localStorage.getItem('noctis_shipping') ?? sessionStorage.getItem('noctis_shipping'))
+    : null
   const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
 
   return (
