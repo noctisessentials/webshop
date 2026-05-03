@@ -13,7 +13,7 @@ export type ChatFAQGroup = {
 
 export const CHATBOT_POLICIES = {
   brandName: 'Noctis Essentials',
-  supportEmail: 'info@noctisessentials.nl',
+  supportEmail: 'info@noctisessentials.com',
   escalationSlaHours: 24,
 } as const
 
@@ -29,7 +29,7 @@ const FAQ_GROUPS_NL: ChatFAQGroup[] = [
       {
         id: 'nl-order-change',
         q: 'Kan ik mijn bestelling annuleren of wijzigen?',
-        a: 'Bestellingen kunnen alleen binnen 2 uur na aankoop worden gewijzigd of geannuleerd. Daarna wordt de bestelling al verwerkt. Neem direct contact op via info@noctisessentials.nl.',
+        a: 'Bestellingen kunnen alleen binnen 2 uur na aankoop worden gewijzigd of geannuleerd. Daarna wordt de bestelling al verwerkt. Neem direct contact op via info@noctisessentials.com.',
       },
       {
         id: 'nl-order-confirmation',
@@ -64,7 +64,7 @@ const FAQ_GROUPS_NL: ChatFAQGroup[] = [
       {
         id: 'nl-return-window',
         q: 'Hoelang heb ik de tijd om te retourneren?',
-        a: 'Je kunt producten binnen 14 dagen na ontvangst retourneren, mits ongebruikt en in originele staat. Neem contact op via info@noctisessentials.nl met je ordernummer om een retour te starten.',
+        a: 'Je kunt producten binnen 14 dagen na ontvangst retourneren, mits ongebruikt en in originele staat. Neem contact op via info@noctisessentials.com met je ordernummer om een retour te starten.',
       },
       {
         id: 'nl-return-cost',
@@ -112,7 +112,7 @@ const FAQ_GROUPS_EN: ChatFAQGroup[] = [
       {
         id: 'en-order-change',
         q: 'Can I cancel or change my order?',
-        a: 'Orders can only be changed or cancelled within 2 hours of purchase, before they are processed. Please contact us immediately at info@noctisessentials.nl.',
+        a: 'Orders can only be changed or cancelled within 2 hours of purchase, before they are processed. Please contact us immediately at info@noctisessentials.com.',
       },
       {
         id: 'en-order-confirmation',
@@ -147,7 +147,7 @@ const FAQ_GROUPS_EN: ChatFAQGroup[] = [
       {
         id: 'en-return-window',
         q: 'How long do I have to return an item?',
-        a: 'You can return products within 14 days of receipt, provided they are unused and in their original condition. Contact us at info@noctisessentials.nl with your order number to start a return.',
+        a: 'You can return products within 14 days of receipt, provided they are unused and in their original condition. Contact us at info@noctisessentials.com with your order number to start a return.',
       },
       {
         id: 'en-return-cost',

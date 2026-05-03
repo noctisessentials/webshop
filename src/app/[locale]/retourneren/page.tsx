@@ -32,7 +32,7 @@ export default async function RetournerenPage({
 
         <PolicySection title="How to return?">
           <ol className="list-decimal pl-5 space-y-2 text-sm">
-            <li>Send an email to info@noctisessentials.nl with your order number and reason for return.</li>
+            <li>Send an email to info@noctisessentials.com with your order number and reason for return.</li>
             <li>You will receive return instructions and a free return label.</li>
             <li>Pack the product carefully, preferably in the original packaging.</li>
             <li>Send the package via the designated shipping location.</li>
@@ -64,7 +64,7 @@ export default async function RetournerenPage({
           <p className="font-semibold text-dark mb-1">Need help?</p>
           <p className="text-sm text-dark/70">
             Send us a message at{' '}
-            <a href="mailto:info@noctisessentials.nl" className="underline hover:text-accent">info@noctisessentials.nl</a>
+            <a href="mailto:info@noctisessentials.com" className="underline hover:text-accent">info@noctisessentials.com</a>
             {' '}or visit our{' '}
             <Link href="/contact" className="underline hover:text-accent">contact page</Link>.
           </p>
@@ -81,7 +81,7 @@ export default async function RetournerenPage({
 
       <PolicySection title="Hoe retourneer je?">
         <ol className="list-decimal pl-5 space-y-2 text-sm">
-          <li>Stuur een e-mail naar info@noctisessentials.nl met je ordernummer en reden van retour.</li>
+          <li>Stuur een e-mail naar info@noctisessentials.com met je ordernummer en reden van retour.</li>
           <li>Je ontvangt retourinstructies en een gratis retourlabel.</li>
           <li>Verpak het product zorgvuldig, bij voorkeur in de originele verpakking.</li>
           <li>Stuur het pakket op via de aangewezen verzendlocatie.</li>
@@ -113,7 +113,7 @@ export default async function RetournerenPage({
         <p className="font-semibold text-dark mb-1">Hulp nodig?</p>
         <p className="text-sm text-dark/70">
           Stuur ons een bericht via{' '}
-          <a href="mailto:info@noctisessentials.nl" className="underline hover:text-accent">info@noctisessentials.nl</a>
+          <a href="mailto:info@noctisessentials.com" className="underline hover:text-accent">info@noctisessentials.com</a>
           {' '}of ga naar onze{' '}
           <Link href="/contact" className="underline hover:text-accent">contactpagina</Link>.
         </p>

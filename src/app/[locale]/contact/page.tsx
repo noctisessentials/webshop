@@ -64,7 +64,7 @@ export default async function ContactPage({
         },
         {
           q: 'Hoe werkt het retourneren?',
-          a: 'Je kunt producten binnen 14 dagen retourneren. Stuur een e-mail naar info@noctisessentials.nl met je ordernummer en reden. Je ontvangt een gratis retourlabel.',
+          a: 'Je kunt producten binnen 14 dagen retourneren. Stuur een e-mail naar info@noctisessentials.com met je ordernummer en reden. Je ontvangt een gratis retourlabel.',
         },
       ]
 
@@ -104,8 +104,8 @@ export default async function ContactPage({
               <div className="space-y-4">
                 <div>
                   <p className="text-xs font-sans font-semibold text-muted uppercase tracking-wider mb-1">{t('email')}</p>
-                  <a href="mailto:info@noctisessentials.nl" className="text-sm font-sans text-dark hover:text-accent transition-colors">
-                    info@noctisessentials.nl
+                  <a href="mailto:info@noctisessentials.com" className="text-sm font-sans text-dark hover:text-accent transition-colors">
+                    info@noctisessentials.com
                   </a>
                 </div>
                 <div>

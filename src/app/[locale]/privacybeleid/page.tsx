@@ -68,7 +68,7 @@ export default async function PrivacybeleidPage({
             <li>Right to data portability</li>
             <li>Right to object</li>
           </ul>
-          <p className="mt-3">You can submit a request via info@noctisessentials.nl. Complaints can be submitted to the relevant data protection authority in your country.</p>
+          <p className="mt-3">You can submit a request via info@noctisessentials.com. Complaints can be submitted to the relevant data protection authority in your country.</p>
         </PolicySection>
 
         <PolicySection title="Retention periods">
@@ -80,7 +80,7 @@ export default async function PrivacybeleidPage({
         </PolicySection>
 
         <PolicySection title="Contact">
-          <p>For questions about our privacy policy, please contact us at info@noctisessentials.nl or via our <a href="/contact" className="underline hover:text-accent">contact page</a>.</p>
+          <p>For questions about our privacy policy, please contact us at info@noctisessentials.com or via our <a href="/contact" className="underline hover:text-accent">contact page</a>.</p>
         </PolicySection>
       </PolicyPage>
     )
@@ -131,7 +131,7 @@ export default async function PrivacybeleidPage({
           <li>Recht op gegevensoverdraagbaarheid</li>
           <li>Recht van bezwaar</li>
         </ul>
-        <p className="mt-3">Je kunt een verzoek indienen via info@noctisessentials.nl. Klachten kun je indienen bij de <a href="https://www.autoriteitpersoonsgegevens.nl" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">Autoriteit Persoonsgegevens</a>.</p>
+        <p className="mt-3">Je kunt een verzoek indienen via info@noctisessentials.com. Klachten kun je indienen bij de <a href="https://www.autoriteitpersoonsgegevens.nl" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">Autoriteit Persoonsgegevens</a>.</p>
       </PolicySection>
 
       <PolicySection title="Bewaartermijnen">
@@ -143,7 +143,7 @@ export default async function PrivacybeleidPage({
       </PolicySection>
 
       <PolicySection title="Contact">
-        <p>Voor vragen over ons privacybeleid kun je contact opnemen via info@noctisessentials.nl of via onze <a href="/contact" className="underline hover:text-accent">contactpagina</a>.</p>
+        <p>Voor vragen over ons privacybeleid kun je contact opnemen via info@noctisessentials.com of via onze <a href="/contact" className="underline hover:text-accent">contactpagina</a>.</p>
       </PolicySection>
     </PolicyPage>
   )

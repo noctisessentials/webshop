@@ -67,7 +67,7 @@ export default async function OverOnsPage({
           <div className="text-sm space-y-1 text-dark/70">
             <p><span className="font-medium text-dark">Company name:</span> Noctis</p>
             <p><span className="font-medium text-dark">Location:</span> Amsterdam, Netherlands</p>
-            <p><span className="font-medium text-dark">Email:</span> info@noctisessentials.nl</p>
+            <p><span className="font-medium text-dark">Email:</span> info@noctisessentials.com</p>
             <p><span className="font-medium text-dark">Phone:</span> +31 6 87267125</p>
             <p><span className="font-medium text-dark">KvK number:</span> 95790004</p>
             <p><span className="font-medium text-dark">VAT number:</span> NL867300875B01</p>
@@ -121,7 +121,7 @@ export default async function OverOnsPage({
         <div className="text-sm space-y-1 text-dark/70">
           <p><span className="font-medium text-dark">Bedrijfsnaam:</span> Noctis</p>
           <p><span className="font-medium text-dark">Vestiging:</span> Amsterdam, Nederland</p>
-          <p><span className="font-medium text-dark">E-mail:</span> info@noctisessentials.nl</p>
+          <p><span className="font-medium text-dark">E-mail:</span> info@noctisessentials.com</p>
           <p><span className="font-medium text-dark">Whatsapp:</span> +31 6 87267125</p>
           <p><span className="font-medium text-dark">KvK-nummer:</span> 95790004</p>
           <p><span className="font-medium text-dark">BTW-nummer:</span> NL867300875B01</p>

@@ -40,7 +40,7 @@ export default async function AlgemeneVoorwaardenPage({
         </PolicySection>
 
         <PolicySection title="Article 2 – Identity of the trader">
-          <p>Noctis<br />Amsterdam, Netherlands<br />Phone: +31 6 87267125<br />Email: info@noctisessentials.nl<br />Chamber of Commerce: 95790004<br />VAT number: NL867300875B01</p>
+          <p>Noctis<br />Amsterdam, Netherlands<br />Phone: +31 6 87267125<br />Email: info@noctisessentials.com<br />Chamber of Commerce: 95790004<br />VAT number: NL867300875B01</p>
         </PolicySection>
 
         <PolicySection title="Article 3 – Applicability">
@@ -64,7 +64,7 @@ export default async function AlgemeneVoorwaardenPage({
         </PolicySection>
 
         <PolicySection title="Article 8 – Exercise of the right of withdrawal">
-          <p>The consumer exercises the right of withdrawal by informing the trader within the withdrawal period via info@noctisessentials.nl. The product must be returned within 14 days of notification, complete and in original packaging.</p>
+          <p>The consumer exercises the right of withdrawal by informing the trader within the withdrawal period via info@noctisessentials.com. The product must be returned within 14 days of notification, complete and in original packaging.</p>
         </PolicySection>
 
         <PolicySection title="Article 9 – Trader obligations upon withdrawal">
@@ -92,7 +92,7 @@ export default async function AlgemeneVoorwaardenPage({
         </PolicySection>
 
         <PolicySection title="Article 15 – Complaints">
-          <p>Complaints must be reported to the trader within a reasonable time after discovery via info@noctisessentials.nl. Complaints are answered within 14 days. If a complaint requires more time, this will be communicated within 14 days with an indication of when a substantive answer will follow.</p>
+          <p>Complaints must be reported to the trader within a reasonable time after discovery via info@noctisessentials.com. Complaints are answered within 14 days. If a complaint requires more time, this will be communicated within 14 days with an indication of when a substantive answer will follow.</p>
         </PolicySection>
 
         <PolicySection title="Article 16 – Disputes">
@@ -119,7 +119,7 @@ export default async function AlgemeneVoorwaardenPage({
       </PolicySection>
 
       <PolicySection title="Artikel 2 – Identiteit van de ondernemer">
-        <p>Noctis<br />Amsterdam, Nederland<br />Telefoon: +31 6 87267125<br />E-mailadres: info@noctisessentials.nl<br />KvK-nummer: 95790004<br />BTW-nummer: NL867300875B01</p>
+        <p>Noctis<br />Amsterdam, Nederland<br />Telefoon: +31 6 87267125<br />E-mailadres: info@noctisessentials.com<br />KvK-nummer: 95790004<br />BTW-nummer: NL867300875B01</p>
       </PolicySection>
 
       <PolicySection title="Artikel 3 – Toepasselijkheid">
@@ -143,7 +143,7 @@ export default async function AlgemeneVoorwaardenPage({
       </PolicySection>
 
       <PolicySection title="Artikel 8 – Uitoefening van het herroepingsrecht">
-        <p>De consument maakt gebruik van het herroepingsrecht door dit binnen de bedenktijd kenbaar te maken aan de ondernemer via info@noctisessentials.nl. Het product dient binnen 14 dagen na melding te worden teruggestuurd, volledig en in originele verpakking.</p>
+        <p>De consument maakt gebruik van het herroepingsrecht door dit binnen de bedenktijd kenbaar te maken aan de ondernemer via info@noctisessentials.com. Het product dient binnen 14 dagen na melding te worden teruggestuurd, volledig en in originele verpakking.</p>
       </PolicySection>
 
       <PolicySection title="Artikel 9 – Verplichtingen van de ondernemer bij herroeping">
@@ -171,7 +171,7 @@ export default async function AlgemeneVoorwaardenPage({
       </PolicySection>
 
       <PolicySection title="Artikel 15 – Klachten">
-        <p>Klachten dienen binnen bekwame tijd na constatering aan de ondernemer gemeld te worden via info@noctisessentials.nl. Klachten worden binnen 14 dagen beantwoord. Indien een klacht meer tijd vraagt, wordt dit uiterlijk binnen 14 dagen gemeld met een indicatie wanneer een inhoudelijk antwoord volgt.</p>
+        <p>Klachten dienen binnen bekwame tijd na constatering aan de ondernemer gemeld te worden via info@noctisessentials.com. Klachten worden binnen 14 dagen beantwoord. Indien een klacht meer tijd vraagt, wordt dit uiterlijk binnen 14 dagen gemeld met een indicatie wanneer een inhoudelijk antwoord volgt.</p>
       </PolicySection>
 
       <PolicySection title="Artikel 16 – Geschillen">

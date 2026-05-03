@@ -38,7 +38,7 @@ export default async function VerzendbeleidPage({
         </PolicySection>
 
         <PolicySection title="Damaged package">
-          <p>Did you receive a damaged package? Report this immediately via info@noctisessentials.nl with your order number and photos of the damage. We will find a solution as quickly as possible.</p>
+          <p>Did you receive a damaged package? Report this immediately via info@noctisessentials.com with your order number and photos of the damage. We will find a solution as quickly as possible.</p>
         </PolicySection>
 
         <PolicySection title="Collection">
@@ -49,7 +49,7 @@ export default async function VerzendbeleidPage({
           <p className="font-semibold text-dark mb-1">Questions about your order?</p>
           <p className="text-sm text-dark/70">
             Contact us at{' '}
-            <a href="mailto:info@noctisessentials.nl" className="underline hover:text-accent">info@noctisessentials.nl</a>
+            <a href="mailto:info@noctisessentials.com" className="underline hover:text-accent">info@noctisessentials.com</a>
             {' '}or see our{' '}
             <a href="/veelgestelde-vragen" className="underline hover:text-accent">FAQ</a>.
           </p>
@@ -73,7 +73,7 @@ export default async function VerzendbeleidPage({
       </PolicySection>
 
       <PolicySection title="Beschadigd pakket">
-        <p>Ontvang je een beschadigd pakket? Meld dit direct via info@noctisessentials.nl met je ordernummer en foto&apos;s van de schade. Wij zorgen dan zo snel mogelijk voor een oplossing.</p>
+        <p>Ontvang je een beschadigd pakket? Meld dit direct via info@noctisessentials.com met je ordernummer en foto&apos;s van de schade. Wij zorgen dan zo snel mogelijk voor een oplossing.</p>
       </PolicySection>
 
       <PolicySection title="Afhalen">
@@ -84,7 +84,7 @@ export default async function VerzendbeleidPage({
         <p className="font-semibold text-dark mb-1">Vragen over jouw bestelling?</p>
         <p className="text-sm text-dark/70">
           Neem contact op via{' '}
-          <a href="mailto:info@noctisessentials.nl" className="underline hover:text-accent">info@noctisessentials.nl</a>
+          <a href="mailto:info@noctisessentials.com" className="underline hover:text-accent">info@noctisessentials.com</a>
           {' '}of bekijk onze{' '}
           <a href="/veelgestelde-vragen" className="underline hover:text-accent">veelgestelde vragen</a>.
         </p>

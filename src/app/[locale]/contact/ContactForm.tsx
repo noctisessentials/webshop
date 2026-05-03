@@ -166,8 +166,8 @@ export default function ContactForm() {
       {status === 'error' && (
         <p className="text-sm font-sans text-red-600">
           {isEn
-            ? 'Something went wrong. Please try again or email info@noctisessentials.nl.'
-            : 'Er is iets misgegaan. Probeer het opnieuw of stuur een e-mail naar info@noctisessentials.nl.'}
+            ? 'Something went wrong. Please try again or email info@noctisessentials.com.'
+            : 'Er is iets misgegaan. Probeer het opnieuw of stuur een e-mail naar info@noctisessentials.com.'}
         </p>
       )}
 

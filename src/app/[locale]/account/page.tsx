@@ -55,8 +55,8 @@ export default async function AccountPage({
               {t('contactUs')}
             </Link>{' '}
             {t('orEmail')}{' '}
-            <a href="mailto:info@noctisessentials.nl" className="underline hover:text-accent transition-colors">
-              info@noctisessentials.nl
+            <a href="mailto:info@noctisessentials.com" className="underline hover:text-accent transition-colors">
+              info@noctisessentials.com
             </a>
           </p>
         </div>

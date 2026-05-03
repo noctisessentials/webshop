@@ -73,6 +73,15 @@ function pickByHandleOrder(products: Product[], handleHints: string[]): Product[
 }
 
 function getRelatedProductsForPost(slug: string, products: Product[]): Product[] {
+  if (slug === 'acacia-snijplank-onderhouden') {
+    const ordered = pickByHandleOrder(products, [
+      'acacia-cutting-board',
+      '19-piece-kitchenware-nude',
+      '19-piece-kitchenware-black',
+      'pepper-salt-mills-black-white',
+    ])
+    if (ordered.length >= 3) return ordered
+  }
   if (slug === 'de-perfecte-keuken-setup-voor-een-rustig-aanrecht') {
     const ordered = pickByHandleOrder(products, [
       '19-piece-kitchenware-black',

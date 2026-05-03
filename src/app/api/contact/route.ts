@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
     await transporter.sendMail({
       from: `"Noctis Contact" <${process.env.SMTP_USER}>`,
-      to: process.env.SMTP_TO ?? 'info@noctisessentials.nl',
+      to: process.env.SMTP_TO ?? 'info@noctisessentials.com',
       replyTo: email,
       subject: `[Contact] ${subject || 'Nieuw bericht'} — ${name}`,
       text: `Naam: ${name}\nE-mail: ${email}\nOnderwerp: ${subject}\n\n${message}`,

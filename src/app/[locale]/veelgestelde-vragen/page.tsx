@@ -40,8 +40,8 @@ export default async function VeelgesteldeVragenPage({
           {t('contactLink')}
         </Link>{' '}
         {t('introOr')}{' '}
-        <a href="mailto:info@noctisessentials.nl" className="underline hover:text-accent">
-          info@noctisessentials.nl
+        <a href="mailto:info@noctisessentials.com" className="underline hover:text-accent">
+          info@noctisessentials.com
         </a>
         .
       </p>
