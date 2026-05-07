@@ -6,7 +6,7 @@ import { CookieBanner } from '@/components/ui/CookieBanner'
 import './globals.css'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
-const META_PIXEL_ID = '933186462850674'
+const META_PIXEL_ID = '332396313251645'
 const CLARITY_ID = 'ryjdokg5a0'
 
 const dmSans = DM_Sans({

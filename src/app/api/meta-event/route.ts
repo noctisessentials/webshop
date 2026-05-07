@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
 
-const PIXEL_ID = '933186462850674'
+const PIXEL_ID = '332396313251645'
 const ACCESS_TOKEN = process.env.META_CAPI_TOKEN
 
 function hash(value: string): string {

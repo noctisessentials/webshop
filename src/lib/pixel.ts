@@ -1,6 +1,6 @@
 'use client'
 
-const PIXEL_ID = '933186462850674'
+const PIXEL_ID = '332396313251645'
 
 function fbq(...args: unknown[]) {
   if (typeof window !== 'undefined' && window.fbq) {

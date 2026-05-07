@@ -241,7 +241,7 @@ export async function POST(request: Request) {
     if (capiToken) {
       const eventId = `purchase-${order.id}-${Date.now()}`
       const hash = (v: string) => crypto.createHash('sha256').update(v.trim().toLowerCase()).digest('hex')
-      fetch(`https://graph.facebook.com/v19.0/933186462850674/events?access_token=${capiToken}`, {
+      fetch(`https://graph.facebook.com/v19.0/332396313251645/events?access_token=${capiToken}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
