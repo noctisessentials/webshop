@@ -53,14 +53,14 @@ function SuccessContent() {
           orderNumber: data.orderNumber,
         })
 
-        // Meta Pixel: Purchase
+        // Meta Pixel: Purchase — event_id matches CAPI so Meta deduplicates correctly
         if (typeof window !== 'undefined' && window.fbq) {
           window.fbq('track', 'Purchase', {
             content_ids: [String(data.orderId)],
             value: data.total ?? 0,
             currency: 'EUR',
             num_items: data.itemCount ?? 1,
-          })
+          }, { eventID: data.purchaseEventId })
         }
 
         localStorage.removeItem('noctis_shipping')

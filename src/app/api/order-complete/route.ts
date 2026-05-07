@@ -238,8 +238,8 @@ export async function POST(request: Request) {
 
     // Fire Meta CAPI Purchase event (server-side, deduplicates with browser pixel)
     const capiToken = process.env.META_CAPI_TOKEN
+    const purchaseEventId = `purchase-${order.id}`
     if (capiToken) {
-      const eventId = `purchase-${order.id}-${Date.now()}`
       const hash = (v: string) => crypto.createHash('sha256').update(v.trim().toLowerCase()).digest('hex')
       fetch(`https://graph.facebook.com/v19.0/332396313251645/events?access_token=${capiToken}`, {
         method: 'POST',
@@ -248,7 +248,7 @@ export async function POST(request: Request) {
           data: [{
             event_name: 'Purchase',
             event_time: Math.floor(Date.now() / 1000),
-            event_id: eventId,
+            event_id: purchaseEventId,
             event_source_url: 'https://noctisessentials.com/nl/checkout/success',
             action_source: 'website',
             user_data: {
@@ -268,7 +268,7 @@ export async function POST(request: Request) {
       }).catch(() => {})
     }
 
-    return NextResponse.json({ orderId: order.id, orderNumber: order.number, total: paymentIntent.amount / 100, itemCount: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0) })
+    return NextResponse.json({ orderId: order.id, orderNumber: order.number, total: paymentIntent.amount / 100, itemCount: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0), purchaseEventId })
   } catch (err) {
     console.error('[order-complete]', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
