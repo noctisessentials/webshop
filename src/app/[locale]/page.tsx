@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { getAllBlogPosts } from '@/lib/blog'
 import { getWCProducts } from '@/lib/woocommerce'
 import { Hero } from '@/components/sections/Hero'
 import { ValueProps } from '@/components/sections/ValueProps'
-import { ProductCarousel } from '@/components/sections/ProductCarousel'
 import { EditorialBanner } from '@/components/sections/EditorialBanner'
 import { Testimonials } from '@/components/sections/Testimonials'
 import { HomeBlogHighlights } from '@/components/sections/HomeBlogHighlights'
@@ -12,6 +12,32 @@ import { HomeFAQ } from '@/components/sections/HomeFAQ'
 import { Newsletter } from '@/components/sections/Newsletter'
 import { getTranslations } from 'next-intl/server'
 import { buildAlternates } from '@/lib/metadata'
+import type { Product } from '@/lib/data'
+
+// Deferred outside initial hydration — RAF loop + 30 Image components cause
+// a 5-8s main thread block when hydrated synchronously with the rest of the page.
+const ProductCarousel = dynamic<{ products: Product[] }>(
+  () => import('@/components/sections/ProductCarousel').then((m) => ({ default: m.ProductCarousel })),
+  {
+    ssr: false,
+    loading: () => (
+      <section className="section-py-sm overflow-x-hidden">
+        <div className="mb-8 px-6 md:px-10 xl:px-14">
+          <div className="h-7 w-44 rounded-lg bg-dark/8 animate-pulse" />
+        </div>
+        <div className="flex gap-4 pl-6 md:pl-10 xl:pl-14">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex-shrink-0" style={{ width: 'clamp(200px, 26vw, 270px)' }}>
+              <div className="aspect-[3/4] rounded-[16px] bg-dark/8 animate-pulse mb-3" />
+              <div className="h-4 w-3/4 rounded bg-dark/8 animate-pulse mb-2" />
+              <div className="h-3 w-1/2 rounded bg-dark/8 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </section>
+    ),
+  }
+)
 
 export async function generateMetadata({
   params,
