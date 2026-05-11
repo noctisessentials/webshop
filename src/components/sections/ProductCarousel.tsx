@@ -334,7 +334,7 @@ export function ProductCarousel({
               return (
                 <div
                   key={`${item.id}-${index}`}
-                  className="flex-shrink-0 select-none"
+                  className="group flex-shrink-0 select-none"
                   style={{ width: 'clamp(200px, 26vw, 270px)' }}
                 >
                   <div className="relative aspect-[3/4] overflow-hidden mb-3" style={{ borderRadius: '16px' }}>
@@ -343,7 +343,7 @@ export function ProductCarousel({
                       alt={`${item.title} in ${item.variant}`}
                       fill
                       draggable={false}
-                      className="pointer-events-none object-cover object-center"
+                      className={`pointer-events-none object-cover object-center transition-opacity duration-500 ${item.hoverImage ? 'group-hover:opacity-0' : 'transition-transform duration-600 group-hover:scale-[1.04]'}`}
                       sizes="270px"
                     />
                     {item.hoverImage && (
@@ -352,7 +352,7 @@ export function ProductCarousel({
                         alt={`${item.title} in ${item.variant} — tweede afbeelding`}
                         fill
                         draggable={false}
-                        className="pointer-events-none object-cover object-center opacity-0"
+                        className="pointer-events-none object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                         sizes="270px"
                       />
                     )}
