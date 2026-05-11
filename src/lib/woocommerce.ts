@@ -200,7 +200,7 @@ async function fetchRawProducts(): Promise<WCProduct[]> {
   )
 
   const res = await fetch(url.toString(), {
-    next: { revalidate: false },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(8000),
   }).catch((err) => {
     console.error('[WC] Fetch failed:', err)
