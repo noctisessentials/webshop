@@ -244,12 +244,14 @@ export function ChatWidget() {
         onClick={() => setOpen((prev) => !prev)}
         aria-label={t.launcher}
         className={cn(
-          'group flex items-center gap-2 rounded-full h-12 px-4 border border-dark/10 bg-white text-dark shadow-[0_14px_35px_rgba(30,29,29,0.16)] transition-all duration-300',
-          'hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(30,29,29,0.2)]'
+          'group flex items-center gap-2 rounded-full h-12 border border-dark/10 bg-white text-dark transition-all duration-300',
+          'px-3 md:px-4',
+          'shadow-none md:shadow-[0_14px_35px_rgba(30,29,29,0.16)]',
+          'hover:-translate-y-0.5 md:hover:shadow-[0_18px_38px_rgba(30,29,29,0.2)]'
         )}
       >
         {open ? <X size={18} strokeWidth={1.8} /> : <MessageCircle size={18} strokeWidth={1.8} />}
-        <span className="font-sans text-sm font-semibold">{open ? t.close : t.launcher}</span>
+        <span className="hidden md:inline font-sans text-sm font-semibold">{open ? t.close : t.launcher}</span>
       </button>
 
       <div

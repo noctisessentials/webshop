@@ -171,6 +171,9 @@ export function ProductCarousel({
   const dragStartPosRef = useRef(0)
   const rafRef = useRef<number | null>(null)
   const lastTsRef = useRef<number | null>(null)
+  const touchStartXRef = useRef(0)
+  const touchStartYRef = useRef(0)
+  const isVerticalScrollRef = useRef(false)
   const items = buildCarouselItems(products, customProducts)
   const loopItems = items.length > 0 ? [...items, ...items, ...items] : items
 
@@ -255,9 +258,33 @@ export function ProductCarousel({
           onMouseDown={(e) => onDragStart(e.clientX)}
           onMouseMove={(e) => onDragMove(e.clientX)}
           onMouseUp={onDragEnd}
-          onTouchStart={(e) => onDragStart(e.touches[0].clientX)}
-          onTouchMove={(e) => onDragMove(e.touches[0].clientX)}
-          onTouchEnd={onDragEnd}
+          onTouchStart={(e) => {
+            touchStartXRef.current = e.touches[0].clientX
+            touchStartYRef.current = e.touches[0].clientY
+            isVerticalScrollRef.current = false
+            isDraggingRef.current = false
+            movedDuringDragRef.current = false
+            // Don't pause auto-scroll yet — wait until horizontal intent is confirmed
+          }}
+          onTouchMove={(e) => {
+            if (isVerticalScrollRef.current) return
+            const clientX = e.touches[0].clientX
+            const adx = Math.abs(clientX - touchStartXRef.current)
+            const ady = Math.abs(e.touches[0].clientY - touchStartYRef.current)
+            if (!isDraggingRef.current) {
+              if (ady > adx + 4) { isVerticalScrollRef.current = true; return }
+              if (adx > 4) {
+                isDraggingRef.current = true
+                pauseAutoScrollRef.current = true
+                dragStartXRef.current = touchStartXRef.current
+                dragStartPosRef.current = posRef.current
+              }
+              return
+            }
+            onDragMove(clientX)
+          }}
+          onTouchEnd={() => { isDraggingRef.current = false; pauseAutoScrollRef.current = false }}
+          onTouchCancel={() => { isDraggingRef.current = false; pauseAutoScrollRef.current = false }}
           onClickCapture={(e) => {
             if (movedDuringDragRef.current) {
               e.preventDefault()

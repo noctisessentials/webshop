@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Minus, Palette, Pause, Play, Plus, ShieldCheck, Sparkles, Truck, Volume2, VolumeX } from 'lucide-react'
+import { Minus, Pause, Play, Plus, ShieldCheck, Truck, Volume2, VolumeX } from 'lucide-react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { Button } from '@/components/ui/Button'
 import { cn, formatPrice } from '@/lib/utils'
@@ -42,9 +42,19 @@ const getColorData = (c: ProductColor) =>
   COLOR_DATA[c.slug.toLowerCase().replace(/\s+/g, '-')] ??
   COLOR_DATA['nude']
 
+const COLOR_ORDER = ['black', 'zwart', 'nude', 'grey', 'gray', 'grijs', 'pink', 'roze', 'mint-green', 'mint', 'mintgroen', 'green']
+
+function sortColors(colors: ProductColor[]): ProductColor[] {
+  return [...colors].sort((a, b) => {
+    const ai = COLOR_ORDER.indexOf(a.slug.toLowerCase())
+    const bi = COLOR_ORDER.indexOf(b.slug.toLowerCase())
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
+  })
+}
+
 function defaultColor(p: Product): ProductColor {
   return (
-    p.colors.find((c) => /pink|roze/.test(`${c.slug} ${c.name}`.toLowerCase())) ??
+    p.colors.find((c) => /^black$|^zwart$/.test(c.slug.toLowerCase())) ??
     p.colors.find((c) => c.wcSlug === p.handle) ??
     p.colors[0]
   )
@@ -87,9 +97,9 @@ const SET_PARTS = [
 type SetPartId = (typeof SET_PARTS)[number]['id']
 
 const BENEFITS = [
-  { icon: Palette,     title: 'Alles matcht visueel',          body: 'Eén kleur, één lijn. Rust op je aanrecht zonder extra moeite.' },
-  { icon: ShieldCheck, title: 'Zacht voor je pannen',          body: 'Hittebestendig silicoen tot 230 °C. Geen krassen op anti-aanbak.' },
-  { icon: Sparkles,    title: 'Gemaakt om gezien te worden',   body: 'De houder staat op je aanrecht — niet verstopt in een la.' },
+  { title: 'Alles matcht visueel',          body: 'Eén kleur, één lijn. Rust op je aanrecht zonder extra moeite.' },
+  { title: 'Zacht voor je pannen',          body: 'Hittebestendig silicoen tot 230 °C. Geen krassen op anti-aanbak.' },
+  { title: 'Gemaakt om gezien te worden',   body: 'De houder staat op je aanrecht — niet verstopt in een la.' },
 ]
 
 const ALL_REVIEWS = [
@@ -109,6 +119,7 @@ const FAQS = [
   { id: 'q2', q: 'Is de set ook echt functioneel?',      a: 'Beide. Het silicoen is hittebestendig tot 230 °C en BPA-vrij. De tools voelen prettig in de hand en zijn gemaakt voor dagelijks gebruik.' },
   { id: 'q3', q: 'Hoe snel wordt het geleverd?',         a: 'Bestel voor 23:30 uur op een werkdag en we verzenden dezelfde dag. Morgen in huis.' },
   { id: 'q4', q: 'Kan ik retourneren?',                  a: 'Ja, 14 dagen bedenktijd. Gratis retour als de set niet bij je keuken past.' },
+  { id: 'q5', q: 'Is de set vaatwasserbestendig?',       a: 'Technisch gezien kan het, maar we raden het af. De hitte van de vaatwasser tast de kleur en het silicoen op de lange termijn aan. Afspoelen met warm water en een beetje afwasmiddel is meer dan voldoende — en zo blijft de set er veel langer als nieuw uit.' },
 ]
 
 // ─── sub-components ───────────────────────────────────────────────────────────
@@ -155,6 +166,26 @@ export function KitchenSetStijlClient({ product }: Props) {
   const vid0 = useRef<HTMLVideoElement>(null)
   const vid1 = useRef<HTMLVideoElement>(null)
   const vid2 = useRef<HTMLVideoElement>(null)
+
+  const sortedColors = sortColors(product.colors)
+
+  // Scroll animations
+  useEffect(() => {
+    const els = document.querySelectorAll('[data-animate]')
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view')
+            obs.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12 }
+    )
+    els.forEach((el) => obs.observe(el))
+    return () => obs.disconnect()
+  }, [])
 
   const base = defaultColor(product)
   const discountPct =
@@ -223,6 +254,14 @@ export function KitchenSetStijlClient({ product }: Props) {
           <p className="text-[11px] font-sans text-dark/35 tracking-wide">
             Gratis verzending · Morgen in huis · 14 dagen retour
           </p>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="flex gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i} className="text-sm text-[#00B67A]">★</span>
+              ))}
+            </div>
+            <p className="text-sm font-sans font-medium text-dark/60">5.000+ tevreden klanten</p>
+          </div>
           </div>
         </div>
 
@@ -239,248 +278,10 @@ export function KitchenSetStijlClient({ product }: Props) {
         </div>
       </section>
 
-      {/* ── S3 EMOTIONAL HOOK ────────────────────────────────────────────────── */}
-      <section className="py-16 md:py-24 px-6 text-center">
-        <p
-          className="font-sans font-bold text-dark mb-1"
-          style={{ fontSize: 'clamp(24px, 3vw, 44px)' }}
-        >
-          Je ziet het misschien niet meteen.
-        </p>
-        <p
-          className="font-normal italic mb-2"
-          style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(25px, 3.1vw, 45px)', color: '#A4744C' }}
-        >
-          Maar je voelt het wel.
-        </p>
-        <p
-          className="font-sans text-dark/50"
-          style={{ fontSize: 'clamp(11px, 0.9vw, 14px)' }}
-        >
-          Een keuken klopt pas… als alles samenkomt.
-        </p>
-      </section>
-
-      {/* ── S4 LIFESTYLE GRID — compact, hover zoom ──────────────────────────── */}
-      <section className="px-4 md:px-8 max-w-4xl mx-auto space-y-2">
-        <div className="flex gap-2">
-          <div className="w-[62%] relative aspect-[4/5] rounded-[10px] overflow-hidden flex-shrink-0 group">
-            <Image
-              src={GALLERY_LARGE}
-              alt="Noctis keukenset lifestyle"
-              fill
-              className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-              sizes="40vw"
-            />
-          </div>
-          <div className="flex-1 flex flex-col gap-2">
-            {GALLERY_SMALLS.map((src) => (
-              <div key={src} className="relative flex-1 rounded-[10px] overflow-hidden group">
-                <Image
-                  src={src}
-                  alt="Detail keukenset"
-                  fill
-                  className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                  sizes="20vw"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          {GALLERY_ROW.map((img) => (
-            <div key={img.src} className="flex-1 relative aspect-square rounded-[10px] overflow-hidden group">
-              <Image
-                src={img.src}
-                alt={img.alt}
-                fill
-                className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                sizes="25vw"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── S5 UGC VIDEO STRIP ───────────────────────────────────────────────── */}
-      <section className="py-20 md:py-28">
-        <div className="container-content mb-8">
-          <h2
-            className="font-sans font-bold text-dark mb-2"
-            style={{ fontSize: 'clamp(20px, 2.2vw, 32px)' }}
-          >
-            Wat mensen van de set vinden
-          </h2>
-          <p className="font-sans text-dark/45 text-sm">
-            Bekijk hoe de set er bij anderen uitziet in gebruik.
-          </p>
-        </div>
-
-        {/* Videos — scrollable on mobile, centered on desktop */}
-        <div className="flex gap-3 px-4 md:px-8 overflow-x-auto md:overflow-visible md:justify-center scrollbar-hide"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          {[vid0, vid1, vid2].map((ref, i) => {
-            const v = [
-              { src: '/videos/ugc-1.mp4', autoplay: true },
-              { src: '/videos/ugc-2.mp4', autoplay: false },
-              { src: '/videos/ugc-3.mp4', autoplay: false },
-            ][i]
-            const isMuted   = mutedState[i]
-            const isPlaying = playingState[i]
-            return (
-              <div
-                key={v.src}
-                className="relative flex-shrink-0 w-[150px] md:w-[200px] aspect-[9/16] rounded-[12px] overflow-hidden bg-dark"
-              >
-                <video
-                  ref={ref as React.RefObject<HTMLVideoElement>}
-                  src={v.src}
-                  className="absolute inset-0 h-full w-full object-cover brightness-90"
-                  autoPlay={v.autoplay}
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                />
-                {/* Play/pause — bottom left */}
-                <button
-                  type="button"
-                  onClick={() => togglePlay(i)}
-                  aria-label={isPlaying ? 'Pauzeren' : 'Afspelen'}
-                  className="absolute left-2 bottom-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white backdrop-blur-sm transition-transform duration-200 hover:scale-105"
-                >
-                  {isPlaying ? <Pause size={12} /> : <Play size={12} />}
-                </button>
-                {/* Mute — bottom right */}
-                <button
-                  type="button"
-                  onClick={() => toggleMute(i)}
-                  aria-label={isMuted ? 'Geluid aan' : 'Dempen'}
-                  className="absolute right-2 bottom-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white backdrop-blur-sm transition-transform duration-200 hover:scale-105"
-                >
-                  {isMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                </button>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* ── S6 PRODUCT REVEAL — met wat zit erin tabs ────────────────────────── */}
-      <section className="py-16 md:py-24 px-4 md:px-8 bg-white">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-          <div className="relative rounded-[20px] border border-[#E8E4DE] bg-[#F8F5F1] p-4">
-            <div className="relative aspect-[4/3] rounded-[14px] overflow-hidden bg-[#F8F5F1]">
-              <Image
-                src="/content/transp-set-nude-website-banner.webp"
-                alt="Alle 19 tools van de Noctis keukenset"
-                fill
-                className="object-contain object-center"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              {SET_PARTS.map((part, index) => {
-                const isActive = part.id === activeSetPartId
-                return (
-                  <button
-                    key={part.id}
-                    type="button"
-                    onClick={() => setActiveSetPartId(part.id)}
-                    style={{ animationDelay: `${index * 180}ms` }}
-                    className={cn(
-                      'absolute z-10 h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-200 hotspot-bubble text-sm font-sans font-bold',
-                      part.markerClassName,
-                      isActive
-                        ? 'border-accent bg-accent text-white shadow-[0_8px_20px_rgba(164,116,76,0.35)]'
-                        : 'border-[#1F2937]/20 bg-[#1F2937] text-white hover:bg-[#111827]'
-                    )}
-                    aria-label={part.title}
-                  >
-                    {index + 1}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <div>
-            <h2
-              className="font-sans font-bold text-dark leading-tight mb-1"
-              style={{ fontSize: 'clamp(24px, 2.8vw, 40px)' }}
-            >
-              Alles wat je nodig hebt.
-            </h2>
-            <p
-              className="font-normal italic mb-3"
-              style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 2.6vw, 38px)', color: '#A4744C' }}
-            >
-              In één set.
-            </p>
-            <p className="font-sans text-dark/50 text-base leading-relaxed mb-5">
-              Geen losse tools. Geen mismatch. Gewoon compleet.
-            </p>
-
-            {/* Numbered tabs */}
-            <div className="space-y-2">
-              {SET_PARTS.map((part, index) => {
-                const isActive = part.id === activeSetPartId
-                return (
-                  <div
-                    key={part.id}
-                    className={cn(
-                      'rounded-[14px] border px-4 py-3 transition-colors duration-200 cursor-pointer',
-                      isActive ? 'border-accent/30 bg-accent/5' : 'border-[#E8E4DE] bg-white'
-                    )}
-                    onClick={() => setActiveSetPartId(part.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={cn(
-                          'inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors duration-200',
-                          isActive ? 'bg-accent text-white' : 'bg-[#F0EDE8] text-dark'
-                        )}
-                      >
-                        {index + 1}
-                      </span>
-                      <span className={cn('text-sm font-sans font-medium', isActive ? 'text-accent' : 'text-dark/85')}>
-                        {part.title}
-                      </span>
-                    </div>
-                    {isActive && (
-                      <p className="mt-3 ml-10 text-sm font-sans text-dark/60 leading-relaxed">
-                        {part.body}
-                      </p>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── S7 BENEFITS — moderne cards ──────────────────────────────────────── */}
-      <section className="py-16 md:py-24 px-4 md:px-8">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-          {BENEFITS.map((b) => {
-            const Icon = b.icon
-            return (
-              <div key={b.title} className="bg-white rounded-[18px] border border-[#E8E4DE] p-6 md:p-8">
-                <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center mb-5">
-                  <Icon size={18} className="text-accent" />
-                </div>
-                <h3 className="font-sans font-semibold text-dark text-base mb-2">{b.title}</h3>
-                <p className="font-sans text-dark/55 text-sm leading-relaxed">{b.body}</p>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
       {/* ── S8 COLOUR SHOWCASE + CTA ─────────────────────────────────────────── */}
       <section id="kies-kleur" className="py-16 md:py-24 px-4 md:px-8 bg-white">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
+          <div data-animate className="text-center mb-10">
             <p className="text-[10px] font-sans font-semibold uppercase tracking-[0.24em] text-accent mb-3">
               5 kleuren
             </p>
@@ -493,8 +294,8 @@ export function KitchenSetStijlClient({ product }: Props) {
           </div>
 
           {/* Colour tab pills */}
-          <div className="flex justify-center gap-2 mb-10 flex-wrap">
-            {product.colors.map((color) => {
+          <div data-animate data-delay="1" className="flex justify-center gap-2 mb-10 flex-wrap">
+            {sortedColors.map((color) => {
               const isActive = preview.slug === color.slug
               return (
                 <button
@@ -581,6 +382,251 @@ export function KitchenSetStijlClient({ product }: Props) {
         </div>
       </section>
 
+      {/* ── S3 EMOTIONAL HOOK ────────────────────────────────────────────────── */}
+      <section className="py-16 md:py-24 px-6 text-center">
+        <p data-animate
+          className="font-sans font-bold text-dark mb-1"
+          style={{ fontSize: 'clamp(24px, 3vw, 44px)' }}
+        >
+          Je ziet het misschien niet meteen.
+        </p>
+        <p
+          data-animate data-delay="1"
+          className="font-normal italic mb-2"
+          style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(25px, 3.1vw, 45px)', color: '#A4744C' }}
+        >
+          Maar je voelt het wel.
+        </p>
+        <p
+          data-animate data-delay="2"
+          className="font-sans text-dark/50"
+          style={{ fontSize: 'clamp(11px, 0.9vw, 14px)' }}
+        >
+          Een keuken klopt pas… als alles samenkomt.
+        </p>
+      </section>
+
+      {/* ── S4 LIFESTYLE GRID — compact, hover zoom ──────────────────────────── */}
+      <section className="px-4 md:px-8 max-w-4xl mx-auto space-y-2">
+        <div className="flex gap-2">
+          <div className="w-[62%] relative aspect-[4/5] rounded-[10px] overflow-hidden flex-shrink-0 group">
+            <Image
+              src={GALLERY_LARGE}
+              alt="Noctis keukenset lifestyle"
+              fill
+              className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              sizes="40vw"
+            />
+          </div>
+          <div className="flex-1 flex flex-col gap-2">
+            {GALLERY_SMALLS.map((src) => (
+              <div key={src} className="relative flex-1 rounded-[10px] overflow-hidden group">
+                <Image
+                  src={src}
+                  alt="Detail keukenset"
+                  fill
+                  className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  sizes="20vw"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          {GALLERY_ROW.map((img) => (
+            <div key={img.src} className="flex-1 relative aspect-square rounded-[10px] overflow-hidden group">
+              <Image
+                src={img.src}
+                alt={img.alt}
+                fill
+                className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                sizes="25vw"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── S5 UGC VIDEO STRIP ───────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28">
+        <div className="container-content mb-8">
+          <h2
+            className="font-sans font-bold text-dark mb-2"
+            style={{ fontSize: 'clamp(20px, 2.2vw, 32px)' }}
+          >
+            Wat mensen van de set vinden
+          </h2>
+          <p className="font-sans text-dark/45 text-sm">
+            Bekijk hoe de set er bij anderen uitziet in gebruik.
+          </p>
+        </div>
+
+        {/* Videos — scrollable on mobile, centered on desktop */}
+        <div className="flex gap-3 px-4 md:px-8 overflow-x-auto md:overflow-visible md:justify-center scrollbar-hide"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {[vid0, vid1, vid2].map((ref, i) => {
+            const v = [
+              { src: '/videos/ugc-1.mp4', autoplay: true },
+              { src: '/videos/ugc-2.mp4', autoplay: false  },
+              { src: '/videos/ugc-3.mp4', autoplay: false  },
+            ][i]
+            const isMuted   = mutedState[i]
+            const isPlaying = playingState[i]
+            return (
+              <div
+                key={v.src}
+                className="relative flex-shrink-0 w-[150px] md:w-[200px] aspect-[9/16] rounded-[12px] overflow-hidden bg-dark"
+              >
+                <video
+                  ref={ref as React.RefObject<HTMLVideoElement>}
+                  src={v.src}
+                  className="absolute inset-0 h-full w-full object-cover brightness-90"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  onLoadedData={(e) => {
+                    if (!v.autoplay) {
+                      e.currentTarget.pause()
+                      e.currentTarget.currentTime = 0
+                    }
+                  }}
+                />
+                {/* Play/pause — bottom left */}
+                <button
+                  type="button"
+                  onClick={() => togglePlay(i)}
+                  aria-label={isPlaying ? 'Pauzeren' : 'Afspelen'}
+                  className="absolute left-2 bottom-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white backdrop-blur-sm transition-transform duration-200 hover:scale-105"
+                >
+                  {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+                </button>
+                {/* Mute — bottom right */}
+                <button
+                  type="button"
+                  onClick={() => toggleMute(i)}
+                  aria-label={isMuted ? 'Geluid aan' : 'Dempen'}
+                  className="absolute right-2 bottom-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white backdrop-blur-sm transition-transform duration-200 hover:scale-105"
+                >
+                  {isMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ── S6 PRODUCT REVEAL — met wat zit erin tabs ────────────────────────── */}
+      <section className="py-16 md:py-24 px-4 md:px-8 bg-white">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+          <div data-animate className="relative rounded-[20px] border border-[#E8E4DE] bg-[#F8F5F1] p-4">
+            <div className="relative aspect-[4/3] rounded-[14px] overflow-hidden bg-[#F8F5F1]">
+              <Image
+                src="/content/transp-set-nude-website-banner.webp"
+                alt="Alle 19 tools van de Noctis keukenset"
+                fill
+                className="object-contain object-center"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              {SET_PARTS.map((part, index) => {
+                const isActive = part.id === activeSetPartId
+                return (
+                  <button
+                    key={part.id}
+                    type="button"
+                    onClick={() => setActiveSetPartId(part.id)}
+                    style={{ animationDelay: `${index * 180}ms` }}
+                    className={cn(
+                      'absolute z-10 h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-200 hotspot-bubble text-sm font-sans font-bold',
+                      part.markerClassName,
+                      isActive
+                        ? 'border-accent bg-accent text-white shadow-[0_8px_20px_rgba(164,116,76,0.35)]'
+                        : 'border-[#1F2937]/20 bg-[#1F2937] text-white hover:bg-[#111827]'
+                    )}
+                    aria-label={part.title}
+                  >
+                    {index + 1}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div data-animate data-delay="2">
+            <h2
+              className="font-sans font-bold text-dark leading-tight mb-1"
+              style={{ fontSize: 'clamp(24px, 2.8vw, 40px)' }}
+            >
+              Alles wat je nodig hebt.
+            </h2>
+            <p
+              className="font-normal italic mb-3"
+              style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 2.6vw, 38px)', color: '#A4744C' }}
+            >
+              In één set.
+            </p>
+            <p className="font-sans text-dark/50 text-base leading-relaxed mb-5">
+              Geen losse tools. Geen mismatch. Gewoon compleet.
+            </p>
+
+            {/* Numbered tabs */}
+            <div className="space-y-2">
+              {SET_PARTS.map((part, index) => {
+                const isActive = part.id === activeSetPartId
+                return (
+                  <div
+                    key={part.id}
+                    className={cn(
+                      'rounded-[14px] border px-4 py-3 transition-colors duration-200 cursor-pointer',
+                      isActive ? 'border-accent/30 bg-accent/5' : 'border-[#E8E4DE] bg-white'
+                    )}
+                    onClick={() => setActiveSetPartId(part.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          'inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors duration-200',
+                          isActive ? 'bg-accent text-white' : 'bg-[#F0EDE8] text-dark'
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className={cn('text-sm font-sans font-medium', isActive ? 'text-accent' : 'text-dark/85')}>
+                        {part.title}
+                      </span>
+                    </div>
+                    {isActive && (
+                      <p className="mt-3 ml-10 text-sm font-sans text-dark/60 leading-relaxed">
+                        {part.body}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S7 BENEFITS — moderne cards ──────────────────────────────────────── */}
+      <section className="py-16 md:py-24 px-4 md:px-8">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+          {BENEFITS.map((b, i) => (
+            <div
+              key={b.title}
+              data-animate
+              data-delay={String(i + 1)}
+              className="bg-white rounded-[18px] border border-[#E8E4DE] p-6 md:p-8"
+            >
+              <h3 className="font-sans font-semibold text-dark text-base mb-2">{b.title}</h3>
+              <p className="font-sans text-dark/55 text-sm leading-relaxed">{b.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── S9 SOCIAL PROOF — auto-scroll marquee ────────────────────────────── */}
       <section className="py-16 md:py-24 overflow-hidden">
         <div className="container-content mb-10 text-center">
@@ -647,7 +693,7 @@ export function KitchenSetStijlClient({ product }: Props) {
 
       {/* ── S10 FAQ ──────────────────────────────────────────────────────────── */}
       <section className="py-16 md:py-24 px-4 md:px-8 bg-white">
-        <div className="max-w-2xl mx-auto">
+        <div data-animate className="max-w-2xl mx-auto">
           <p className="text-[10px] font-sans font-semibold uppercase tracking-[0.24em] text-accent text-center mb-10">
             Vragen
           </p>
