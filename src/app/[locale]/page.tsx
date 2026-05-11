@@ -1,6 +1,4 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
-import { getWCProducts } from '@/lib/woocommerce'
 import { getAllBlogPosts } from '@/lib/blog'
 import { Hero } from '@/components/sections/Hero'
 import { ValueProps } from '@/components/sections/ValueProps'
@@ -13,30 +11,6 @@ import { HomeFAQ } from '@/components/sections/HomeFAQ'
 import { Newsletter } from '@/components/sections/Newsletter'
 import { getTranslations } from 'next-intl/server'
 import { buildAlternates } from '@/lib/metadata'
-
-async function CarouselStream() {
-  const products = await getWCProducts()
-  return <ProductCarousel products={products} />
-}
-
-function CarouselSkeleton() {
-  return (
-    <section className="section-py-sm overflow-x-hidden">
-      <div className="mb-8 px-6 md:px-10 xl:px-14">
-        <div className="h-8 w-48 rounded-lg bg-dark/8 animate-pulse" />
-      </div>
-      <div className="flex gap-4 pl-6 md:pl-10 xl:pl-14">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex-shrink-0" style={{ width: 'clamp(200px, 26vw, 270px)' }}>
-            <div className="aspect-[3/4] rounded-[16px] bg-dark/8 animate-pulse mb-3" />
-            <div className="h-4 w-3/4 rounded bg-dark/8 animate-pulse mb-2" />
-            <div className="h-3 w-1/2 rounded bg-dark/8 animate-pulse" />
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
 
 export async function generateMetadata({
   params,
@@ -68,9 +42,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <Suspense fallback={<CarouselSkeleton />}>
-        <CarouselStream />
-      </Suspense>
+      <ProductCarousel />
       <ValueProps />
 
       <div className="mx-auto w-full max-w-[980px] pt-8 md:pt-14">

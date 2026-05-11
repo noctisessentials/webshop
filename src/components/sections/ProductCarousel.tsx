@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from '@/i18n/navigation'
 import PlainLink from 'next/link'
 import Image from 'next/image'
@@ -26,7 +26,7 @@ type BestsellerSpec = {
 }
 
 type ProductCarouselProps = {
-  products: Product[]
+  products?: Product[]
   customProducts?: Product[]
   title?: string
   showViewAllLink?: boolean
@@ -154,13 +154,25 @@ function buildCarouselItems(products: Product[], customProducts?: Product[]): Ca
 }
 
 export function ProductCarousel({
-  products,
+  products: productsProp,
   customProducts,
   title = 'Onze bestsellers',
   showViewAllLink = true,
   viewAllHref = '/winkel',
   viewAllLabel = 'Bekijk alle producten',
 }: ProductCarouselProps) {
+  const [fetchedProducts, setFetchedProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(!productsProp?.length)
+
+  useEffect(() => {
+    if (productsProp?.length) return
+    fetch('/api/products')
+      .then((r) => r.json())
+      .then((data: Product[]) => { setFetchedProducts(data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [productsProp?.length])
+
+  const products = productsProp?.length ? productsProp : fetchedProducts
   const trackRef = useRef<HTMLDivElement>(null)
   const posRef = useRef(0)
   const copyWidthRef = useRef(0)
@@ -176,6 +188,25 @@ export function ProductCarousel({
   const isVerticalScrollRef = useRef(false)
   const items = buildCarouselItems(products, customProducts)
   const loopItems = items.length > 0 ? [...items, ...items, ...items] : items
+
+  if (loading) {
+    return (
+      <section className="section-py-sm overflow-x-hidden">
+        <div className="mb-8 px-6 md:px-10 xl:px-14">
+          <div className="h-7 w-44 rounded-lg bg-dark/8 animate-pulse" />
+        </div>
+        <div className="flex gap-4 pl-6 md:pl-10 xl:pl-14">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex-shrink-0" style={{ width: 'clamp(200px, 26vw, 270px)' }}>
+              <div className="aspect-[3/4] rounded-[16px] bg-dark/8 animate-pulse mb-3" />
+              <div className="h-4 w-3/4 rounded bg-dark/8 animate-pulse mb-2" />
+              <div className="h-3 w-1/2 rounded bg-dark/8 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   // Measure after mount and set initial position to middle copy
   useEffect(() => {
