@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Link } from '@/i18n/navigation'
 import PlainLink from 'next/link'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
@@ -333,12 +332,10 @@ export function ProductCarousel({
             {loopItems.map((item, index) => {
               const discount = getDiscountPercentage(item.price, item.compareAtPrice)
               return (
-                <Link
+                <div
                   key={`${item.id}-${index}`}
-                  href={{ pathname: '/products/[handle]', params: { handle: item.handle } }}
-                  className="group flex-shrink-0"
+                  className="flex-shrink-0 select-none"
                   style={{ width: 'clamp(200px, 26vw, 270px)' }}
-                  onDragStart={(e) => e.preventDefault()}
                 >
                   <div className="relative aspect-[3/4] overflow-hidden mb-3" style={{ borderRadius: '16px' }}>
                     <Image
@@ -346,7 +343,7 @@ export function ProductCarousel({
                       alt={`${item.title} in ${item.variant}`}
                       fill
                       draggable={false}
-                      className={`pointer-events-none object-cover object-center transition-opacity duration-500 ${item.hoverImage ? 'group-hover:opacity-0' : 'transition-transform duration-600 group-hover:scale-[1.04]'}`}
+                      className="pointer-events-none object-cover object-center"
                       sizes="270px"
                     />
                     {item.hoverImage && (
@@ -355,11 +352,10 @@ export function ProductCarousel({
                         alt={`${item.title} in ${item.variant} — tweede afbeelding`}
                         fill
                         draggable={false}
-                        className="pointer-events-none object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                        className="pointer-events-none object-cover object-center opacity-0"
                         sizes="270px"
                       />
                     )}
-
                     {discount && (
                       <div className="absolute top-2 right-2">
                         <span className="inline-block bg-accent text-white text-[10px] leading-none font-sans font-semibold px-1.5 py-0.5 rounded-full tracking-normal shadow-sm">
@@ -371,16 +367,14 @@ export function ProductCarousel({
 
                   <div className="flex items-start justify-between gap-1 mt-1.5">
                     <div className="flex-1 min-w-0">
-                      <p className="font-sans font-medium text-sm text-dark leading-snug group-hover:text-accent-dark transition-colors duration-200">
-                        {item.title}
-                      </p>
+                      <p className="font-sans font-medium text-sm text-dark leading-snug">{item.title}</p>
                       <p className="text-xs font-sans text-muted mt-0.5">{item.variant}</p>
                     </div>
                     <span className="font-sans font-semibold text-sm text-dark flex-shrink-0 pt-0.5">
                       {formatPrice(item.price)}
                     </span>
                   </div>
-                </Link>
+                </div>
               )
             })}
           </div>
