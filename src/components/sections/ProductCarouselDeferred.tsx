@@ -26,6 +26,6 @@ const ProductCarousel = dynamic(
   }
 )
 
-export function ProductCarouselDeferred({ products }: { products: Product[] }) {
+export function ProductCarouselDeferred({ products }: { products?: Product[] } = {}) {
   return <ProductCarousel products={products} />
 }

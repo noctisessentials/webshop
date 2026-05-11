@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { getAllBlogPosts } from '@/lib/blog'
-import { getWCProducts } from '@/lib/woocommerce'
 import { Hero } from '@/components/sections/Hero'
 import { ValueProps } from '@/components/sections/ValueProps'
 import { ProductCarouselDeferred } from '@/components/sections/ProductCarouselDeferred'
@@ -38,15 +37,12 @@ export async function generateMetadata({
 
 export default async function HomePage() {
   const posts = getAllBlogPosts()
-  const [products, t] = await Promise.all([
-    getWCProducts(),
-    getTranslations('home'),
-  ])
+  const t = await getTranslations('home')
 
   return (
     <>
       <Hero />
-      <ProductCarouselDeferred products={products} />
+      <ProductCarouselDeferred />
       <ValueProps />
 
       <div className="mx-auto w-full max-w-[980px] pt-8 md:pt-14">
