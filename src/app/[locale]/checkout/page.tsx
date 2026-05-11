@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext'
 import { formatPrice } from '@/lib/utils'
 import { useRouter } from '@/i18n/navigation'
 import { Link } from '@/i18n/navigation'
-import { ChevronLeft, Lock, Truck, ShieldCheck, RotateCcw } from 'lucide-react'
+import { ChevronLeft, Lock, Truck, ShieldCheck, RotateCcw, Tag, Check, Loader2 } from 'lucide-react'
 import { getStoredUTMs } from '@/lib/utm'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
@@ -200,12 +200,81 @@ export default function CheckoutPage() {
   })
   const [newsletterOptIn, setNewsletterOptIn] = useState(false)
 
+  // Discount code state
+  const [discountInput, setDiscountInput] = useState('')
+  const [discountApplying, setDiscountApplying] = useState(false)
+  const [appliedDiscount, setAppliedDiscount] = useState<{ label: string; amount: number; code: string } | null>(null)
+  const [discountError, setDiscountError] = useState<string | null>(null)
+
+  // Postcode autofill state
+  const [addressLookupStatus, setAddressLookupStatus] = useState<'idle' | 'loading' | 'found' | 'not-found'>('idle')
+  const lookupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
     if (items.length === 0) router.replace('/winkel')
   }, [items.length, router])
 
+  // Postcode autofill — triggers when postcode + huisnummer are both filled and country is NL
+  useEffect(() => {
+    if (lookupTimerRef.current) clearTimeout(lookupTimerRef.current)
+
+    const postcode = shipping.postcode.replace(/\s/g, '').toUpperCase()
+    const houseNumber = shipping.houseNumber.trim()
+    if (shipping.country !== 'NL' || !/^\d{4}[A-Z]{2}$/.test(postcode) || !houseNumber) {
+      setAddressLookupStatus('idle')
+      return
+    }
+
+    setAddressLookupStatus('loading')
+    lookupTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/lookup-address?postcode=${postcode}&number=${encodeURIComponent(houseNumber)}`)
+        if (res.ok) {
+          const data = await res.json()
+          setShipping((prev) => ({
+            ...prev,
+            address1: data.street || prev.address1,
+            city: data.city || prev.city,
+          }))
+          setAddressLookupStatus('found')
+        } else {
+          setAddressLookupStatus('not-found')
+        }
+      } catch {
+        setAddressLookupStatus('idle')
+      }
+    }, 700)
+
+    return () => { if (lookupTimerRef.current) clearTimeout(lookupTimerRef.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shipping.postcode, shipping.houseNumber, shipping.country])
+
+  const applyDiscount = async () => {
+    if (!discountInput.trim()) return
+    setDiscountApplying(true)
+    setDiscountError(null)
+    try {
+      const res = await fetch('/api/validate-discount', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: discountInput.trim(), orderTotal: total }),
+      })
+      const data = await res.json()
+      if (data.valid) {
+        setAppliedDiscount({ label: data.label, amount: data.discountAmount, code: data.code })
+        setDiscountInput('')
+      } else {
+        setDiscountError(data.error ?? 'Ongeldige kortingscode.')
+      }
+    } catch {
+      setDiscountError('Er ging iets mis. Probeer opnieuw.')
+    } finally {
+      setDiscountApplying(false)
+    }
+  }
+
   const shipping_total = 0
-  const order_total = total + shipping_total
+  const order_total = total + shipping_total - (appliedDiscount?.amount ?? 0)
 
   const requiredFields: Array<keyof ShippingForm> = [
     'firstName',
@@ -283,6 +352,7 @@ export default function CheckoutPage() {
           email: shipping.email,
           shipping: { ...shipping, address1: `${shipping.address1} ${shipping.houseNumber}`.trim(), newsletterOptIn },
           utm: getStoredUTMs(),
+          discountCode: appliedDiscount?.code ?? null,
           items: items.map((i) => ({
             wcId: i.color.wcId,
             title: i.product.title,
@@ -407,25 +477,6 @@ export default function CheckoutPage() {
                       <input type="text" value={shipping.lastName} onChange={set('lastName')} required placeholder="de Vries" />
                     </Field>
                   </div>
-                  <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4">
-                    <Field label="Straat" required>
-                      <input type="text" value={shipping.address1} onChange={set('address1')} required placeholder="Keizersgracht" />
-                    </Field>
-                    <Field label="Huisnummer" required>
-                      <input type="text" value={shipping.houseNumber} onChange={set('houseNumber')} required placeholder="10A" />
-                    </Field>
-                  </div>
-                  <Field label="Toevoeging (optioneel)">
-                    <input type="text" value={shipping.address2} onChange={set('address2')} placeholder="Appartement 2B" />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Field label="Plaats" required>
-                      <input type="text" value={shipping.city} onChange={set('city')} required placeholder="Amsterdam" />
-                    </Field>
-                    <Field label="Postcode" required>
-                      <input type="text" value={shipping.postcode} onChange={set('postcode')} required placeholder="1017 EH" />
-                    </Field>
-                  </div>
                   <Field label="Land" required>
                     <select value={shipping.country} onChange={set('country')} required>
                       <option value="">Selecteer land</option>
@@ -439,6 +490,39 @@ export default function CheckoutPage() {
                       <option value="AT">Oostenrijk</option>
                       <option value="CH">Zwitserland</option>
                     </select>
+                  </Field>
+                  <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4">
+                    <Field label="Postcode" required hint={shipping.country === 'NL' ? 'bijv. 1017EH' : undefined}>
+                      <input type="text" value={shipping.postcode} onChange={set('postcode')} required placeholder="1017EH" />
+                    </Field>
+                    <Field label="Huisnummer" required>
+                      <input type="text" value={shipping.houseNumber} onChange={set('houseNumber')} required placeholder="10A" />
+                    </Field>
+                  </div>
+
+                  {/* Autofill status indicator (NL only) */}
+                  {shipping.country === 'NL' && (addressLookupStatus === 'loading' || addressLookupStatus === 'found' || addressLookupStatus === 'not-found') && (
+                    <div className={`flex items-center gap-2 text-xs font-sans rounded-lg px-3 py-2 -mt-1 ${
+                      addressLookupStatus === 'found' ? 'text-green-700 bg-green-50 border border-green-200' :
+                      addressLookupStatus === 'not-found' ? 'text-muted bg-surface border border-border' :
+                      'text-muted bg-surface border border-border'
+                    }`}>
+                      {addressLookupStatus === 'loading' && <><Loader2 size={12} className="animate-spin" />Adres opzoeken…</>}
+                      {addressLookupStatus === 'found' && <><Check size={12} />Adres automatisch ingevuld — controleer het even.</>}
+                      {addressLookupStatus === 'not-found' && <>Adres niet gevonden, vul straat en stad handmatig in.</>}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4">
+                    <Field label="Straat" required>
+                      <input type="text" value={shipping.address1} onChange={set('address1')} required placeholder="Keizersgracht" />
+                    </Field>
+                    <Field label="Toevoeging">
+                      <input type="text" value={shipping.address2} onChange={set('address2')} placeholder="2B" />
+                    </Field>
+                  </div>
+                  <Field label="Plaats" required>
+                    <input type="text" value={shipping.city} onChange={set('city')} required placeholder="Amsterdam" />
                   </Field>
                 </div>
 
@@ -518,11 +602,61 @@ export default function CheckoutPage() {
               ))}
             </ul>
 
+            {/* Kortingscode */}
+            <div className="border-t border-border pt-4">
+              {appliedDiscount ? (
+                <div className="flex items-center justify-between text-sm font-sans bg-green-50 border border-green-200 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <Tag size={13} />
+                    <span className="font-medium">{appliedDiscount.label}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAppliedDiscount(null)}
+                    className="text-xs text-muted hover:text-dark underline underline-offset-2"
+                  >
+                    Verwijderen
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={discountInput}
+                      onChange={(e) => { setDiscountInput(e.target.value.toUpperCase()); setDiscountError(null) }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void applyDiscount() } }}
+                      placeholder="Kortingscode"
+                      className="flex-1 h-10 px-3 border border-border rounded-lg text-sm font-sans text-dark placeholder:text-muted/60 bg-white focus:outline-none focus:border-accent transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void applyDiscount()}
+                      disabled={discountApplying || !discountInput.trim()}
+                      className="h-10 px-4 bg-dark text-white text-xs font-sans font-semibold rounded-lg disabled:opacity-50 hover:bg-dark/85 transition-colors flex items-center gap-1.5"
+                    >
+                      {discountApplying ? <Loader2 size={12} className="animate-spin" /> : null}
+                      Toepassen
+                    </button>
+                  </div>
+                  {discountError && (
+                    <p className="text-xs font-sans text-red-600">{discountError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="border-t border-border pt-4 space-y-2">
               <div className="flex items-center justify-between text-sm font-sans">
                 <span className="text-muted">Subtotaal</span>
                 <span className="text-dark">{formatPrice(total)}</span>
               </div>
+              {appliedDiscount && (
+                <div className="flex items-center justify-between text-sm font-sans text-green-700">
+                  <span>Korting</span>
+                  <span>-{formatPrice(appliedDiscount.amount)}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between text-sm font-sans">
                 <span className="text-muted">Verzending</span>
                 <span className="text-accent font-medium">Gratis</span>
@@ -568,17 +702,19 @@ export default function CheckoutPage() {
 function Field({
   label,
   required,
+  hint,
   children,
 }: {
   label: string
   required?: boolean
+  hint?: string
   children: React.ReactElement<React.InputHTMLAttributes<HTMLInputElement> | React.SelectHTMLAttributes<HTMLSelectElement>>
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-sans font-semibold text-muted uppercase tracking-widest">
-        {label}
-        {required && <span className="text-accent ml-0.5">*</span>}
+      <label className="flex items-center gap-2 text-xs font-sans font-semibold text-muted uppercase tracking-widest">
+        <span>{label}{required && <span className="text-accent ml-0.5">*</span>}</span>
+        {hint && <span className="font-normal normal-case tracking-normal text-muted/60">{hint}</span>}
       </label>
       {children && (
         <div>

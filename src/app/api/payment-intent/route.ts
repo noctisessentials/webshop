@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import type { UTMData } from '@/lib/utm'
+import { validateDiscountViaWC } from '@/lib/discounts'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -29,16 +30,32 @@ type ShippingData = {
 
 export async function POST(request: Request) {
   try {
-    const { items, email, shipping, utm }: { items: LineItem[]; email?: string; shipping?: ShippingData; utm?: UTMData | null } = await request.json()
+    const { items, email, shipping, utm, discountCode }: {
+      items: LineItem[]
+      email?: string
+      shipping?: ShippingData
+      utm?: UTMData | null
+      discountCode?: string
+    } = await request.json()
 
     if (!items?.length) {
       return NextResponse.json({ error: 'No items' }, { status: 400 })
     }
 
-    // Total in cents
-    const amountCents = Math.round(
-      items.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100
-    )
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
+    // Validate discount server-side so the client can't manipulate the amount
+    let discountAmount = 0
+    let discountLabel = ''
+    if (discountCode) {
+      const result = await validateDiscountViaWC(discountCode, subtotal)
+      if (result.valid) {
+        discountAmount = result.discountAmount
+        discountLabel = result.label
+      }
+    }
+
+    const amountCents = Math.round((subtotal - discountAmount) * 100)
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
@@ -53,6 +70,7 @@ export async function POST(request: Request) {
         ...(shipping ? { shipping: JSON.stringify(shipping) } : {}),
         // Store UTMs so the webhook can set order attribution if the browser never reaches /success
         ...(utm ? { utm: JSON.stringify(utm) } : {}),
+        ...(discountLabel ? { discount: discountLabel } : {}),
       },
     })
 
