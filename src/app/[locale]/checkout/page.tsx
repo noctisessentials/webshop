@@ -372,6 +372,9 @@ export default function CheckoutPage() {
       // Storage unavailable — webhook fallback will create the WC order
     }
 
+    let utms = null
+    try { utms = getStoredUTMs() } catch { /* storage blocked */ }
+
     try {
       const res = await fetch('/api/payment-intent', {
         method: 'POST',
@@ -379,7 +382,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           email: merged.email,
           shipping: { ...merged, address1: `${merged.address1} ${merged.houseNumber}`.trim(), newsletterOptIn },
-          utm: getStoredUTMs(),
+          utm: utms,
           discountCode: appliedDiscount?.code ?? null,
           items: items.map((i) => ({
             wcId: i.color.wcId,
@@ -391,7 +394,10 @@ export default function CheckoutPage() {
         }),
       })
 
-      if (!res.ok) throw new Error('Could not create payment')
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(`[${res.status}] ${body?.error ?? 'Could not create payment'}`)
+      }
       const { clientSecret: cs } = await res.json()
       setClientSecret(cs)
       setStep('payment')
@@ -422,8 +428,8 @@ export default function CheckoutPage() {
           })),
         }])
       }
-    } catch {
-      setIntentError('Er ging iets mis. Probeer het opnieuw.')
+    } catch (err) {
+      setIntentError(`Er ging iets mis. Probeer het opnieuw. (${err instanceof Error ? err.message : String(err)})`)
     } finally {
       setLoadingIntent(false)
     }
