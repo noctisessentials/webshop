@@ -177,19 +177,9 @@ function PaymentForm({
 
 // ── Main checkout page ─────────────────────────────────────────────────────
 
-function useIsInAppBrowser() {
-  const [isInApp, setIsInApp] = useState(false)
-  useEffect(() => {
-    const ua = navigator.userAgent || ''
-    setIsInApp(/Instagram|FBAN|FBAV|FB_IAB|Twitter|TikTok|Line\/|Musical\.ly/.test(ua))
-  }, [])
-  return isInApp
-}
-
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, total, count } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
-  const isInApp = useIsInAppBrowser()
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loadingIntent, setLoadingIntent] = useState(false)
@@ -329,21 +319,44 @@ export default function CheckoutPage() {
 
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isDetailsValid) {
+
+    // Read actual DOM values so iOS/WKWebView autofill (Instagram, Safari) is
+    // always captured, even when it bypasses React's onChange handlers.
+    const form = e.currentTarget as HTMLFormElement
+    const fd = new FormData(form)
+    const domValues: ShippingForm = {
+      email:       fd.get('email')?.toString().trim() ?? '',
+      phone:       fd.get('phone')?.toString().trim() ?? '',
+      firstName:   fd.get('firstName')?.toString().trim() ?? '',
+      lastName:    fd.get('lastName')?.toString().trim() ?? '',
+      country:     fd.get('country')?.toString().trim() ?? '',
+      postcode:    fd.get('postcode')?.toString().trim() ?? '',
+      houseNumber: fd.get('houseNumber')?.toString().trim() ?? '',
+      address1:    fd.get('address1')?.toString().trim() ?? '',
+      address2:    fd.get('address2')?.toString().trim() ?? '',
+      city:        fd.get('city')?.toString().trim() ?? '',
+    }
+    const merged = { ...shipping, ...domValues }
+    setShipping(merged)
+
+    const missingField = requiredFields.some((f) => !merged[f].trim())
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(merged.email)
+    if (missingField || !validEmail) {
       setIntentError('Vul alle verplichte velden correct in om door te gaan.')
       return
     }
+
     setLoadingIntent(true)
     setIntentError(null)
 
     const shippingForOrder = {
-      ...shipping,
-      address1: `${shipping.address1} ${shipping.houseNumber}`.trim(),
+      ...merged,
+      address1: `${merged.address1} ${merged.houseNumber}`.trim(),
       newsletterOptIn,
     }
 
     // Use localStorage so shipping survives cross-origin payment redirects (iDEAL, Klarna, Bancontact).
-    // Wrapped in try-catch: in-app browsers (Instagram, TikTok) may block storage APIs.
+    // Wrapped in try-catch: restricted browser contexts may block storage APIs.
     try {
       localStorage.setItem('noctis_shipping', JSON.stringify(shippingForOrder))
       sessionStorage.setItem('noctis_cart', JSON.stringify(
@@ -364,8 +377,8 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: shipping.email,
-          shipping: { ...shipping, address1: `${shipping.address1} ${shipping.houseNumber}`.trim(), newsletterOptIn },
+          email: merged.email,
+          shipping: { ...merged, address1: `${merged.address1} ${merged.houseNumber}`.trim(), newsletterOptIn },
           utm: getStoredUTMs(),
           discountCode: appliedDiscount?.code ?? null,
           items: items.map((i) => ({
@@ -392,13 +405,11 @@ export default function CheckoutPage() {
         })
       }
 
-      // Omnisend: identify contact + fire $startedCheckout so the
-      // "Abandoned Checkout" automation (trigger: Started checkout) fires
-      // if the customer doesn't complete payment within the configured delay.
+      // Omnisend: identify contact + fire $startedCheckout
       if (typeof window !== 'undefined' && window.omnisend) {
-        window.omnisend.push(['identify', { email: shipping.email }])
+        window.omnisend.push(['identify', { email: merged.email }])
         window.omnisend.push(['track', '$startedCheckout', {
-          $cartID: `checkout-${shipping.email}`,
+          $cartID: `checkout-${merged.email}`,
           $currency: 'EUR',
           $cartTotal: total,
           $checkoutURL: `${window.location.origin}/checkout`,
@@ -426,23 +437,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#F0EDE8]">
-      {isInApp && (
-        <div className="bg-accent text-white text-sm font-sans px-4 py-3 text-center">
-          <span className="font-semibold">Tip:</span> voor iDEAL en Klarna open je deze pagina in Safari of Chrome.{' '}
-          <button
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({ url: window.location.href }).catch(() => {})
-              } else {
-                window.open(window.location.href, '_blank')
-              }
-            }}
-            className="underline underline-offset-2 font-semibold"
-          >
-            Open in browser
-          </button>
-        </div>
-      )}
       <div className="bg-light border-b border-border">
         <div className="container-content">
           <div className="flex items-center justify-between h-16">
@@ -477,14 +471,14 @@ export default function CheckoutPage() {
                 <div className="bg-white rounded-2xl p-6 md:p-8 space-y-5">
                   <h2 className="font-sans font-semibold text-sm text-dark">Contactgegevens</h2>
                   <Field label="E-mailadres" required>
-                    <input type="email" value={shipping.email} onChange={set('email')} required placeholder="jij@voorbeeld.nl" />
+                    <input type="email" name="email" value={shipping.email} onChange={set('email')} required placeholder="jij@voorbeeld.nl" />
                   </Field>
                   <p className="text-xs font-sans text-muted/70 -mt-2">
                     Controleer je spam of ongewenste e-mail als je geen bevestiging ontvangt (vooral bij Outlook).{' '}
                     <a href="mailto:info@noctisessentials.com" className="underline underline-offset-2 hover:text-dark transition-colors">Niet ontvangen? Neem contact op.</a>
                   </p>
                   <Field label="Telefoon (optioneel)">
-                    <input type="tel" value={shipping.phone} onChange={set('phone')} placeholder="+31 6 12345678" />
+                    <input type="tel" name="phone" value={shipping.phone} onChange={set('phone')} placeholder="+31 6 12345678" />
                   </Field>
                   <label className="flex items-start gap-2.5 rounded-lg border border-border bg-surface/30 px-3 py-2.5 cursor-pointer">
                     <input
@@ -503,14 +497,14 @@ export default function CheckoutPage() {
                   <h2 className="font-sans font-semibold text-sm text-dark">Adresgegevens</h2>
                   <div className="grid grid-cols-2 gap-4">
                     <Field label="Voornaam" required>
-                      <input type="text" value={shipping.firstName} onChange={set('firstName')} required placeholder="Anna" />
+                      <input type="text" name="firstName" value={shipping.firstName} onChange={set('firstName')} required placeholder="Anna" />
                     </Field>
                     <Field label="Achternaam" required>
-                      <input type="text" value={shipping.lastName} onChange={set('lastName')} required placeholder="de Vries" />
+                      <input type="text" name="lastName" value={shipping.lastName} onChange={set('lastName')} required placeholder="de Vries" />
                     </Field>
                   </div>
                   <Field label="Land" required>
-                    <select value={shipping.country} onChange={set('country')} required>
+                    <select name="country" value={shipping.country} onChange={set('country')} required>
                       <option value="">Selecteer land</option>
                       <option value="NL">Nederland</option>
                       <option value="BE">België</option>
@@ -525,10 +519,10 @@ export default function CheckoutPage() {
                   </Field>
                   <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4">
                     <Field label="Postcode" required hint={shipping.country === 'NL' ? 'bijv. 1017EH' : undefined}>
-                      <input type="text" value={shipping.postcode} onChange={set('postcode')} required placeholder="1017EH" />
+                      <input type="text" name="postcode" value={shipping.postcode} onChange={set('postcode')} required placeholder="1017EH" />
                     </Field>
                     <Field label="Huisnummer" required>
-                      <input type="text" value={shipping.houseNumber} onChange={set('houseNumber')} required placeholder="10A" />
+                      <input type="text" name="houseNumber" value={shipping.houseNumber} onChange={set('houseNumber')} required placeholder="10A" />
                     </Field>
                   </div>
 
@@ -547,14 +541,14 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4">
                     <Field label="Straat" required>
-                      <input type="text" value={shipping.address1} onChange={set('address1')} required placeholder="Keizersgracht" />
+                      <input type="text" name="address1" value={shipping.address1} onChange={set('address1')} required placeholder="Keizersgracht" />
                     </Field>
                     <Field label="Toevoeging">
-                      <input type="text" value={shipping.address2} onChange={set('address2')} placeholder="2B" />
+                      <input type="text" name="address2" value={shipping.address2} onChange={set('address2')} placeholder="2B" />
                     </Field>
                   </div>
                   <Field label="Plaats" required>
-                    <input type="text" value={shipping.city} onChange={set('city')} required placeholder="Amsterdam" />
+                    <input type="text" name="city" value={shipping.city} onChange={set('city')} required placeholder="Amsterdam" />
                   </Field>
                 </div>
 
@@ -566,7 +560,7 @@ export default function CheckoutPage() {
 
                 <button
                   type="submit"
-                  disabled={loadingIntent || !isDetailsValid}
+                  disabled={loadingIntent}
                   className="w-full h-14 bg-accent hover:bg-accent/90 disabled:opacity-60 text-white text-sm font-sans font-semibold rounded-xl transition-colors duration-200"
                 >
                   {loadingIntent ? 'Betaling laden…' : 'Ga door naar betalen'}
