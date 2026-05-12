@@ -10,6 +10,17 @@ export type UTMData = {
 
 const KEY = 'noctis_utm'
 
+function cleanUrl(raw: string): string {
+  try {
+    const url = new URL(raw)
+    // Strip click-tracking params that make URLs excessively long
+    ;['fbclid', 'gclid', 'gclsrc', 'msclkid', 'ttclid', 'twclid', 'utm_id'].forEach((p) => url.searchParams.delete(p))
+    return url.toString()
+  } catch {
+    return raw
+  }
+}
+
 export function captureUTMs(): void {
   if (typeof window === 'undefined') return
 
@@ -26,13 +37,13 @@ export function captureUTMs(): void {
     if (!localStorage.getItem(KEY) && document.referrer) {
       localStorage.setItem(KEY, JSON.stringify({
         referrer: document.referrer,
-        entry_url: window.location.href,
+        entry_url: cleanUrl(window.location.href),
       }))
     }
     return
   }
 
-  const utm: UTMData = { entry_url: window.location.href }
+  const utm: UTMData = { entry_url: cleanUrl(window.location.href) }
   if (source) utm.utm_source = source
   if (medium) utm.utm_medium = medium
   if (campaign) utm.utm_campaign = campaign

@@ -57,19 +57,21 @@ export async function POST(request: Request) {
 
     const amountCents = Math.round((subtotal - discountAmount) * 100)
 
+    const cap = (s: string) => s.slice(0, 500)
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency: 'eur',
       payment_method_types: ['ideal', 'card', 'bancontact', 'klarna'],
       receipt_email: email || undefined,
       metadata: {
-        line_items: JSON.stringify(
+        line_items: cap(JSON.stringify(
           items.map((i) => ({ wcId: i.wcId, title: i.title, colorName: i.colorName, quantity: i.quantity, price: i.price }))
-        ),
+        )),
         // Store shipping so the webhook can create a WC order if the browser never reaches /success
-        ...(shipping ? { shipping: JSON.stringify(shipping) } : {}),
+        ...(shipping ? { shipping: cap(JSON.stringify(shipping)) } : {}),
         // Store UTMs so the webhook can set order attribution if the browser never reaches /success
-        ...(utm ? { utm: JSON.stringify(utm) } : {}),
+        ...(utm ? { utm: cap(JSON.stringify(utm)) } : {}),
         ...(discountLabel ? { discount: discountLabel } : {}),
       },
     })
