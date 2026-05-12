@@ -177,9 +177,19 @@ function PaymentForm({
 
 // ── Main checkout page ─────────────────────────────────────────────────────
 
+function useIsInAppBrowser() {
+  const [isInApp, setIsInApp] = useState(false)
+  useEffect(() => {
+    const ua = navigator.userAgent || ''
+    setIsInApp(/Instagram|FBAN|FBAV|FB_IAB|Twitter|TikTok|Line\/|Musical\.ly/.test(ua))
+  }, [])
+  return isInApp
+}
+
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, total, count } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
+  const isInApp = useIsInAppBrowser()
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loadingIntent, setLoadingIntent] = useState(false)
@@ -332,17 +342,22 @@ export default function CheckoutPage() {
       newsletterOptIn,
     }
 
-    // Use localStorage so shipping survives cross-origin payment redirects (iDEAL, Klarna, Bancontact)
-    localStorage.setItem('noctis_shipping', JSON.stringify(shippingForOrder))
-    sessionStorage.setItem('noctis_cart', JSON.stringify(
-      items.map((i) => ({
-        wcId: i.color.wcId,
-        title: i.product.title,
-        colorName: i.color.name,
-        quantity: i.quantity,
-        price: i.product.price,
-      }))
-    ))
+    // Use localStorage so shipping survives cross-origin payment redirects (iDEAL, Klarna, Bancontact).
+    // Wrapped in try-catch: in-app browsers (Instagram, TikTok) may block storage APIs.
+    try {
+      localStorage.setItem('noctis_shipping', JSON.stringify(shippingForOrder))
+      sessionStorage.setItem('noctis_cart', JSON.stringify(
+        items.map((i) => ({
+          wcId: i.color.wcId,
+          title: i.product.title,
+          colorName: i.color.name,
+          quantity: i.quantity,
+          price: i.product.price,
+        }))
+      ))
+    } catch {
+      // Storage unavailable — webhook fallback will create the WC order
+    }
 
     try {
       const res = await fetch('/api/payment-intent', {
@@ -411,6 +426,23 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#F0EDE8]">
+      {isInApp && (
+        <div className="bg-accent text-white text-sm font-sans px-4 py-3 text-center">
+          <span className="font-semibold">Tip:</span> voor iDEAL en Klarna open je deze pagina in Safari of Chrome.{' '}
+          <button
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({ url: window.location.href }).catch(() => {})
+              } else {
+                window.open(window.location.href, '_blank')
+              }
+            }}
+            className="underline underline-offset-2 font-semibold"
+          >
+            Open in browser
+          </button>
+        </div>
+      )}
       <div className="bg-light border-b border-border">
         <div className="container-content">
           <div className="flex items-center justify-between h-16">
