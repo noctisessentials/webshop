@@ -235,7 +235,7 @@ export function KitchenSetStijlClient({ product }: Props) {
             <br />
             <span
               className="font-normal italic"
-              style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.08em', color: '#A4744C' }}
+              style={{ color: '#A4744C' }}
             >
               Jouw stijl.
             </span>
@@ -392,8 +392,8 @@ export function KitchenSetStijlClient({ product }: Props) {
         </p>
         <p
           data-animate data-delay="1"
-          className="font-normal italic mb-2"
-          style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(25px, 3.1vw, 45px)', color: '#A4744C' }}
+          className="font-sans font-normal italic mb-2"
+          style={{ fontSize: 'clamp(25px, 3.1vw, 45px)', color: '#A4744C' }}
         >
           Maar je voelt het wel.
         </p>
@@ -445,6 +445,43 @@ export function KitchenSetStijlClient({ product }: Props) {
               />
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Before/After Transformation ──────────────────────────────────────── */}
+      <section className="bg-[#F0EDE8] pt-16 md:pt-24 pb-16 md:pb-24">
+        <div className="container-content">
+          <div className="mb-8 md:mb-10 text-center">
+            <h2 className="font-sans font-semibold text-dark leading-tight mb-4" style={{ fontSize: 'clamp(24px, 3vw, 40px)' }}>
+              Van rommel{' '}
+              <span className="font-normal italic" style={{ color: '#A4744C' }}>naar rust</span>
+            </h2>
+            <p className="text-sm md:text-base font-sans text-muted leading-relaxed max-w-xl mx-auto">
+              Alles matched. Alles georganiseerd. Eén rustige uitstraling op je aanrecht.
+            </p>
+          </div>
+
+          {/* Mobile image — 1:1 */}
+          <div className="relative w-full rounded-[24px] overflow-hidden aspect-square md:hidden">
+            <Image
+              src="/content/before_after_PDP_mobile.jpg"
+              alt="Voor en na — van een rommelige keuken naar een rustige Noctis keuken"
+              fill
+              className="object-cover object-center"
+              sizes="100vw"
+            />
+          </div>
+
+          {/* Desktop image — wide cinematic */}
+          <div className="relative w-full rounded-[28px] overflow-hidden hidden md:block" style={{ aspectRatio: '8/3' }}>
+            <Image
+              src="/content/before_after_PDP.jpeg"
+              alt="Voor en na — van een rommelige keuken naar een rustige Noctis keuken"
+              fill
+              className="object-cover object-center"
+              sizes="90vw"
+            />
+          </div>
         </div>
       </section>
 
@@ -562,8 +599,8 @@ export function KitchenSetStijlClient({ product }: Props) {
               Alles wat je nodig hebt.
             </h2>
             <p
-              className="font-normal italic mb-3"
-              style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 2.6vw, 38px)', color: '#A4744C' }}
+              className="font-sans font-normal italic mb-3"
+              style={{ fontSize: 'clamp(22px, 2.6vw, 38px)', color: '#A4744C' }}
             >
               In één set.
             </p>
@@ -727,8 +764,8 @@ export function KitchenSetStijlClient({ product }: Props) {
               Een keuken die eindelijk
             </h2>
             <p
-              className="font-normal italic mb-5"
-              style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(28px, 3.5vw, 52px)', color: '#A4744C' }}
+              className="font-sans font-normal italic mb-5"
+              style={{ fontSize: 'clamp(28px, 3.5vw, 52px)', color: '#A4744C' }}
             >
               gewoon klopt.
             </p>
