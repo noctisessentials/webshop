@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import PlainLink from 'next/link'
+import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/lib/data'
@@ -258,7 +259,7 @@ export function ProductCarousel({
   const onDragMove = (clientX: number) => {
     if (!isDraggingRef.current || !trackRef.current || !copyWidthRef.current) return
     const delta = clientX - dragStartXRef.current
-    if (Math.abs(delta) > 3) movedDuringDragRef.current = true
+    if (Math.abs(delta) > 10) movedDuringDragRef.current = true
     posRef.current = wrapPos(dragStartPosRef.current + delta)
     trackRef.current.style.transform = `translateX(${posRef.current}px)`
   }
@@ -302,9 +303,10 @@ export function ProductCarousel({
             const adx = Math.abs(clientX - touchStartXRef.current)
             const ady = Math.abs(e.touches[0].clientY - touchStartYRef.current)
             if (!isDraggingRef.current) {
-              if (ady > adx + 4) { isVerticalScrollRef.current = true; return }
-              if (adx > 4) {
+              if (ady > adx + 6) { isVerticalScrollRef.current = true; return }
+              if (adx > 8) {
                 isDraggingRef.current = true
+                movedDuringDragRef.current = true
                 pauseAutoScrollRef.current = true
                 dragStartXRef.current = touchStartXRef.current
                 dragStartPosRef.current = posRef.current
@@ -332,10 +334,12 @@ export function ProductCarousel({
             {loopItems.map((item, index) => {
               const discount = getDiscountPercentage(item.price, item.compareAtPrice)
               return (
-                <div
+                <Link
                   key={`${item.id}-${index}`}
-                  className="group flex-shrink-0 select-none"
+                  href={{ pathname: '/products/[handle]', params: { handle: item.handle } }}
+                  className="group flex-shrink-0 select-none block"
                   style={{ width: 'clamp(200px, 26vw, 270px)' }}
+                  draggable={false}
                 >
                   <div className="relative aspect-[3/4] overflow-hidden mb-3" style={{ borderRadius: '16px' }}>
                     <Image
@@ -374,7 +378,7 @@ export function ProductCarousel({
                       {formatPrice(item.price)}
                     </span>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>
