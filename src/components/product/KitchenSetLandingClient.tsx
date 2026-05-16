@@ -399,6 +399,8 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
   const [adding, setAdding] = useState(false)
   const [testimonialsPaused, setTestimonialsPaused] = useState(false)
   const [isActiveVideoPlaying, setIsActiveVideoPlaying] = useState(true)
+  const [comparisonInView, setComparisonInView] = useState(false)
+  const comparisonRef = useRef<HTMLDivElement>(null)
 
   const selectedColor = getSelectedColor(product)
   const galleryItems = getKitchenSetGalleryImages(product)
@@ -411,6 +413,15 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
       setIsActiveVideoPlaying(true)
     }
   }, [activeImageIndex, activeGalleryItem?.type])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setComparisonInView(true) },
+      { threshold: 0.1 }
+    )
+    if (comparisonRef.current) observer.observe(comparisonRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   const discountPercentage =
     product.compareAtPrice && product.compareAtPrice > product.price
@@ -909,6 +920,44 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
           </div>
         </div>
       </section>
+      {/* ── Transformation Section ─────────────────────────────────────────── */}
+      <section className="bg-light pb-16 md:pb-24 pt-8 md:pt-14">
+        <div className="container-content">
+          {/* Text above image */}
+          <div className="mb-8 md:mb-10 text-center">
+            <h2 className="font-sans font-semibold text-dark leading-tight mb-4" style={{ fontSize: 'clamp(24px, 3vw, 40px)' }}>
+              Van rommel{' '}
+              <span className="italic font-normal">naar rust</span>
+            </h2>
+            <p className="text-sm md:text-base font-sans text-muted leading-relaxed max-w-xl mx-auto">
+              Alles matched. Alles georganiseerd. Eén rustige uitstraling op je aanrecht.
+            </p>
+          </div>
+
+          {/* Mobile image — 1:1 */}
+          <div className="relative w-full rounded-[24px] overflow-hidden aspect-square md:hidden">
+            <Image
+              src="/content/before_after_PDP_mobile.jpg"
+              alt="Voor en na — van een rommelige keuken naar een rustige Noctis keuken"
+              fill
+              className="object-cover object-center"
+              sizes="100vw"
+            />
+          </div>
+
+          {/* Desktop image — wide cinematic */}
+          <div className="relative w-full rounded-[28px] overflow-hidden hidden md:block" style={{ aspectRatio: '8/3' }}>
+            <Image
+              src="/content/before_after_PDP.jpeg"
+              alt="Voor en na — van een rommelige keuken naar een rustige Noctis keuken"
+              fill
+              className="object-cover object-center"
+              sizes="90vw"
+            />
+          </div>
+        </div>
+      </section>
+
       <section className="bg-light section-py">
         <div className="container-content">
           <div className="text-center max-w-3xl mx-auto mb-10 md:mb-12">
@@ -1073,90 +1122,133 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
           </a>
         </div>
       </section>
+      {/* ── Premium editorial comparison ───────────────────────────────────── */}
       <section className="bg-light section-py">
         <div className="container-content">
-          <div className="text-center max-w-3xl mx-auto mb-10 md:mb-12">
-            <h2 className="font-sans font-semibold text-dark leading-tight" style={{ fontSize: 'clamp(24px, 3vw, 40px)' }}>
-              Noctis vs rommelige houders
+          <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+            <h2
+              className="font-sans font-semibold text-dark leading-tight"
+              style={{ fontSize: 'clamp(24px, 3vw, 40px)' }}
+            >
+              Rust zit in de details
             </h2>
             <p className="mt-3 text-sm md:text-base font-sans text-muted">
-              Zie direct waarom Noctis de slimme keuze is voor een rustige en complete keuken.
+              Een rustige keuken draait niet om meer spullen, maar om samenhang.
             </p>
           </div>
 
-          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-            <div className="min-w-[340px] max-w-[1120px] mx-auto">
+          <div ref={comparisonRef} className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+            {/* Card 1 — Mismatch kitchen */}
+            <div
+              className={cn(
+                'relative rounded-[24px] border border-[#D8D5D1] bg-[#EFEDEB] p-7 md:p-9 overflow-hidden transition-all ease-out hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]',
+                comparisonInView ? 'opacity-100 translate-y-0 duration-700' : 'opacity-0 translate-y-10 duration-700'
+              )}
+              style={{ transitionDelay: comparisonInView ? '0ms' : '0ms' }}
+            >
+              <div className="mb-6">
+                <span className="inline-block text-[10px] font-sans font-semibold uppercase tracking-[0.2em] text-[#9B9390] mb-4">
+                  Zonder Noctis
+                </span>
+                <h3
+                  className="font-sans font-semibold text-[#5A5552] leading-tight"
+                  style={{ fontSize: 'clamp(20px, 2vw, 26px)' }}
+                >
+                  Mismatch keuken
+                </h3>
+              </div>
 
-              {/* Table body */}
-              <div className="bg-white rounded-[20px] border border-[#1E1D1D]/12 overflow-hidden">
-                {/* Product column headers */}
-                <div className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[2.3fr_1fr_1fr] border-b border-[#EDEBE8]">
-                  <div className="px-3 md:px-6 py-4 md:py-5" />
-                  <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] px-3 md:px-5 py-4 md:py-5 text-center w-24 md:w-auto">
-                    <div className="relative mx-auto h-14 w-14 md:h-[88px] md:w-[88px]">
-                      <Image
-                        src="/content/noctis-houder.webp"
-                        alt="Noctis 19-delige set"
-                        fill
-                        className="object-contain"
-                        sizes="88px"
-                      />
-                    </div>
-                    <p className="mt-2 font-sans font-semibold text-xs md:text-base text-dark leading-snug">
-                      Noctis set
-                    </p>
-                  </div>
-                  <div className="border-l border-[#EDEBE8] px-3 md:px-5 py-4 md:py-5 text-center w-24 md:w-auto">
-                    <div className="relative mx-auto h-14 w-14 md:h-[88px] md:w-[88px]">
-                      <Image
-                        src="/content/rommelige-houder.webp"
-                        alt="Rommelige houder"
-                        fill
-                        className="object-contain"
-                        sizes="88px"
-                      />
-                    </div>
-                    <p className="mt-2 font-sans font-semibold text-xs md:text-base text-muted leading-snug">
-                      Rommelig
-                    </p>
-                  </div>
+              <div className="h-px w-full bg-[#CCC9C5] mb-7" />
+
+              <div className="flex items-end justify-between gap-4">
+                <ul className="space-y-4 flex-1">
+                  {[
+                    'Verschillende kleuren en materialen',
+                    'Rommelig aanrecht',
+                    'Losse tools overal',
+                    'Visuele onrust',
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 flex-shrink-0 h-5 w-5 rounded-full border border-[#C5C0BB] bg-white/60 flex items-center justify-center">
+                        <X size={10} strokeWidth={2} className="text-[#B0AAA5]" />
+                      </span>
+                      <span className="font-sans text-sm md:text-base text-[#5A5552] leading-snug">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex-shrink-0 self-end">
+                  <Image
+                    src="/content/rommelig-set-silhoutte.webp"
+                    alt=""
+                    width={90}
+                    height={110}
+                    className="object-contain object-bottom"
+                    aria-hidden
+                  />
                 </div>
+              </div>
 
-                {/* Feature rows */}
-                {COMPARISON_FEATURE_ROWS.map((row) => (
-                  <div key={row.title} className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[2.3fr_1fr_1fr] border-b border-[#EDEBE8]">
-                    <div className="px-3 md:px-6 py-4 md:py-5">
-                      <p className="font-sans font-semibold text-sm md:text-[22px] text-dark">{row.title}</p>
-                      <p className="mt-1 text-xs md:text-[18px] font-sans text-muted leading-relaxed">{row.subtitle}</p>
-                    </div>
-                    <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center">
-                      <ComparisonMark isPositive={row.noctis} />
-                    </div>
-                    <div className="border-l border-[#EDEBE8] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center">
-                      <ComparisonMark isPositive={row.other} />
-                    </div>
-                  </div>
-                ))}
+              <div className="mt-8 pt-6 border-t border-[#CCC9C5]">
+                <p className="font-sans text-xs text-[#9B9390] leading-relaxed italic">
+                  "Verschillende kleuren, willekeurige houders. Je aanrecht ziet er nooit echt opgeruimd uit."
+                </p>
+              </div>
+            </div>
 
-                {/* Price footer */}
-                <div className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[2.3fr_1fr_1fr] bg-[#FAFAF8]">
-                  <div className="px-3 md:px-6 py-4 md:py-5">
-                    <p className="font-sans font-semibold text-sm md:text-[22px] text-dark">Prijsvoordeel</p>
-                    <p className="mt-1 text-xs md:text-[18px] font-sans text-muted">Complete set vs losse tools.</p>
-                  </div>
-                  <div className="border-l border-[#EDEBE8] bg-[#FAF7F4] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center text-center">
-                    <div>
-                      <p className="font-sans text-base md:text-[24px] font-bold text-dark">{formatPrice(basePrice)}</p>
-                      <p className="text-xs md:text-[16px] font-sans text-muted mt-1">complete set</p>
-                    </div>
-                  </div>
-                  <div className="border-l border-[#EDEBE8] w-24 md:w-auto px-3 md:px-5 py-4 md:py-5 flex items-center justify-center text-center">
-                    <div>
-                      <p className="font-sans text-base md:text-[24px] font-semibold text-dark">€115,95+</p>
-                      <p className="text-xs md:text-[16px] font-sans text-muted mt-1">aan losse tools</p>
-                    </div>
-                  </div>
+            {/* Card 2 — Noctis kitchen */}
+            <div
+              className={cn(
+                'relative rounded-[24px] border border-accent/20 bg-[#FBF7F2] p-7 md:p-9 overflow-hidden transition-all ease-out hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(164,116,76,0.12)]',
+                comparisonInView ? 'opacity-100 translate-y-0 duration-700' : 'opacity-0 translate-y-10 duration-700'
+              )}
+              style={{ transitionDelay: comparisonInView ? '150ms' : '0ms' }}
+            >
+              <div className="mb-6">
+                <span className="inline-block text-[10px] font-sans font-semibold uppercase tracking-[0.2em] text-accent mb-4">
+                  Met Noctis
+                </span>
+                <h3
+                  className="font-sans font-semibold text-dark leading-tight"
+                  style={{ fontSize: 'clamp(20px, 2vw, 26px)' }}
+                >
+                  Noctis keuken
+                </h3>
+              </div>
+
+              <div className="h-px w-full bg-accent/25 mb-7" />
+
+              <div className="flex items-end justify-between gap-4">
+                <ul className="space-y-4 flex-1">
+                  {[
+                    'Eén rustige uitstraling',
+                    'Alles perfect op elkaar afgestemd',
+                    'Georganiseerd gevoel',
+                    'Mooie tools die gezien mogen worden',
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 flex-shrink-0 h-5 w-5 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center">
+                        <Check size={10} strokeWidth={2.5} className="text-accent" />
+                      </span>
+                      <span className="font-sans text-sm md:text-base text-dark leading-snug">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex-shrink-0 self-end">
+                  <Image
+                    src="/content/noctis-set-silhoutte.webp"
+                    alt=""
+                    width={90}
+                    height={110}
+                    className="object-contain object-bottom"
+                    aria-hidden
+                  />
                 </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-accent/15">
+                <p className="font-sans text-xs text-accent/70 leading-relaxed italic">
+                  "Eindelijk een keuken waar ik trots op ben elke keer dat ik erin sta."
+                </p>
               </div>
             </div>
           </div>
