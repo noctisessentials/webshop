@@ -17,7 +17,7 @@ export async function Hero() {
         {/* Full-bleed image */}
         <div className="absolute inset-0">
           <Image
-            src="/images/hero.webp"
+            src="/images/Herosectie foto.webp"
             alt="Noctis keuken sfeerbeeld"
             fill
             priority
