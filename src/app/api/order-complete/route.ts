@@ -1,29 +1,9 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import crypto from 'crypto'
-import { utmToWCMeta } from '@/lib/utm'
-import type { UTMData } from '@/lib/utm'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
 })
-
-// In-flight deduplication: if two requests arrive simultaneously for the same
-// paymentIntentId, the second one waits for the first and returns its result.
-const inFlight = new Map<string, Promise<{ id: number; number: string }>>()
-
-type ShippingAddress = {
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string
-  address1: string
-  address2?: string
-  city: string
-  postcode: string
-  country: string
-  newsletterOptIn?: boolean
-}
 
 type WCOrder = {
   id: number
@@ -31,57 +11,47 @@ type WCOrder = {
   transaction_id?: string
 }
 
-async function findExistingOrderByTransactionId(
+async function findExistingOrder(
   WC_URL: string,
   credentials: string,
   paymentIntentId: string
 ): Promise<WCOrder | undefined> {
-  const byTransactionRes = await fetch(
+  const res = await fetch(
     `${WC_URL}/wp-json/wc/v3/orders?transaction_id=${encodeURIComponent(paymentIntentId)}&per_page=5`,
-    {
-      headers: {
-        Authorization: `Basic ${credentials}`,
-      },
-    }
+    { headers: { Authorization: `Basic ${credentials}` } }
   )
-
-  if (byTransactionRes.ok) {
-    const orders = (await byTransactionRes.json()) as WCOrder[]
-    const exact = orders.find((order) => order.transaction_id === paymentIntentId)
+  if (res.ok) {
+    const orders = (await res.json()) as WCOrder[]
+    const exact = orders.find((o) => o.transaction_id === paymentIntentId)
     if (exact) return exact
   }
 
-  const fallbackSearchRes = await fetch(
+  const fallback = await fetch(
     `${WC_URL}/wp-json/wc/v3/orders?search=${encodeURIComponent(paymentIntentId)}&per_page=20`,
-    {
-      headers: {
-        Authorization: `Basic ${credentials}`,
-      },
-    }
+    { headers: { Authorization: `Basic ${credentials}` } }
   )
+  if (!fallback.ok) return undefined
+  const fallbackOrders = (await fallback.json()) as WCOrder[]
+  return fallbackOrders.find((o) => o.transaction_id === paymentIntentId)
+}
 
-  if (!fallbackSearchRes.ok) return undefined
-  const fallbackOrders = (await fallbackSearchRes.json()) as WCOrder[]
-  return fallbackOrders.find((order) => order.transaction_id === paymentIntentId)
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export async function POST(request: Request) {
   try {
-    const {
-      paymentIntentId,
-      shipping,
-      utm,
-    }: { paymentIntentId: string; shipping: ShippingAddress | null; utm?: UTMData | null } = await request.json()
+    const { paymentIntentId }: { paymentIntentId: string } = await request.json()
 
-    // Verify the payment actually succeeded
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
     if (paymentIntent.status !== 'succeeded') {
       return NextResponse.json({ error: 'Payment not completed' }, { status: 400 })
     }
 
-    // Parse line items stored in payment intent metadata
     type LineItem = { wcId: number; quantity: number }
     const lineItems: LineItem[] = JSON.parse(paymentIntent.metadata.line_items ?? '[]')
+    const total = paymentIntent.amount / 100
+    const itemCount = lineItems.reduce((s, i) => s + i.quantity, 0)
 
     const WC_URL = process.env.NEXT_PUBLIC_WC_URL
     const WC_KEY = process.env.WC_CONSUMER_KEY
@@ -93,182 +63,47 @@ export async function POST(request: Request) {
 
     const credentials = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString('base64')
 
-    const existingOrder = await findExistingOrderByTransactionId(
-      WC_URL,
-      credentials,
-      paymentIntentId
-    )
-    if (existingOrder) {
+    // Fast path: webhook already stored the WC order ID in Stripe metadata
+    if (paymentIntent.metadata.wc_order_id) {
       return NextResponse.json({
-        orderId: existingOrder.id,
-        orderNumber: existingOrder.number,
-        total: paymentIntent.amount / 100,
-        itemCount: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0),
+        orderId: Number(paymentIntent.metadata.wc_order_id),
+        orderNumber: paymentIntent.metadata.wc_order_number ?? paymentIntent.metadata.wc_order_id,
+        total,
+        itemCount,
       })
     }
 
-    // Shipping is required to create a new order — if it's missing and no existing order was
-    // found, the webhook hasn't fired yet or something else went wrong.
-    if (!shipping) {
-      console.error('[order-complete] No shipping data and no existing WC order for', paymentIntentId)
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
-    }
+    // Poll WC — webhook is the sole order creator, give it up to ~8 seconds
+    const ATTEMPTS = 5
+    const INTERVAL_MS = 1600
 
-    // If another request is already creating this order, wait for it
-    if (inFlight.has(paymentIntentId)) {
-      const order = await inFlight.get(paymentIntentId)!
-      return NextResponse.json({ orderId: order.id, orderNumber: order.number })
-    }
+    for (let i = 0; i < ATTEMPTS; i++) {
+      if (i > 0) await sleep(INTERVAL_MS)
 
-    // Register in-flight promise before the async WC call so concurrent
-    // requests with the same paymentIntentId wait instead of creating a second order.
-    let resolveInFlight!: (o: { id: number; number: string }) => void
-    let rejectInFlight!: (e: unknown) => void
-    const inFlightPromise = new Promise<{ id: number; number: string }>((res, rej) => {
-      resolveInFlight = res
-      rejectInFlight = rej
-    })
-    inFlight.set(paymentIntentId, inFlightPromise)
-
-    // Create the WooCommerce order with status "processing" (paid)
-    const res = await fetch(`${WC_URL}/wp-json/wc/v3/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${credentials}`,
-      },
-      body: JSON.stringify({
-        status: 'processing',
-        payment_method: 'stripe',
-        payment_method_title: 'Stripe',
-        set_paid: true,
-        transaction_id: paymentIntentId,
-        meta_data: [
-          ...(shipping.newsletterOptIn ? [{ key: 'newsletter_opt_in', value: 'yes' }] : []),
-          ...(utm ? utmToWCMeta(utm) : []),
-        ],
-        billing: {
-          first_name: shipping.firstName,
-          last_name: shipping.lastName,
-          email: shipping.email,
-          phone: shipping.phone ?? '',
-          address_1: shipping.address1,
-          address_2: shipping.address2 ?? '',
-          city: shipping.city,
-          postcode: shipping.postcode,
-          country: shipping.country,
-        },
-        shipping: {
-          first_name: shipping.firstName,
-          last_name: shipping.lastName,
-          address_1: shipping.address1,
-          address_2: shipping.address2 ?? '',
-          city: shipping.city,
-          postcode: shipping.postcode,
-          country: shipping.country,
-        },
-        line_items: lineItems.map(({ wcId, quantity }) => ({
-          product_id: wcId,
-          quantity,
-        })),
-      }),
-    })
-
-    if (!res.ok) {
-      const err = await res.text()
-      console.error('[order-complete] WC order creation failed:', err)
-      rejectInFlight(new Error('WC creation failed'))
-      inFlight.delete(paymentIntentId)
-      return NextResponse.json({ error: 'Failed to create order' }, { status: 502 })
-    }
-
-    const order = await res.json()
-    resolveInFlight({ id: order.id, number: order.number })
-    inFlight.delete(paymentIntentId)
-
-    // Sync contact + order to Omnisend
-    const omnisendKey = process.env.OMNISEND_API_KEY
-    if (omnisendKey) {
-      // Upsert contact (subscribe if opted in, non-subscribed otherwise)
-      const contactPayload = {
-        email: shipping.email,
-        firstName: shipping.firstName,
-        lastName: shipping.lastName,
-        ...(shipping.newsletterOptIn
-          ? { status: 'subscribed', statusDate: new Date().toISOString(), tags: ['newsletter'] }
-          : { status: 'nonSubscribed' }),
+      // Re-fetch Stripe metadata on each attempt — webhook may have written wc_order_id
+      const fresh = i > 0 ? await stripe.paymentIntents.retrieve(paymentIntentId) : paymentIntent
+      if (fresh.metadata.wc_order_id) {
+        return NextResponse.json({
+          orderId: Number(fresh.metadata.wc_order_id),
+          orderNumber: fresh.metadata.wc_order_number ?? fresh.metadata.wc_order_id,
+          total,
+          itemCount,
+        })
       }
-      await fetch('https://api.omnisend.com/v3/contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
-        body: JSON.stringify(contactPayload),
-      }).catch(() => {})
 
-      // Send order event for abandoned cart / post-purchase flows
-      const orderItems = lineItems.map(({ wcId, quantity }) => ({
-        productID: String(wcId),
-        quantity,
-        price: 0,
-      }))
-      await fetch('https://api.omnisend.com/v3/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
-        body: JSON.stringify({
-          orderID: String(order.id),
-          orderNumber: order.number,
-          email: shipping.email,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          currency: 'EUR',
-          orderSum: paymentIntent.amount / 100,
-          paymentStatus: 'paid',
-          fulfillmentStatus: 'unfulfilled',
-          products: orderItems,
-          shippingAddress: {
-            firstName: shipping.firstName,
-            lastName: shipping.lastName,
-            address: shipping.address1,
-            city: shipping.city,
-            zip: shipping.postcode,
-            country: shipping.country,
-          },
-        }),
-      }).catch(() => {})
+      const order = await findExistingOrder(WC_URL, credentials, paymentIntentId)
+      if (order) {
+        console.log(`[order-complete] Found WC order #${order.id} on attempt ${i + 1}`)
+        return NextResponse.json({ orderId: order.id, orderNumber: order.number, total, itemCount })
+      }
+
+      console.log(`[order-complete] Waiting for webhook to create order, attempt ${i + 1}/${ATTEMPTS}`)
     }
 
-    // Fire Meta CAPI Purchase event (server-side, deduplicates with browser pixel)
-    const capiToken = process.env.META_CAPI_TOKEN
-    const purchaseEventId = `purchase-${order.id}`
-    if (capiToken) {
-      const hash = (v: string) => crypto.createHash('sha256').update(v.trim().toLowerCase()).digest('hex')
-      fetch(`https://graph.facebook.com/v19.0/332396313251645/events?access_token=${capiToken}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: [{
-            event_name: 'Purchase',
-            event_time: Math.floor(Date.now() / 1000),
-            event_id: purchaseEventId,
-            event_source_url: 'https://noctisessentials.com/nl/checkout/success',
-            action_source: 'website',
-            user_data: {
-              em: hash(shipping.email),
-              fn: hash(shipping.firstName),
-              ln: hash(shipping.lastName),
-              ph: shipping.phone ? hash(shipping.phone.replace(/\D/g, '')) : undefined,
-            },
-            custom_data: {
-              value: paymentIntent.amount / 100,
-              currency: 'EUR',
-              content_ids: [String(order.id)],
-              num_items: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0),
-            },
-          }],
-        }),
-      }).catch(() => {})
-    }
-
-    return NextResponse.json({ orderId: order.id, orderNumber: order.number, total: paymentIntent.amount / 100, itemCount: lineItems.reduce((s: number, i: LineItem) => s + i.quantity, 0), purchaseEventId })
+    // Webhook hasn't fired yet — tell the client to show a pending state.
+    // Stripe will retry the webhook for up to 3 days; the customer will receive a confirmation email.
+    console.warn(`[order-complete] Order not found after polling for ${paymentIntentId} — returning pending`)
+    return NextResponse.json({ status: 'pending', total, itemCount })
   } catch (err) {
     console.error('[order-complete]', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

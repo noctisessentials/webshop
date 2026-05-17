@@ -127,7 +127,16 @@ export function Testimonials() {
         </div>
 
         <div className="max-w-[1120px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {/* Mobile: horizontal scroll */}
+          <div className="flex md:hidden gap-3 overflow-x-auto pb-2 -mx-4 px-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+            {REVIEW_CARDS.map((review) => (
+              <div key={review.id} className="flex-shrink-0 w-[78vw] max-w-[300px]">
+                <ReviewCardItem review={review} />
+              </div>
+            ))}
+          </div>
+          {/* Desktop: grid */}
+          <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-3">
             {REVIEW_CARDS.map((review) => (
               <ReviewCardItem key={review.id} review={review} />
             ))}

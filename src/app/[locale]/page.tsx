@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import { getAllBlogPosts } from '@/lib/blog'
 import { getWCProducts } from '@/lib/woocommerce'
 import { Hero } from '@/components/sections/Hero'
+import { HomeBeforeAfter } from '@/components/sections/HomeBeforeAfter'
 import { ValueProps } from '@/components/sections/ValueProps'
 import { ProductCarousel } from '@/components/sections/ProductCarousel'
+import { HomeTransformationStatement } from '@/components/sections/HomeTransformationStatement'
 import { EditorialBanner } from '@/components/sections/EditorialBanner'
 import { Testimonials } from '@/components/sections/Testimonials'
 import { HomeBlogHighlights } from '@/components/sections/HomeBlogHighlights'
@@ -46,7 +48,9 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
+      <HomeBeforeAfter />
       <ProductCarousel products={products} />
+      <HomeTransformationStatement />
       <ValueProps />
 
       <div className="mx-auto w-full max-w-[980px] pt-8 md:pt-14">

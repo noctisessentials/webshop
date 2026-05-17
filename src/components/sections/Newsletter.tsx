@@ -48,7 +48,7 @@ export function Newsletter() {
             >
               {t('title1')}
               <br />
-              <span style={{ color: '#C9A882', fontWeight: 400, fontStyle: 'italic', fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: '1.1em' }}>
+              <span style={{ color: '#C9A882', fontWeight: 400, fontStyle: 'italic' }}>
                 {t('title2')}
               </span>
             </h2>
@@ -78,7 +78,7 @@ export function Newsletter() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+                className="flex flex-col gap-3 max-w-md mx-auto sm:flex-row"
               >
                 <input
                   type="email"
@@ -86,9 +86,10 @@ export function Newsletter() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t('placeholder')}
                   required
-                  className="flex-1 h-12 px-4 bg-white/8 border border-white/15 text-light placeholder:text-light/30 text-sm font-sans rounded-full focus:outline-none focus:border-accent/60 transition-colors duration-200"
+                  className="w-full sm:flex-1 h-13 px-5 bg-white/8 border border-white/20 text-light placeholder:text-light/35 text-sm font-sans rounded-full focus:outline-none focus:border-accent/60 transition-colors duration-200"
+                  style={{ minHeight: '52px' }}
                 />
-                <Button variant="accent" size="md" type="submit" disabled={loading} className="rounded-full">
+                <Button variant="accent" size="md" type="submit" disabled={loading} className="w-full sm:w-auto rounded-full" style={{ minHeight: '52px' }}>
                   {loading ? '...' : t('submit')}
                 </Button>
               </form>

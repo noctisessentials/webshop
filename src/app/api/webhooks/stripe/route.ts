@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import crypto from 'crypto'
 import { utmToWCMeta } from '@/lib/utm'
 import type { UTMData } from '@/lib/utm'
 
@@ -39,9 +40,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
   }
 
-  // Must use raw body for signature verification
   const rawBody = await request.text()
-
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
@@ -61,7 +60,7 @@ export async function POST(request: Request) {
 
   const credentials = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString('base64')
 
-  // ── payment_intent.succeeded → ensure WC order exists + attach receipt URL ──
+  // ── payment_intent.succeeded ──────────────────────────────────────────────────
   if (event.type === 'payment_intent.succeeded') {
     const intentId = (event.data.object as Stripe.PaymentIntent).id
 
@@ -72,87 +71,182 @@ export async function POST(request: Request) {
     const charge = fullIntent.latest_charge as Stripe.Charge | null
     const receiptUrl = charge?.receipt_url ?? null
 
-    // Check if a WC order already exists (client-side /api/order-complete may have already run)
-    let wcOrder: WCOrder | undefined = await findExistingOrder(WC_URL, credentials, intentId)
+    type LineItem = { wcId: number; quantity: number; price?: number }
+    const lineItems: LineItem[] = JSON.parse(fullIntent.metadata.line_items ?? '[]')
+    const shippingRaw = fullIntent.metadata.shipping
+    const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
+    const utmRaw = fullIntent.metadata.utm
+    const utm: UTMData | null = utmRaw ? JSON.parse(utmRaw) : null
 
-    if (!wcOrder) {
-      // Client never reached /success — create the order from PaymentIntent metadata
-      type LineItem = { wcId: number; quantity: number }
-      const lineItems: LineItem[] = JSON.parse(fullIntent.metadata.line_items ?? '[]')
-      const shippingRaw = fullIntent.metadata.shipping
-      const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
-      const utmRaw = fullIntent.metadata.utm
-      const utm: UTMData | null = utmRaw ? JSON.parse(utmRaw) : null
+    // ── Step 1: Ensure WC order exists ─────────────────────────────────────────
+    let wcOrder: WCOrder | undefined
+    let justCreated = false
 
-      if (lineItems.length > 0) {
-        const orderBody: Record<string, unknown> = {
-          status: 'processing',
-          payment_method: 'stripe',
-          payment_method_title: 'Stripe',
-          set_paid: true,
-          transaction_id: intentId,
-          line_items: lineItems.map(({ wcId, quantity }) => ({ product_id: wcId, quantity })),
-          ...(utm ? { meta_data: utmToWCMeta(utm) } : {}),
-        }
-
-        if (shipping) {
-          orderBody.billing = {
-            first_name: shipping.firstName ?? '',
-            last_name: shipping.lastName ?? '',
-            email: shipping.email ?? fullIntent.receipt_email ?? '',
-            phone: shipping.phone ?? '',
-            address_1: shipping.address1 ?? '',
-            address_2: shipping.address2 ?? '',
-            city: shipping.city ?? '',
-            postcode: shipping.postcode ?? '',
-            country: shipping.country ?? '',
-          }
-          orderBody.shipping = {
-            first_name: shipping.firstName ?? '',
-            last_name: shipping.lastName ?? '',
-            address_1: shipping.address1 ?? '',
-            address_2: shipping.address2 ?? '',
-            city: shipping.city ?? '',
-            postcode: shipping.postcode ?? '',
-            country: shipping.country ?? '',
-          }
-        } else if (fullIntent.receipt_email) {
-          orderBody.billing = { email: fullIntent.receipt_email }
-        }
-
-        const createRes = await fetch(`${WC_URL}/wp-json/wc/v3/orders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Basic ${credentials}` },
-          body: JSON.stringify(orderBody),
-        })
-
-        if (createRes.ok) {
-          wcOrder = await createRes.json() as WCOrder
-          console.log(`[stripe-webhook] Fallback order created: #${wcOrder!.id} for intent ${intentId}`)
-        } else {
-          const err = await createRes.text()
-          console.error('[stripe-webhook] Fallback order creation failed:', err)
-        }
+    // Fast path: wc_order_id already stored in Stripe metadata
+    if (fullIntent.metadata.wc_order_id) {
+      console.log(`[stripe-webhook] Found wc_order_id in Stripe metadata: #${fullIntent.metadata.wc_order_id}`)
+      wcOrder = {
+        id: Number(fullIntent.metadata.wc_order_id),
+        number: fullIntent.metadata.wc_order_number ?? fullIntent.metadata.wc_order_id,
       }
     }
 
-    if (!wcOrder || !receiptUrl) {
+    if (!wcOrder) wcOrder = await findExistingOrder(WC_URL, credentials, intentId)
+
+    if (!wcOrder && lineItems.length > 0) {
+      const orderBody: Record<string, unknown> = {
+        status: 'processing',
+        payment_method: 'stripe',
+        payment_method_title: 'Stripe',
+        set_paid: true,
+        transaction_id: intentId,
+        line_items: lineItems.map(({ wcId, quantity }) => ({ product_id: wcId, quantity })),
+        ...(utm ? { meta_data: utmToWCMeta(utm) } : {}),
+      }
+
+      if (shipping) {
+        orderBody.billing = {
+          first_name: shipping.firstName ?? '',
+          last_name: shipping.lastName ?? '',
+          email: shipping.email ?? fullIntent.receipt_email ?? '',
+          phone: shipping.phone ?? '',
+          address_1: shipping.address1 ?? '',
+          address_2: shipping.address2 ?? '',
+          city: shipping.city ?? '',
+          postcode: shipping.postcode ?? '',
+          country: shipping.country ?? '',
+        }
+        orderBody.shipping = {
+          first_name: shipping.firstName ?? '',
+          last_name: shipping.lastName ?? '',
+          address_1: shipping.address1 ?? '',
+          address_2: shipping.address2 ?? '',
+          city: shipping.city ?? '',
+          postcode: shipping.postcode ?? '',
+          country: shipping.country ?? '',
+        }
+      } else if (fullIntent.receipt_email) {
+        orderBody.billing = { email: fullIntent.receipt_email }
+      }
+
+      const createRes = await fetch(`${WC_URL}/wp-json/wc/v3/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Basic ${credentials}` },
+        body: JSON.stringify(orderBody),
+      })
+
+      if (createRes.ok) {
+        wcOrder = (await createRes.json()) as WCOrder
+        justCreated = true
+        console.log(`[stripe-webhook] WC order created: #${wcOrder.id} for intent ${intentId}`)
+
+        // Write order ID to Stripe metadata — order-complete polls this for fast resolution
+        stripe.paymentIntents.update(intentId, {
+          metadata: {
+            wc_order_id: String(wcOrder.id),
+            wc_order_number: String(wcOrder.number),
+          },
+        }).catch((err) => console.error('[stripe-webhook] Stripe metadata update failed:', err))
+      } else {
+        const err = await createRes.text()
+        console.error('[stripe-webhook] WC order creation failed:', err)
+        return NextResponse.json({ error: 'WC order creation failed' }, { status: 502 })
+      }
+    }
+
+    if (!wcOrder) {
       return NextResponse.json({ received: true })
     }
 
-    // PATCH the Omnisend order so order-confirmation emails can include the receipt link
+    // ── Step 2: Post-order integrations ────────────────────────────────────────
+    // These use idempotent IDs so Stripe webhook retries are safe.
     const omnisendKey = process.env.OMNISEND_API_KEY
-    if (omnisendKey) {
-      await fetch(`https://api.omnisend.com/v3/orders/${wcOrder.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
-        body: JSON.stringify({ orderUrl: receiptUrl }),
-      }).catch((err) => console.error('[stripe-webhook] Omnisend PATCH failed:', err))
+    const email = shipping?.email ?? fullIntent.receipt_email
 
-      console.log(`[stripe-webhook] Attached receipt URL to Omnisend order ${wcOrder.id}: ${receiptUrl}`)
+    if (omnisendKey && email) {
+      // Upsert Omnisend contact
+      const contactPayload = {
+        email,
+        firstName: shipping?.firstName,
+        lastName: shipping?.lastName,
+        ...(shipping?.newsletterOptIn
+          ? { status: 'subscribed', statusDate: new Date().toISOString(), tags: ['newsletter'] }
+          : { status: 'nonSubscribed' }),
+      }
+      fetch('https://api.omnisend.com/v3/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
+        body: JSON.stringify(contactPayload),
+      }).catch((err) => console.error('[stripe-webhook] Omnisend contact upsert failed:', err))
+
+      // Upsert Omnisend order (idempotent by orderID)
+      const omnisendOrderPayload: Record<string, unknown> = {
+        orderID: String(wcOrder.id),
+        orderNumber: wcOrder.number,
+        email,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        currency: 'EUR',
+        orderSum: fullIntent.amount / 100,
+        paymentStatus: 'paid',
+        fulfillmentStatus: 'unfulfilled',
+        products: lineItems.map(({ wcId, quantity }) => ({
+          productID: String(wcId),
+          quantity,
+          price: 0,
+        })),
+        ...(receiptUrl ? { orderUrl: receiptUrl } : {}),
+        ...(shipping ? {
+          shippingAddress: {
+            firstName: shipping.firstName,
+            lastName: shipping.lastName,
+            address: shipping.address1,
+            city: shipping.city,
+            zip: shipping.postcode,
+            country: shipping.country,
+          },
+        } : {}),
+      }
+      fetch('https://api.omnisend.com/v3/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
+        body: JSON.stringify(omnisendOrderPayload),
+      }).catch((err) => console.error('[stripe-webhook] Omnisend order sync failed:', err))
     }
 
-    return NextResponse.json({ received: true, orderId: wcOrder.id, receiptUrl })
+    // Meta CAPI Purchase — event_id is stable so retries are deduplicated by Meta
+    const capiToken = process.env.META_CAPI_TOKEN
+    if (capiToken && shipping?.email) {
+      const hash = (v: string) => crypto.createHash('sha256').update(v.trim().toLowerCase()).digest('hex')
+      fetch(`https://graph.facebook.com/v19.0/332396313251645/events?access_token=${capiToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: [{
+            event_name: 'Purchase',
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: `purchase-${wcOrder.id}`,
+            event_source_url: 'https://noctisessentials.com/nl/checkout/success',
+            action_source: 'website',
+            user_data: {
+              em: hash(shipping.email),
+              fn: hash(shipping.firstName),
+              ln: hash(shipping.lastName),
+              ph: shipping.phone ? hash(shipping.phone.replace(/\D/g, '')) : undefined,
+            },
+            custom_data: {
+              value: fullIntent.amount / 100,
+              currency: 'EUR',
+              content_ids: [String(wcOrder.id)],
+              num_items: lineItems.reduce((s, i) => s + i.quantity, 0),
+            },
+          }],
+        }),
+      }).catch((err) => console.error('[stripe-webhook] Meta CAPI failed:', err))
+    }
+
+    console.log(`[stripe-webhook] payment_intent.succeeded handled: order #${wcOrder.id} justCreated=${justCreated}`)
+    return NextResponse.json({ received: true, orderId: wcOrder.id })
   }
 
   // ── payment_intent.payment_failed / canceled → create failed WC order ────────
@@ -165,7 +259,6 @@ export async function POST(request: Request) {
 
   const paymentIntent = event.data.object as Stripe.PaymentIntent
 
-  // Don't create a duplicate if we already logged this intent
   const existing = await findExistingOrder(WC_URL, credentials, paymentIntent.id)
   if (existing) {
     return NextResponse.json({ received: true, orderId: existing.id })
@@ -175,9 +268,7 @@ export async function POST(request: Request) {
   let lineItems: LineItem[] = []
   try {
     lineItems = JSON.parse(paymentIntent.metadata.line_items ?? '[]')
-  } catch {
-    // metadata may be empty for very early failures
-  }
+  } catch { /* metadata may be empty for very early failures */ }
 
   const failureMessage =
     (paymentIntent as Stripe.PaymentIntent & { last_payment_error?: { message?: string } })
@@ -193,12 +284,7 @@ export async function POST(request: Request) {
       { key: '_stripe_event_type', value: event.type },
     ],
     ...(lineItems.length > 0
-      ? {
-          line_items: lineItems.map(({ wcId, quantity }) => ({
-            product_id: wcId,
-            quantity,
-          })),
-        }
+      ? { line_items: lineItems.map(({ wcId, quantity }) => ({ product_id: wcId, quantity })) }
       : {}),
   }
 
@@ -208,28 +294,23 @@ export async function POST(request: Request) {
 
   const res = await fetch(`${WC_URL}/wp-json/wc/v3/orders`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Basic ${credentials}`,
-    },
+    headers: { 'Content-Type': 'application/json', Authorization: `Basic ${credentials}` },
     body: JSON.stringify(body),
   })
 
   if (!res.ok) {
     const err = await res.text()
-    console.error('[stripe-webhook] WC order creation failed:', err)
+    console.error('[stripe-webhook] Failed WC order creation failed:', err)
     return NextResponse.json({ error: 'Failed to create WC order' }, { status: 502 })
   }
 
   const order = await res.json()
-  console.log(
-    `[stripe-webhook] Created failed order #${order.id} for intent ${paymentIntent.id} (${event.type})`
-  )
+  console.log(`[stripe-webhook] Created failed order #${order.id} for intent ${paymentIntent.id} (${event.type})`)
 
-  // Notify Omnisend so the "Failed order" automation can trigger
+  // Notify Omnisend for abandoned cart / failed-order automation
   const omnisendKey = process.env.OMNISEND_API_KEY
   if (omnisendKey && paymentIntent.receipt_email) {
-    await fetch('https://api.omnisend.com/v3/orders', {
+    fetch('https://api.omnisend.com/v3/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
       body: JSON.stringify({

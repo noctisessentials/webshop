@@ -10,6 +10,9 @@ import { getStoredUTMs, clearUTMs } from '@/lib/utm'
 type OrderState =
   | { status: 'loading' }
   | { status: 'success'; orderId: number; orderNumber: string }
+  | { status: 'pending'; total: number }
+  | { status: 'canceled' }
+  | { status: 'failed' }
   | { status: 'error'; message: string }
 
 function SuccessContent() {
@@ -19,11 +22,21 @@ function SuccessContent() {
   const [order, setOrder] = useState<OrderState>({ status: 'loading' })
 
   const paymentIntentId = searchParams.get('payment_intent')
+  const redirectStatus = searchParams.get('redirect_status')
   const calledRef = useRef(false)
 
   useEffect(() => {
     if (!paymentIntentId) {
       router.replace('/')
+      return
+    }
+    // Handle redirect-based payment methods (iDEAL, Bancontact, Klarna)
+    if (redirectStatus === 'canceled') {
+      setOrder({ status: 'canceled' })
+      return
+    }
+    if (redirectStatus === 'failed') {
+      setOrder({ status: 'failed' })
       return
     }
     if (calledRef.current) return
@@ -47,20 +60,27 @@ function SuccessContent() {
         if (!res.ok) throw new Error('Order creation failed')
         const data = await res.json()
 
-        setOrder({
-          status: 'success',
-          orderId: data.orderId,
-          orderNumber: data.orderNumber,
-        })
+        // Pending: webhook hasn't fired yet — show processing state, cart still cleared
+        if (data.status === 'pending') {
+          setOrder({ status: 'pending', total: data.total ?? 0 })
+          localStorage.removeItem('noctis_shipping')
+          sessionStorage.removeItem('noctis_shipping')
+          sessionStorage.removeItem('noctis_cart')
+          clearUTMs()
+          clearCart?.()
+          return
+        }
 
-        // Meta Pixel: Purchase — event_id matches CAPI so Meta deduplicates correctly
+        setOrder({ status: 'success', orderId: data.orderId, orderNumber: data.orderNumber })
+
+        // Meta Pixel Purchase — event_id matches CAPI (purchase-{orderId}) so Meta deduplicates
         if (typeof window !== 'undefined' && window.fbq) {
           window.fbq('track', 'Purchase', {
             content_ids: [String(data.orderId)],
             value: data.total ?? 0,
             currency: 'EUR',
             num_items: data.itemCount ?? 1,
-          }, { eventID: data.purchaseEventId })
+          }, { eventID: `purchase-${data.orderId}` })
         }
 
         localStorage.removeItem('noctis_shipping')
@@ -93,6 +113,46 @@ function SuccessContent() {
           <div className="text-center py-20">
             <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-6" />
             <p className="font-sans text-muted text-sm">Bestelling afronden…</p>
+          </div>
+        )}
+
+        {order.status === 'pending' && (
+          <div className="space-y-8">
+            <div className="bg-white rounded-2xl p-8 md:p-10 text-center">
+              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle size={32} className="text-accent" strokeWidth={1.5} />
+              </div>
+              <p className="text-xs font-sans font-semibold uppercase tracking-widest text-accent mb-3">
+                Betaling ontvangen
+              </p>
+              <h1
+                className="font-sans font-bold text-dark mb-3 tracking-tight"
+                style={{ fontSize: 'clamp(24px, 4vw, 36px)' }}
+              >
+                Bedankt{shipping?.firstName ? `, ${shipping.firstName}` : ''}!
+              </h1>
+              <p className="font-sans text-muted text-sm leading-relaxed">
+                Je betaling is bevestigd. Je ontvangt zo meteen een bevestigingsmail.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 md:p-8">
+              <div className="flex gap-4">
+                <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Mail size={15} className="text-accent" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <p className="font-sans font-semibold text-sm text-dark">Bevestigingsmail onderweg</p>
+                  <p className="font-sans text-xs text-muted mt-0.5 leading-relaxed">
+                    Binnen enkele minuten ontvang je een bevestiging. Niets ontvangen? Controleer je spam of neem contact op via info@noctisessentials.com.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="text-center">
+              <Link href="/winkel" className="inline-block bg-dark text-white font-sans font-semibold text-sm px-8 py-4 rounded-xl hover:bg-dark/90 transition-colors duration-200">
+                Verder winkelen
+              </Link>
+            </div>
           </div>
         )}
 
@@ -157,6 +217,46 @@ function SuccessContent() {
                 Verder winkelen
               </Link>
             </div>
+          </div>
+        )}
+
+        {order.status === 'canceled' && (
+          <div className="bg-white rounded-2xl p-8 text-center">
+            <p className="text-xs font-sans font-semibold uppercase tracking-widest text-muted mb-3">
+              Betaling geannuleerd
+            </p>
+            <h1 className="font-sans font-bold text-dark mb-3" style={{ fontSize: 'clamp(22px, 3vw, 32px)' }}>
+              Je hebt de betaling geannuleerd.
+            </h1>
+            <p className="font-sans text-sm text-muted leading-relaxed mb-6">
+              Er is niets in rekening gebracht. Je winkelwagen is nog intact.
+            </p>
+            <Link
+              href="/checkout"
+              className="inline-block bg-dark text-white font-sans font-semibold text-sm px-8 py-4 rounded-xl hover:bg-dark/90 transition-colors duration-200"
+            >
+              Terug naar checkout
+            </Link>
+          </div>
+        )}
+
+        {order.status === 'failed' && (
+          <div className="bg-white rounded-2xl p-8 text-center">
+            <p className="text-xs font-sans font-semibold uppercase tracking-widest text-muted mb-3">
+              Betaling mislukt
+            </p>
+            <h1 className="font-sans font-bold text-dark mb-3" style={{ fontSize: 'clamp(22px, 3vw, 32px)' }}>
+              Er ging iets mis met je betaling.
+            </h1>
+            <p className="font-sans text-sm text-muted leading-relaxed mb-6">
+              Er is niets in rekening gebracht. Probeer het opnieuw of kies een andere betaalmethode.
+            </p>
+            <Link
+              href="/checkout"
+              className="inline-block bg-dark text-white font-sans font-semibold text-sm px-8 py-4 rounded-xl hover:bg-dark/90 transition-colors duration-200"
+            >
+              Opnieuw proberen
+            </Link>
           </div>
         )}
 

@@ -113,16 +113,21 @@ export async function InstagramGrid() {
     <SectionFrame>
       <div className="bg-white section-py-sm">
         <div className="container-content">
-          <div className="flex items-center justify-between mb-8">
-            <h2
-              className="font-sans font-bold text-dark tracking-tight"
-              style={{ fontSize: 'clamp(24px, 3vw, 44px)' }}
-            >
-              Een stijl die verder gaat dan de keuken
-            </h2>
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <p className="text-xs font-sans font-semibold uppercase tracking-widest text-accent mb-2">
+                Volg ons op Instagram
+              </p>
+              <h2
+                className="font-sans font-bold text-dark tracking-tight"
+                style={{ fontSize: 'clamp(22px, 2.5vw, 36px)' }}
+              >
+                Een stijl die verder gaat
+              </h2>
+            </div>
             <Link
               href="https://instagram.com/noctisessentials"
-              className="hidden md:flex items-center gap-2 text-xs font-sans font-semibold uppercase tracking-widest text-muted hover:text-dark transition-colors duration-200"
+              className="hidden md:flex items-center gap-2 text-xs font-sans font-semibold uppercase tracking-widest text-muted hover:text-dark transition-colors duration-200 pb-1"
             >
               <Camera size={14} strokeWidth={2} />
               @noctisessentials
