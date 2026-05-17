@@ -32,7 +32,7 @@ export function HomeTransformationStatement() {
         {/* Image — right */}
         <div className="relative min-h-[300px] md:min-h-0 order-first md:order-last">
           <Image
-            src="/images/pdp/kitchen-set-black/lifestyle-new.webp"
+            src="/content/Een compleet gevoel.webp"
             alt="Noctis keukenset in een rustige stijlvolle keuken"
             fill
             className="object-cover object-center"

@@ -9,7 +9,7 @@ export function HomeBeforeAfter() {
         {/* Image — left on desktop, top on mobile */}
         <div className="relative min-h-[300px] md:min-h-0">
           <Image
-            src="/content/before_after_PDP.jpeg"
+            src="/content/before_after_homepage.jpg"
             alt="Voor en na — van een rommelige keuken naar een rustige Noctis keuken"
             fill
             className="object-cover object-center"
