@@ -50,15 +50,21 @@ export async function POST(request: Request) {
     const recoveryUrl = cartProducts[0]?.recoveryUrl ?? `${BASE_URL}/nl/winkel`
     const cleanProducts = cartProducts.map(({ recoveryUrl: _, ...rest }) => rest)
 
-    // Upsert contact so Omnisend knows the email
-    fetch('https://api.omnisend.com/v3/contacts', {
+    // Upsert contact first (awaited so the contact exists before the cart is created)
+    const contactRes = await fetch('https://api.omnisend.com/v3/contacts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
       body: JSON.stringify({ email, status: 'nonSubscribed' }),
-    }).catch((err) => console.error('[track-cart] Omnisend contact upsert failed:', err))
+    })
+    if (!contactRes.ok) {
+      const body = await contactRes.text()
+      console.error('[track-cart] Omnisend contact upsert failed:', contactRes.status, body)
+    } else {
+      console.log('[track-cart] Omnisend contact upserted:', email)
+    }
 
     // Push cart — triggers "Started checkout" automation in Omnisend
-    await fetch('https://api.omnisend.com/v3/carts', {
+    const cartRes = await fetch('https://api.omnisend.com/v3/carts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
       body: JSON.stringify({
@@ -70,7 +76,13 @@ export async function POST(request: Request) {
         products: cleanProducts,
       }),
     })
+    if (!cartRes.ok) {
+      const body = await cartRes.text()
+      console.error('[track-cart] Omnisend cart push failed:', cartRes.status, body)
+      return NextResponse.json({ ok: false, error: body }, { status: 502 })
+    }
 
+    console.log('[track-cart] Omnisend cart pushed for:', email)
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[track-cart]', err)
