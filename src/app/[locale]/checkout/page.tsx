@@ -323,20 +323,23 @@ export default function CheckoutPage() {
     if (!email || trackedEmailRef.current === email) return
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
     trackedEmailRef.current = email
-    fetch('/api/track-cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        items: items.map((i) => ({
-          wcId: i.color.wcId,
-          title: i.product.title,
-          colorName: i.color.name,
-          quantity: i.quantity,
-          price: i.product.price,
+
+    if (typeof window !== 'undefined' && window.omnisend) {
+      window.omnisend.push(['identify', { email }])
+      window.omnisend.push(['track', '$startedCheckout', {
+        $cartID: `checkout-${email}`,
+        $currency: 'EUR',
+        $cartTotal: total,
+        $checkoutURL: `${window.location.origin}/checkout`,
+        $lineItems: items.map((i) => ({
+          $productID: String(i.color.wcId),
+          $productTitle: i.product.title,
+          $quantity: i.quantity,
+          $price: i.product.price,
+          $currency: 'EUR',
         })),
-      }),
-    }).catch((err) => console.error('[checkout] early cart track failed:', err))
+      }])
+    }
   }
 
   const handleDetailsSubmit = async (e: React.FormEvent) => {
