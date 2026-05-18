@@ -317,6 +317,28 @@ export default function CheckoutPage() {
   const set = (field: keyof ShippingForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setShipping((prev) => ({ ...prev, [field]: e.target.value }))
 
+  const trackedEmailRef = useRef<string>('')
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const email = e.target.value.trim()
+    if (!email || trackedEmailRef.current === email) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return
+    trackedEmailRef.current = email
+    fetch('/api/track-cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        items: items.map((i) => ({
+          wcId: i.color.wcId,
+          title: i.product.title,
+          colorName: i.color.name,
+          quantity: i.quantity,
+          price: i.product.price,
+        })),
+      }),
+    }).catch((err) => console.error('[checkout] early cart track failed:', err))
+  }
+
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -477,7 +499,7 @@ export default function CheckoutPage() {
                 <div className="bg-white rounded-2xl p-6 md:p-8 space-y-5">
                   <h2 className="font-sans font-semibold text-sm text-dark">Contactgegevens</h2>
                   <Field label="E-mailadres" required>
-                    <input type="email" name="email" value={shipping.email} onChange={set('email')} required placeholder="jij@voorbeeld.nl" />
+                    <input type="email" name="email" value={shipping.email} onChange={set('email')} onBlur={handleEmailBlur} required placeholder="jij@voorbeeld.nl" />
                   </Field>
                   <p className="text-xs font-sans text-muted/70 -mt-2">
                     Controleer je spam of ongewenste e-mail als je geen bevestiging ontvangt (vooral bij Outlook).{' '}

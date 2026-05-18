@@ -105,6 +105,12 @@ export async function POST(request: Request) {
       const recoveryUrl = cartProducts[0]?._recoveryUrl ?? `${BASE_URL}/nl/winkel`
       const cleanProducts = cartProducts.map(({ _recoveryUrl: _, ...rest }) => rest)
 
+      // Delete the early cart (created at email blur) so only one cart exists per contact
+      fetch(`https://api.omnisend.com/v3/carts/early-${encodeURIComponent(contactEmail)}`, {
+        method: 'DELETE',
+        headers: { 'X-API-KEY': omnisendKey },
+      }).catch(() => { /* early cart may not exist — ignore */ })
+
       fetch('https://api.omnisend.com/v3/carts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
