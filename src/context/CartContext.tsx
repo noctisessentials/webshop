@@ -52,6 +52,7 @@ function pushOmnisendCart(cartItems: CartItem[]) {
     cartID: 'cart',
     currency: 'EUR',
     value: Math.round(cartItems.reduce((s, i) => s + i.product.price * i.quantity, 0) * 100),
+    checkoutURL: 'https://noctisessentials.com/nl/checkout',
   }])
 }
 
@@ -78,12 +79,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       setItems((prev) => {
         const existing = prev.find((i) => i.id === itemId)
-        if (existing) {
-          return prev.map((i) =>
-            i.id === itemId ? { ...i, quantity: i.quantity + quantity } : i
-          )
-        }
-        return [...prev, { id: itemId, product, color, quantity }]
+        const next = existing
+          ? prev.map((i) => i.id === itemId ? { ...i, quantity: i.quantity + quantity } : i)
+          : [...prev, { id: itemId, product, color, quantity }]
+        // Fire immediately so Omnisend has cart data as soon as possible
+        setTimeout(() => pushOmnisendCart(next), 0)
+        return next
       })
       setIsOpen(true)
     },
