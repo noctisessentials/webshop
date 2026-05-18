@@ -245,6 +245,14 @@ export async function POST(request: Request) {
       }).catch((err) => console.error('[stripe-webhook] Meta CAPI failed:', err))
     }
 
+    // Delete the Omnisend cart so the abandoned cart automation stops
+    if (omnisendKey) {
+      fetch(`https://api.omnisend.com/v3/carts/${intentId}`, {
+        method: 'DELETE',
+        headers: { 'X-API-KEY': omnisendKey },
+      }).catch((err) => console.error('[stripe-webhook] Omnisend cart delete failed:', err))
+    }
+
     console.log(`[stripe-webhook] payment_intent.succeeded handled: order #${wcOrder.id} justCreated=${justCreated}`)
     return NextResponse.json({ received: true, orderId: wcOrder.id })
   }

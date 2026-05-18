@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import type { UTMData } from '@/lib/utm'
 import { validateDiscountViaWC } from '@/lib/discounts'
+import { STATIC_PRODUCTS } from '@/lib/products-static'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -75,6 +76,48 @@ export async function POST(request: Request) {
         ...(discountLabel ? { discount: discountLabel } : {}),
       },
     })
+
+    // Push cart to Omnisend for abandoned cart automation (fire-and-forget)
+    const omnisendKey = process.env.OMNISEND_API_KEY
+    const contactEmail = shipping?.email ?? email
+    if (omnisendKey && contactEmail) {
+      const BASE_URL = 'https://noctisessentials.com'
+      const cartProducts = items.map((item) => {
+        const product = STATIC_PRODUCTS.find((p) => p.id === String(item.wcId))
+        const handle = product?.handle ?? ''
+        const imageUrl = product?.images[0]?.src ? `${BASE_URL}${product.images[0].src}` : undefined
+        const isSingleProduct = items.length === 1
+        const recoveryUrl = isSingleProduct && handle
+          ? `${BASE_URL}/nl/products/${handle}`
+          : `${BASE_URL}/nl/winkel`
+        return {
+          productID: String(item.wcId),
+          variantID: String(item.wcId),
+          title: item.colorName ? `${item.title} — ${item.colorName}` : item.title,
+          quantity: item.quantity,
+          price: item.price,
+          currency: 'EUR',
+          ...(imageUrl ? { imageUrl } : {}),
+          productUrl: `${BASE_URL}/nl/products/${handle}`,
+          _recoveryUrl: recoveryUrl,
+        }
+      })
+      const recoveryUrl = cartProducts[0]?._recoveryUrl ?? `${BASE_URL}/nl/winkel`
+      const cleanProducts = cartProducts.map(({ _recoveryUrl: _, ...rest }) => rest)
+
+      fetch('https://api.omnisend.com/v3/carts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
+        body: JSON.stringify({
+          cartID: paymentIntent.id,
+          email: contactEmail,
+          currency: 'EUR',
+          cartSum: amountCents / 100,
+          cartRecoveryUrl: recoveryUrl,
+          products: cleanProducts,
+        }),
+      }).catch((err) => console.error('[payment-intent] Omnisend cart push failed:', err))
+    }
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret })
   } catch (err) {
