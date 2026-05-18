@@ -327,16 +327,18 @@ export default function CheckoutPage() {
     if (typeof window !== 'undefined' && window.omnisend) {
       window.omnisend.push(['identify', { email }])
       window.omnisend.push(['track', '$startedCheckout', {
-        $cartID: `checkout-${email}`,
-        $currency: 'EUR',
-        $cartTotal: total,
-        $checkoutURL: `${window.location.origin}/checkout`,
-        $lineItems: items.map((i) => ({
-          $productID: String(i.color.wcId),
-          $productTitle: i.product.title,
-          $quantity: i.quantity,
-          $price: i.product.price,
-          $currency: 'EUR',
+        cartID: `checkout-${email}`,
+        currency: 'EUR',
+        cartSum: total,
+        checkoutURL: `${window.location.origin}/nl/checkout`,
+        lineItems: items.map((i) => ({
+          productID: String(i.color.wcId),
+          productName: i.product.title,
+          quantity: i.quantity,
+          price: Math.round(i.product.price * 100),
+          currency: 'EUR',
+          imageUrl: i.product.images[0]?.src ?? '',
+          productUrl: `https://noctisessentials.com/nl/products/${i.product.handle}`,
         })),
       }])
     }
@@ -440,16 +442,18 @@ export default function CheckoutPage() {
       if (typeof window !== 'undefined' && window.omnisend) {
         window.omnisend.push(['identify', { email: merged.email }])
         window.omnisend.push(['track', '$startedCheckout', {
-          $cartID: `checkout-${merged.email}`,
-          $currency: 'EUR',
-          $cartTotal: total,
-          $checkoutURL: `${window.location.origin}/checkout`,
-          $lineItems: items.map((i) => ({
-            $productID: String(i.color.wcId),
-            $productTitle: i.product.title,
-            $quantity: i.quantity,
-            $price: i.product.price,
-            $currency: 'EUR',
+          cartID: `checkout-${merged.email}`,
+          currency: 'EUR',
+          cartSum: total,
+          checkoutURL: `${window.location.origin}/nl/checkout`,
+          lineItems: items.map((i) => ({
+            productID: String(i.color.wcId),
+            productName: i.product.title,
+            quantity: i.quantity,
+            price: Math.round(i.product.price * 100),
+            currency: 'EUR',
+            imageUrl: i.product.images[0]?.src ?? '',
+            productUrl: `https://noctisessentials.com/nl/products/${i.product.handle}`,
           })),
         }])
       }
