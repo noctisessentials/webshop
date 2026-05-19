@@ -1,7 +1,10 @@
 interface Window {
   fbq?: (...args: unknown[]) => void
   gtag?: (...args: unknown[]) => void
-  omnisend?: ((...args: unknown[]) => void) & { push: (...args: unknown[]) => void }
+  omnisend?: ((...args: unknown[]) => void) & {
+    push: (...args: unknown[]) => void
+    identifyContact: (contact: { email?: string; phone?: string }) => void
+  }
   dataLayer?: unknown[]
   turnstile?: {
     render: (container: HTMLElement, options: Record<string, unknown>) => string

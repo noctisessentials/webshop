@@ -325,7 +325,7 @@ export default function CheckoutPage() {
     trackedEmailRef.current = email
 
     if (typeof window !== 'undefined' && window.omnisend) {
-      window.omnisend.push(['identify', { email }])
+      window.omnisend.identifyContact({ email })
       window.omnisend.push(['track', 'started checkout', {
         origin: 'api',
         eventVersion: '',
@@ -445,7 +445,7 @@ export default function CheckoutPage() {
 
       // Omnisend: identify contact + fire started checkout
       if (typeof window !== 'undefined' && window.omnisend) {
-        window.omnisend.push(['identify', { email: merged.email }])
+        window.omnisend.identifyContact({ email: merged.email })
         window.omnisend.push(['track', 'started checkout', {
           origin: 'api',
           eventVersion: '',
