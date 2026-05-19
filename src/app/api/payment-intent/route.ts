@@ -91,11 +91,12 @@ export async function POST(request: Request) {
           ? `${BASE_URL}/nl/products/${handle}`
           : `${BASE_URL}/nl/winkel`
         return {
+          cartProductID: String(item.wcId),
           productID: String(item.wcId),
           variantID: String(item.wcId),
           title: item.colorName ? `${item.title} — ${item.colorName}` : item.title,
           quantity: item.quantity,
-          price: item.price,
+          price: Math.round(item.price * 100),
           currency: 'EUR',
           ...(imageUrl ? { imageUrl } : {}),
           productUrl: `${BASE_URL}/nl/products/${handle}`,
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
           cartID: paymentIntent.id,
           email: contactEmail,
           currency: 'EUR',
-          cartSum: amountCents / 100,
+          cartSum: amountCents,
           cartRecoveryUrl: recoveryUrl,
           products: cleanProducts,
         }),

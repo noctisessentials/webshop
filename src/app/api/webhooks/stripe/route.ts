@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     const charge = fullIntent.latest_charge as Stripe.Charge | null
     const receiptUrl = charge?.receipt_url ?? null
 
-    type LineItem = { wcId: number; quantity: number; price?: number }
+    type LineItem = { wcId: number; quantity: number; price?: number; title?: string; colorName?: string }
     const lineItems: LineItem[] = JSON.parse(fullIntent.metadata.line_items ?? '[]')
     const shippingRaw = fullIntent.metadata.shipping
     const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
         lastName: shipping?.lastName,
         ...(shipping?.newsletterOptIn
           ? { status: 'subscribed', statusDate: new Date().toISOString(), tags: ['newsletter'] }
-          : { status: 'nonSubscribed' }),
+          : { status: 'nonSubscribed', statusDate: new Date().toISOString() }),
       }
       fetch('https://api.omnisend.com/v3/contacts', {
         method: 'POST',
@@ -182,18 +182,20 @@ export async function POST(request: Request) {
       // Upsert Omnisend order (idempotent by orderID)
       const omnisendOrderPayload: Record<string, unknown> = {
         orderID: String(wcOrder.id),
-        orderNumber: wcOrder.number,
+        orderNumber: Number(wcOrder.number) || wcOrder.id,
         email,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         currency: 'EUR',
-        orderSum: fullIntent.amount / 100,
+        orderSum: fullIntent.amount,
         paymentStatus: 'paid',
         fulfillmentStatus: 'unfulfilled',
-        products: lineItems.map(({ wcId, quantity }) => ({
+        products: lineItems.map(({ wcId, quantity, price, title, colorName }) => ({
           productID: String(wcId),
+          variantID: String(wcId),
+          title: colorName ? `${title ?? ''} — ${colorName}` : (title ?? String(wcId)),
           quantity,
-          price: 0,
+          price: Math.round((price ?? 0) * 100),
         })),
         ...(receiptUrl ? { orderUrl: receiptUrl } : {}),
         ...(shipping ? {
