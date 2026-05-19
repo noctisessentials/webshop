@@ -329,6 +329,7 @@ export default function CheckoutPage() {
       window.omnisend.push(['track', 'started checkout', {
         origin: 'api',
         eventVersion: '',
+        contact: { email },
         properties: {
           abandonedCheckoutURL: 'https://noctisessentials.com/nl/checkout',
           cartID: `checkout-${email}`,
