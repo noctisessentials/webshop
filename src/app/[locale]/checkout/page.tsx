@@ -326,20 +326,25 @@ export default function CheckoutPage() {
 
     if (typeof window !== 'undefined' && window.omnisend) {
       window.omnisend.push(['identify', { email }])
-      window.omnisend.push(['track', '$startedCheckout', {
-        cartID: `checkout-${email}`,
-        currency: 'EUR',
-        cartSum: total,
-        checkoutURL: `${window.location.origin}/nl/checkout`,
-        lineItems: items.map((i) => ({
-          productID: String(i.color.wcId),
-          productName: i.product.title,
-          quantity: i.quantity,
-          price: Math.round(i.product.price * 100),
+      window.omnisend.push(['track', 'started checkout', {
+        origin: 'api',
+        eventVersion: '',
+        properties: {
+          abandonedCheckoutURL: 'https://noctisessentials.com/nl/checkout',
+          cartID: `checkout-${email}`,
           currency: 'EUR',
-          imageUrl: i.product.images[0]?.src ?? '',
-          productUrl: `https://noctisessentials.com/nl/products/${i.product.handle}`,
-        })),
+          lineItems: items.map((i) => ({
+            productID: String(i.color.wcId),
+            productDescription: i.product.title,
+            productImageURL: i.product.images[0]?.src ?? '',
+            quantity: i.quantity,
+            price: i.product.price,
+          })),
+        },
+        callbacks: {
+          onSuccess: () => console.log('[omnisend] started checkout tracked'),
+          onError: () => console.error('[omnisend] started checkout failed'),
+        },
       }])
     }
   }
@@ -438,23 +443,28 @@ export default function CheckoutPage() {
         })
       }
 
-      // Omnisend: identify contact + fire $startedCheckout
+      // Omnisend: identify contact + fire started checkout
       if (typeof window !== 'undefined' && window.omnisend) {
         window.omnisend.push(['identify', { email: merged.email }])
-        window.omnisend.push(['track', '$startedCheckout', {
-          cartID: `checkout-${merged.email}`,
-          currency: 'EUR',
-          cartSum: total,
-          checkoutURL: `${window.location.origin}/nl/checkout`,
-          lineItems: items.map((i) => ({
-            productID: String(i.color.wcId),
-            productName: i.product.title,
-            quantity: i.quantity,
-            price: Math.round(i.product.price * 100),
+        window.omnisend.push(['track', 'started checkout', {
+          origin: 'api',
+          eventVersion: '',
+          properties: {
+            abandonedCheckoutURL: 'https://noctisessentials.com/nl/checkout',
+            cartID: `checkout-${merged.email}`,
             currency: 'EUR',
-            imageUrl: i.product.images[0]?.src ?? '',
-            productUrl: `https://noctisessentials.com/nl/products/${i.product.handle}`,
-          })),
+            lineItems: items.map((i) => ({
+              productID: String(i.color.wcId),
+              productDescription: i.product.title,
+              productImageURL: i.product.images[0]?.src ?? '',
+              quantity: i.quantity,
+              price: i.product.price,
+            })),
+          },
+          callbacks: {
+            onSuccess: () => console.log('[omnisend] started checkout tracked'),
+            onError: () => console.error('[omnisend] started checkout failed'),
+          },
         }])
       }
     } catch (err) {
