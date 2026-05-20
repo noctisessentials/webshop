@@ -179,41 +179,7 @@ export async function POST(request: Request) {
         body: JSON.stringify(contactPayload),
       }).catch((err) => console.error('[stripe-webhook] Omnisend contact upsert failed:', err))
 
-      // Upsert Omnisend order (idempotent by orderID)
-      const omnisendOrderPayload: Record<string, unknown> = {
-        orderID: String(wcOrder.id),
-        orderNumber: Number(wcOrder.number) || wcOrder.id,
-        email,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        currency: 'EUR',
-        orderSum: fullIntent.amount,
-        paymentStatus: 'paid',
-        fulfillmentStatus: 'unfulfilled',
-        products: lineItems.map(({ wcId, quantity, price, title, colorName }) => ({
-          productID: String(wcId),
-          variantID: String(wcId),
-          title: colorName ? `${title ?? ''} — ${colorName}` : (title ?? String(wcId)),
-          quantity,
-          price: Math.round((price ?? 0) * 100),
-        })),
-        ...(receiptUrl ? { orderUrl: receiptUrl } : {}),
-        ...(shipping ? {
-          shippingAddress: {
-            firstName: shipping.firstName,
-            lastName: shipping.lastName,
-            address: shipping.address1,
-            city: shipping.city,
-            zip: shipping.postcode,
-            country: shipping.country,
-          },
-        } : {}),
-      }
-      fetch('https://api.omnisend.com/v3/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-KEY': omnisendKey },
-        body: JSON.stringify(omnisendOrderPayload),
-      }).catch((err) => console.error('[stripe-webhook] Omnisend order sync failed:', err))
+      // Omnisend order sync is handled by the WooCommerce Omnisend plugin
     }
 
     // Meta CAPI Purchase — event_id is stable so retries are deduplicated by Meta
