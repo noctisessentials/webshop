@@ -36,7 +36,7 @@ const ALL_SUGGESTIONS: CartSuggestion[] = [
     price: 64.95,
     image: '/images/products/kitchenware-black.jpg',
     href: '/products/19-piece-kitchenware-black',
-    color: { name: 'Zwart', slug: 'black', hex: '#1E1D1D', inStock: true },
+    color: { name: 'Zwart', slug: 'black', hex: '#1E1D1D', inStock: true, wcId: 2640 },
   },
   {
     id: 'upsell-kitchen-nude',
@@ -47,7 +47,7 @@ const ALL_SUGGESTIONS: CartSuggestion[] = [
     price: 64.95,
     image: '/images/products/kitchenware-nude.jpg',
     href: '/products/19-piece-kitchenware-nude',
-    color: { name: 'Nude', slug: 'nude', hex: '#D4B49A', inStock: true },
+    color: { name: 'Nude', slug: 'nude', hex: '#D4B49A', inStock: true, wcId: 1991 },
   },
   {
     id: 'upsell-mills-black-white',
@@ -58,7 +58,7 @@ const ALL_SUGGESTIONS: CartSuggestion[] = [
     price: 66.95,
     image: '/images/products/mills-blackwhite.jpg',
     href: '/products/pepper-salt-mills-black-white',
-    color: { name: 'Zwart wit', slug: 'zwart-wit', hex: '#9E9E9E', inStock: true },
+    color: { name: 'Zwart wit', slug: 'zwart-wit', hex: '#9E9E9E', inStock: true, wcId: 2444 },
   },
   {
     id: 'upsell-mills-white',
@@ -69,7 +69,7 @@ const ALL_SUGGESTIONS: CartSuggestion[] = [
     price: 66.95,
     image: '/images/products/mills-white.jpg',
     href: '/products/pepper-salt-mills-white',
-    color: { name: 'Wit', slug: 'white', hex: '#F5F3F0', inStock: true },
+    color: { name: 'Wit', slug: 'white', hex: '#F5F3F0', inStock: true, wcId: 2619 },
   },
   {
     id: 'upsell-mills-green',
@@ -80,7 +80,7 @@ const ALL_SUGGESTIONS: CartSuggestion[] = [
     price: 66.95,
     image: '/images/products/mills-green.jpg',
     href: '/products/pepper-salt-mills-green',
-    color: { name: 'Groen', slug: 'green', hex: '#4A6741', inStock: true },
+    color: { name: 'Groen', slug: 'green', hex: '#4A6741', inStock: true, wcId: 2621 },
   },
   {
     id: 'upsell-acacia',
@@ -91,7 +91,7 @@ const ALL_SUGGESTIONS: CartSuggestion[] = [
     price: 76.95,
     image: '/images/products/acacia.jpg',
     href: '/products/acacia-cutting-board',
-    color: { name: 'Acacia', slug: 'acacia', hex: '#C4894A', inStock: true },
+    color: { name: 'Acacia', slug: 'acacia', hex: '#C4894A', inStock: true, wcId: 2466 },
   },
 ]
 
