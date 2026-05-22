@@ -337,7 +337,7 @@ export default function CheckoutPage() {
           lineItems: items.map((i) => ({
             productID: String(i.color.wcId),
             productDescription: i.product.title,
-            productImageURL: i.product.images[0]?.src ?? '',
+            productImageURL: i.product.images[0]?.src ? `https://noctisessentials.com${i.product.images[0].src}` : '',
             quantity: i.quantity,
             price: i.product.price,
           })),
@@ -457,7 +457,7 @@ export default function CheckoutPage() {
             lineItems: items.map((i) => ({
               productID: String(i.color.wcId),
               productDescription: i.product.title,
-              productImageURL: i.product.images[0]?.src ?? '',
+              productImageURL: i.product.images[0]?.src ? `https://noctisessentials.com${i.product.images[0].src}` : '',
               quantity: i.quantity,
               price: i.product.price,
             })),
