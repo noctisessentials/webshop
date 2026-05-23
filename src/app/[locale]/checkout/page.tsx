@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useCart } from '@/context/CartContext'
+import { STATIC_PRODUCTS } from '@/lib/products-static'
 import { formatPrice } from '@/lib/utils'
 import { useRouter } from '@/i18n/navigation'
 import { Link } from '@/i18n/navigation'
@@ -179,7 +180,7 @@ function PaymentForm({
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, total, count } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
+  const { items, total, count, addItem } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loadingIntent, setLoadingIntent] = useState(false)
@@ -213,6 +214,24 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (items.length === 0) router.replace('/winkel')
   }, [items.length, router])
+
+  // Restore cart from abandoned checkout email link (?restore=wcId:qty,wcId:qty)
+  useEffect(() => {
+    const restore = new URLSearchParams(window.location.search).get('restore')
+    if (!restore) return
+    restore.split(',').forEach((pair) => {
+      const [wcIdStr, qtyStr] = pair.split(':')
+      const wcId = parseInt(wcIdStr, 10)
+      const qty = parseInt(qtyStr, 10)
+      if (!wcId || !qty) return
+      const product = STATIC_PRODUCTS.find((p) => p.id === String(wcId))
+      if (!product) return
+      const color = product.colors.find((c) => c.wcId === wcId)
+      if (!color) return
+      addItem(product, color, qty)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Postcode autofill — triggers when postcode + huisnummer are both filled and country is NL
   useEffect(() => {
@@ -331,7 +350,7 @@ export default function CheckoutPage() {
         eventVersion: '',
         contact: { email },
         properties: {
-          abandonedCheckoutURL: 'https://noctisessentials.com/nl/checkout',
+          abandonedCheckoutURL: `https://noctisessentials.com/nl/checkout?restore=${encodeURIComponent(items.map((i) => `${i.color.wcId}:${i.quantity}`).join(','))}`,
           cartID: `checkout-${email}`,
           currency: 'EUR',
           lineItems: items.map((i) => ({
@@ -451,7 +470,7 @@ export default function CheckoutPage() {
           origin: 'api',
           eventVersion: '',
           properties: {
-            abandonedCheckoutURL: 'https://noctisessentials.com/nl/checkout',
+            abandonedCheckoutURL: `https://noctisessentials.com/nl/checkout?restore=${encodeURIComponent(items.map((i) => `${i.color.wcId}:${i.quantity}`).join(','))}`,
             cartID: `checkout-${merged.email}`,
             currency: 'EUR',
             lineItems: items.map((i) => ({
