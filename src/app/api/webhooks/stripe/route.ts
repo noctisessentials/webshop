@@ -186,7 +186,7 @@ export async function POST(request: Request) {
     const capiToken = process.env.META_CAPI_TOKEN
     if (capiToken && shipping?.email) {
       const hash = (v: string) => crypto.createHash('sha256').update(v.trim().toLowerCase()).digest('hex')
-      fetch(`https://graph.facebook.com/v19.0/332396313251645/events?access_token=${capiToken}`, {
+      await fetch(`https://graph.facebook.com/v19.0/332396313251645/events?access_token=${capiToken}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -210,7 +210,13 @@ export async function POST(request: Request) {
             },
           }],
         }),
-      }).catch((err) => console.error('[stripe-webhook] Meta CAPI failed:', err))
+      })
+        .then(async (r) => {
+          const json = await r.json().catch(() => null)
+          if (!r.ok) console.error('[stripe-webhook] Meta CAPI error:', JSON.stringify(json))
+          else console.log(`[stripe-webhook] Meta CAPI Purchase sent for order #${wcOrder!.id}`)
+        })
+        .catch((err) => console.error('[stripe-webhook] Meta CAPI fetch failed:', err))
     }
 
     // Delete the Omnisend cart so the abandoned cart automation stops

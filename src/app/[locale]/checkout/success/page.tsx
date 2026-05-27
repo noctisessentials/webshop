@@ -73,15 +73,40 @@ function SuccessContent() {
 
         setOrder({ status: 'success', orderId: data.orderId, orderNumber: data.orderNumber })
 
-        // Meta Pixel Purchase — event_id matches CAPI (purchase-{orderId}) so Meta deduplicates
+        const eventId = `purchase-${data.orderId}`
+
+        // Browser pixel — may be blocked by ad blockers / Safari ITP
         if (typeof window !== 'undefined' && window.fbq) {
           window.fbq('track', 'Purchase', {
             content_ids: [String(data.orderId)],
             value: data.total ?? 0,
             currency: 'EUR',
             num_items: data.itemCount ?? 1,
-          }, { eventID: `purchase-${data.orderId}` })
+          }, { eventID: eventId })
         }
+
+        // Server-side CAPI — fires regardless of ad blockers, deduplicates with browser pixel and webhook via event_id
+        fetch('/api/meta-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName: 'Purchase',
+            eventId,
+            eventSourceUrl: window.location.href,
+            userData: {
+              email: shipping?.email,
+              phone: shipping?.phone,
+              firstName: shipping?.firstName,
+              lastName: shipping?.lastName,
+            },
+            customData: {
+              value: data.total ?? 0,
+              currency: 'EUR',
+              content_ids: [String(data.orderId)],
+              num_items: data.itemCount ?? 1,
+            },
+          }),
+        }).catch((err) => console.error('[capi] Purchase event failed:', err))
 
         localStorage.removeItem('noctis_shipping')
         sessionStorage.removeItem('noctis_shipping')
