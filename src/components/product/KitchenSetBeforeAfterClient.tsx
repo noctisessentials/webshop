@@ -62,6 +62,29 @@ function defaultColor(p: Product): ProductColor {
 
 // ─── static data ─────────────────────────────────────────────────────────────
 
+const SET_PARTS = [
+  {
+    id: 'messen-schaar' as const,
+    title: '5 messen & schaar',
+    body: 'Een complete basis met koksmes, broodmes, santoku, universeel mes, schilmes en een stevige keukenschaar.',
+    markerClassName: 'top-[22%] left-[40%]',
+  },
+  {
+    id: 'tools' as const,
+    title: '11 siliconen tools',
+    body: 'Van spatel en pollepel tot garde en tang. Alle tools die je dagelijks gebruikt, in dezelfde rustige stijl.',
+    markerClassName: 'top-[22%] right-[36%]',
+  },
+  {
+    id: 'houder-snijplank' as const,
+    title: 'Houder & snijplank',
+    body: 'De houder houdt alles overzichtelijk op je aanrecht. De snijplank maakt de set direct functioneel en compleet.',
+    markerClassName: 'bottom-[16%] left-1/2 -translate-x-1/2',
+  },
+] as const
+
+type SetPartId = (typeof SET_PARTS)[number]['id']
+
 const BEFORE_AFTER = [
   { before: 'Losse tools overal verspreid',         after: 'Alles in één houder op je aanrecht' },
   { before: 'Verschillende kleuren en merken door elkaar', after: 'Één kleur, één stijl, rust op je aanrecht' },
@@ -122,6 +145,7 @@ export function KitchenSetBeforeAfterClient({ product }: Props) {
 
   const [adding, setAdding]   = useState(false)
   const [preview, setPreview] = useState<ProductColor>(defaultColor(product))
+  const [activeSetPartId, setActiveSetPartId] = useState<SetPartId>('messen-schaar')
   const [testimonialsPaused, setTestimonialsPaused] = useState(false)
 
   // Video states
@@ -440,6 +464,143 @@ export function KitchenSetBeforeAfterClient({ product }: Props) {
                   <ShieldCheck size={13} className="text-dark/30 flex-shrink-0" />
                   Gratis verzending &amp; retour
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WAT ZIT ERIN ─────────────────────────────────────────────────────── */}
+      <section className="py-16 md:py-24 px-4 md:px-8 bg-white">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+          <div data-animate className="relative rounded-[20px] border border-[#E8E4DE] bg-[#F8F5F1] p-4">
+            <div className="relative aspect-[4/3] rounded-[14px] overflow-hidden bg-[#F8F5F1]">
+              <Image
+                src="/content/transp-set-nude-website-banner.webp"
+                alt="Alle 19 tools van de Noctis keukenset"
+                fill
+                className="object-contain object-center"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              {SET_PARTS.map((part, index) => {
+                const isActive = part.id === activeSetPartId
+                return (
+                  <button
+                    key={part.id}
+                    type="button"
+                    onClick={() => setActiveSetPartId(part.id)}
+                    style={{ animationDelay: `${index * 180}ms` }}
+                    className={cn(
+                      'absolute z-10 h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-200 hotspot-bubble text-sm font-sans font-bold',
+                      part.markerClassName,
+                      isActive
+                        ? 'border-accent bg-accent text-white shadow-[0_8px_20px_rgba(164,116,76,0.35)]'
+                        : 'border-[#1F2937]/20 bg-[#1F2937] text-white hover:bg-[#111827]'
+                    )}
+                    aria-label={part.title}
+                  >
+                    {index + 1}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div data-animate data-delay="2">
+            <h2
+              className="font-sans font-bold text-dark leading-tight mb-1"
+              style={{ fontSize: 'clamp(24px, 2.8vw, 40px)' }}
+            >
+              Alles wat je nodig hebt.
+            </h2>
+            <p
+              className="font-sans font-normal italic mb-3"
+              style={{ fontSize: 'clamp(22px, 2.6vw, 38px)', color: '#A4744C' }}
+            >
+              In één set.
+            </p>
+            <p className="font-sans text-dark/50 text-base leading-relaxed mb-5">
+              Geen losse tools. Geen mismatch. Gewoon compleet.
+            </p>
+            <div className="space-y-2">
+              {SET_PARTS.map((part, index) => {
+                const isActive = part.id === activeSetPartId
+                return (
+                  <div
+                    key={part.id}
+                    className={cn(
+                      'rounded-[14px] border px-4 py-3 transition-colors duration-200 cursor-pointer',
+                      isActive ? 'border-accent/30 bg-accent/5' : 'border-[#E8E4DE] bg-white'
+                    )}
+                    onClick={() => setActiveSetPartId(part.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          'inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors duration-200',
+                          isActive ? 'bg-accent text-white' : 'bg-[#F0EDE8] text-dark'
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className={cn('text-sm font-sans font-medium', isActive ? 'text-accent' : 'text-dark/85')}>
+                        {part.title}
+                      </span>
+                    </div>
+                    {isActive && (
+                      <p className="mt-3 ml-10 text-sm font-sans text-dark/60 leading-relaxed">
+                        {part.body}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── LIFESTYLE FOTO GRID ──────────────────────────────────────────────── */}
+      <section className="py-16 md:py-20 px-4 md:px-8 bg-[#F0EDE8]">
+        <div className="max-w-4xl mx-auto">
+          <div data-animate className="text-center mb-8">
+            <p className="text-[10px] font-sans font-semibold uppercase tracking-[0.24em] text-accent mb-3">
+              In het echt
+            </p>
+            <h2
+              className="font-sans font-bold text-dark"
+              style={{ fontSize: 'clamp(22px, 2.5vw, 36px)' }}
+            >
+              Zo ziet rust eruit.
+            </h2>
+          </div>
+          <div data-animate className="flex gap-2">
+            <div className="w-[62%] relative aspect-[4/5] rounded-[10px] overflow-hidden flex-shrink-0 group">
+              <Image
+                src="/content/grid-top-left.webp"
+                alt="Noctis keukenset op aanrecht"
+                fill
+                className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                sizes="40vw"
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-2">
+              <div className="relative flex-1 rounded-[10px] overflow-hidden group">
+                <Image
+                  src="/content/grid-top-right.webp"
+                  alt="Noctis mes in gebruik"
+                  fill
+                  className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  sizes="20vw"
+                />
+              </div>
+              <div className="relative flex-1 rounded-[10px] overflow-hidden group">
+                <Image
+                  src="/content/grid-middle-right.webp"
+                  alt="Noctis spatel in gebruik"
+                  fill
+                  className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  sizes="20vw"
+                />
               </div>
             </div>
           </div>
