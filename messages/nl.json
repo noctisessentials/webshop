@@ -2,7 +2,7 @@
   "announcement": {
     "msg1": "Gratis verzending op elke bestelling - geen minimum",
     "msg2": "Binnen 1-2 werkdagen geleverd in Nederland en Belgi\u00eb",
-    "msg3": "14 dagen gratis retourneren - zonder gedoe",
+    "msg3": "14 dagen gratis retourneren",
     "msg4": "5000+ tevreden klanten",
     "msg5": "Persoonlijke support - antwoord binnen 24 uur"
   },
@@ -189,10 +189,11 @@
     "freeShipping": "Je hebt gratis verzending!",
     "freeShippingProgress": "Nog {amount} voor gratis verzending",
     "remove": "Verwijder product",
+    "removeOne": "Verwijder één",
     "addOne": "Voeg er een toe",
     "quantity": "Aantal:",
     "colour": "Kleur:",
-    "upsellTitle": "Maak je keuken compleet.",
+    "upsellTitle": "Maak je keuken compleet en bespaar 10%",
     "viewProduct": "Bekijk product",
     "discount": "Korting",
     "shipping": "Verzending",

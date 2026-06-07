@@ -2,7 +2,7 @@
   "announcement": {
     "msg1": "Free shipping on every order \u2014 no minimum",
     "msg2": "Delivered in 1\u20132 business days in NL & BE",
-    "msg3": "14-day free returns \u2014 no hassle",
+    "msg3": "14-day free returns",
     "msg4": "5,000+ happy customers",
     "msg5": "Personal support \u2014 reply within 24 hours"
   },
@@ -189,10 +189,11 @@
     "freeShipping": "You have free shipping!",
     "freeShippingProgress": "{amount} away from free shipping",
     "remove": "Remove item",
+    "removeOne": "Remove one",
     "addOne": "Add one",
     "quantity": "Quantity:",
     "colour": "Colour:",
-    "upsellTitle": "Complete your kitchen.",
+    "upsellTitle": "Complete your kitchen and save 10%",
     "viewProduct": "View product",
     "discount": "Discount",
     "shipping": "Shipping",

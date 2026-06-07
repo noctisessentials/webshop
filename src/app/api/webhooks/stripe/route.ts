@@ -76,7 +76,8 @@ export async function POST(request: Request) {
     const shippingRaw = fullIntent.metadata.shipping
     const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
     const utmRaw = fullIntent.metadata.utm
-    const utm: UTMData | null = utmRaw ? JSON.parse(utmRaw) : null
+    let utm: UTMData | null = null
+    try { utm = utmRaw ? JSON.parse(utmRaw) : null } catch { utm = null }
 
     // ── Step 1: Ensure WC order exists ─────────────────────────────────────────
     let wcOrder: WCOrder | undefined

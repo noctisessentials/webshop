@@ -51,10 +51,21 @@ function SuccessContent() {
           sessionStorage.getItem('noctis_shipping')
         const shipping = shippingRaw ? JSON.parse(shippingRaw) : null
 
+        // Extract GA4 client_id from _ga cookie so server-side Measurement Protocol
+        // can attribute the purchase to the correct session/user
+        let ga4ClientId: string | undefined
+        try {
+          const gaCookie = document.cookie.split('; ').find((c) => c.startsWith('_ga='))
+          if (gaCookie) {
+            const parts = gaCookie.split('=')[1].split('.')
+            if (parts.length >= 4) ga4ClientId = `${parts[2]}.${parts[3]}`
+          }
+        } catch { /* cookie access blocked */ }
+
         const res = await fetch('/api/order-complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentIntentId, shipping, utm: getStoredUTMs() }),
+          body: JSON.stringify({ paymentIntentId, shipping, utm: getStoredUTMs(), ga4ClientId }),
         })
 
         if (!res.ok) throw new Error('Order creation failed')
@@ -74,6 +85,33 @@ function SuccessContent() {
         setOrder({ status: 'success', orderId: data.orderId, orderNumber: data.orderNumber })
 
         const eventId = `purchase-${data.orderId}`
+
+        // GA4 ecommerce purchase event — read cart from sessionStorage before clearing
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+          try {
+            const cartRaw = sessionStorage.getItem('noctis_cart')
+            const cartItems: { wcId: number; title: string; colorName: string; quantity: number; price: number }[] =
+              cartRaw ? JSON.parse(cartRaw) : []
+            window.gtag('event', 'purchase', {
+              transaction_id: data.orderNumber ?? String(data.orderId),
+              value: data.total ?? 0,
+              currency: 'EUR',
+              items: cartItems.map((item) => ({
+                item_id: String(item.wcId),
+                item_name: item.colorName ? `${item.title} — ${item.colorName}` : item.title,
+                price: item.price,
+                quantity: item.quantity,
+              })),
+            })
+          } catch {
+            // Storage unavailable — fire minimal event
+            window.gtag('event', 'purchase', {
+              transaction_id: data.orderNumber ?? String(data.orderId),
+              value: data.total ?? 0,
+              currency: 'EUR',
+            })
+          }
+        }
 
         // Browser pixel — may be blocked by ad blockers / Safari ITP
         if (typeof window !== 'undefined' && window.fbq) {

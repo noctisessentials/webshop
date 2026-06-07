@@ -289,6 +289,36 @@ const COMPARISON_FEATURE_ROWS = [
   },
 ] as const
 
+type UpsellColorOption = {
+  label: string
+  hex: string
+  background?: string
+  wcId: number
+  handle: string
+  image: string
+}
+
+const MILLS_COLOR_OPTIONS: UpsellColorOption[] = [
+  { label: 'Zwart wit', hex: '#2A2A2A', background: 'linear-gradient(90deg, #212121 0%, #212121 50%, #F4F2ED 50%, #F4F2ED 100%)', wcId: 2444, handle: 'pepper-salt-mills-black-white', image: '/images/products/mills-blackwhite.jpg' },
+  { label: 'Zwart',     hex: '#2C2C2C', wcId: 2617, handle: 'pepper-salt-mills-black',       image: '/images/products/mills-black.jpg' },
+  { label: 'Wit',       hex: '#F5F3F0', wcId: 2619, handle: 'pepper-salt-mills-white',       image: '/images/products/mills-white.jpg' },
+  { label: 'Groen',     hex: '#4A6741', wcId: 2621, handle: 'pepper-salt-mills-green',       image: '/images/products/mills-green.jpg' },
+]
+
+const KITCHEN_COLOR_OPTIONS: UpsellColorOption[] = [
+  { label: 'Zwart',     hex: '#1E1D1D', wcId: 2640, handle: '19-piece-kitchenware-black',      image: '/images/products/kitchenware-black.jpg' },
+  { label: 'Nude',      hex: '#D4B49A', wcId: 1991, handle: '19-piece-kitchenware-nude',       image: '/images/products/kitchenware-nude.jpg' },
+  { label: 'Grijs',     hex: '#B0AEAC', wcId: 2648, handle: '19-piece-kitchenware-grey',       image: '/images/products/kitchenware-grey.jpg' },
+  { label: 'Roze',      hex: '#E8B4B8', wcId: 2645, handle: '19-piece-kitchenware-pink',       image: '/images/products/kitchenware-pink.jpg' },
+  { label: 'Mintgroen', hex: '#7FB5A2', wcId: 2642, handle: '19-piece-kitchenware-mint-green', image: '/images/products/kitchenware-mint.jpg' },
+]
+
+function getUpsellColorOptions(upsell: Product): UpsellColorOption[] | null {
+  if (upsell.handle.includes('pepper-salt-mills')) return MILLS_COLOR_OPTIONS
+  if (upsell.handle.includes('19-piece-kitchenware')) return KITCHEN_COLOR_OPTIONS
+  return null
+}
+
 function getSelectedColor(product: Product): ProductColor {
   return (
     product.colors.find((color) => color.wcSlug === product.handle) ??
@@ -396,6 +426,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
   const [openInfoRow, setOpenInfoRow] = useState('sleep')
   const [activeSetPartId, setActiveSetPartId] = useState<SetPartId>('messen-schaar')
   const [selectedUpsellIds, setSelectedUpsellIds] = useState<string[]>([])
+  const [upsellColorMap, setUpsellColorMap] = useState<Record<string, UpsellColorOption>>({})
   const [adding, setAdding] = useState(false)
   const [testimonialsPaused, setTestimonialsPaused] = useState(false)
   const [isActiveVideoPlaying, setIsActiveVideoPlaying] = useState(true)
@@ -439,7 +470,9 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
 
   const selectedUpsells = sortedUpsells.filter((item) => selectedUpsellIds.includes(item.id))
   const selectedUpsellsTotal = selectedUpsells.reduce((sum, item) => sum + item.price, 0)
-  const totalCartValue = basePrice + selectedUpsellsTotal
+  const hasBundleDiscount = selectedUpsells.length > 0
+  const bundleDiscount = hasBundleDiscount ? Math.round((basePrice + selectedUpsellsTotal) * 0.10 * 100) / 100 : 0
+  const totalCartValue = basePrice + selectedUpsellsTotal - bundleDiscount
   const klarnaSplit = totalCartValue / 3
   const deliveryLine = getDeliveryLine(new Date())
 
@@ -448,8 +481,13 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
     await new Promise((resolve) => setTimeout(resolve, 450))
     addItem({ ...product, title: kitchenSetTitle }, selectedColor, 1)
     for (const upsell of selectedUpsells) {
-      const upsellColor = getSelectedColor(upsell)
-      addItem(upsell, upsellColor, 1)
+      const selectedOption = upsellColorMap[upsell.id]
+      if (selectedOption) {
+        const color: ProductColor = { name: selectedOption.label, slug: selectedOption.handle, hex: selectedOption.hex, inStock: true, wcId: selectedOption.wcId }
+        addItem({ ...upsell, handle: selectedOption.handle, images: [{ src: selectedOption.image, alt: selectedOption.label }] }, color, 1)
+      } else {
+        addItem(upsell, getSelectedColor(upsell), 1)
+      }
     }
     setAdding(false)
   }
@@ -723,12 +761,22 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
 
             {sortedUpsells.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-sm font-sans font-semibold text-dark">
-                  Selecteer populaire add-ons
-                </h3>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-sm font-sans font-semibold text-dark flex-1">
+                    Maak je keuken compleet en bespaar 10%
+                  </h3>
+                  <span className="flex-shrink-0 inline-flex rounded-full bg-[#EAF4FF] px-2.5 py-1 text-xs font-sans font-semibold text-[#1a6fb8]">
+                    Bundle deal
+                  </span>
+                </div>
                 {sortedUpsells.map((upsell) => {
                   const isSelected = selectedUpsellIds.includes(upsell.id)
                   const savingsAmount = getSavingsAmount(upsell)
+                  const colorOptions = getUpsellColorOptions(upsell)
+                  const activeOption = upsellColorMap[upsell.id] ?? colorOptions?.[0] ?? null
+                  const activeImage = activeOption?.image ?? upsell.images[0]?.src ?? '/images/products/acacia.jpg'
+                  const activeLabel = activeOption ? `${upsell.handle.includes('pepper') ? 'Peper- en zoutmolens' : '19-delige keukenset'} ${activeOption.label}` : getDisplayName(upsell)
+
                   return (
                     <div
                       key={upsell.id}
@@ -760,8 +808,8 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                         </span>
                         <div className="relative h-12 w-12 rounded-md overflow-hidden bg-surface flex-shrink-0">
                           <Image
-                            src={upsell.images[0]?.src ?? '/images/products/acacia.jpg'}
-                            alt={getDisplayName(upsell)}
+                            src={activeImage}
+                            alt={activeLabel}
                             fill
                             className="object-cover object-center"
                             sizes="48px"
@@ -769,8 +817,22 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-sans font-semibold text-dark">
-                            {getDisplayName(upsell)}
+                            {activeLabel}
                           </p>
+                          {colorOptions && (
+                            <div className="mt-1.5 flex gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                              {colorOptions.map((opt) => (
+                                <button
+                                  key={opt.handle}
+                                  type="button"
+                                  title={opt.label}
+                                  onClick={() => setUpsellColorMap((prev) => ({ ...prev, [upsell.id]: opt }))}
+                                  className={`h-4 w-4 rounded-full border-2 transition-all duration-150 ${activeOption?.handle === opt.handle ? 'border-dark scale-110' : 'border-transparent hover:border-dark/40'}`}
+                                  style={opt.background ? { background: opt.background } : { backgroundColor: opt.hex }}
+                                />
+                              ))}
+                            </div>
+                          )}
                           <div className="mt-1 flex items-center gap-2 text-xs">
                             <span className="font-sans font-semibold text-dark">
                               {formatPrice(upsell.price)}
@@ -791,9 +853,9 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation()
-                            handleUpsellNavigate(upsell.handle)
+                            handleUpsellNavigate(activeOption?.handle ?? upsell.handle)
                           }}
-                          aria-label={`Ga naar ${getDisplayName(upsell)}`}
+                          aria-label={`Ga naar ${activeLabel}`}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-white text-dark transition-colors duration-200 hover:bg-surface"
                         >
                           <ChevronRight size={14} />
@@ -805,6 +867,12 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
               </div>
             )}
 
+            {hasBundleDiscount && (
+              <div className="flex items-center justify-between rounded-xl bg-[#EAF4FF] px-4 py-3 text-sm font-sans">
+                <span className="text-[#1a6fb8] font-medium">10% bundelkorting</span>
+                <span className="text-[#1a6fb8] font-semibold">- {formatPrice(bundleDiscount)}</span>
+              </div>
+            )}
             <Button
               variant="accent"
               size="xl"

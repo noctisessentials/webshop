@@ -126,7 +126,7 @@ export function Testimonials() {
           </p>
         </div>
 
-        <div className="max-w-[1120px] mx-auto">
+        <div>
           {/* Mobile: horizontal scroll */}
           <div className="flex md:hidden gap-3 overflow-x-auto pb-2 -mx-4 px-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
             {REVIEW_CARDS.map((review) => (

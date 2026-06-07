@@ -53,7 +53,7 @@ export default async function HomePage() {
       <HomeTransformationStatement />
       <ValueProps />
 
-      <div className="mx-auto w-full max-w-[980px] pt-8 md:pt-14">
+      <div className="container-content pt-8 md:pt-14">
         <EditorialBanner
           imageSrc="/images/pepre-en-zoutmolens-zwart-wit-lifestyle-keuken.webp"
           imageAlt="Noctis merkverhaal in een rustige keukenomgeving"

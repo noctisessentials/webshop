@@ -45,18 +45,22 @@ export async function POST(request: Request) {
 
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-    // Validate discount server-side so the client can't manipulate the amount
+    // Bundle discount: 10% off when cart has 2+ distinct products (server-side validated)
+    const distinctWcIds = new Set(items.map((i) => i.wcId)).size
+    const bundleDiscountAmount = distinctWcIds >= 2 ? Math.round(subtotal * 0.10 * 100) / 100 : 0
+
+    // Validate coupon discount server-side so the client can't manipulate the amount
     let discountAmount = 0
     let discountLabel = ''
     if (discountCode) {
-      const result = await validateDiscountViaWC(discountCode, subtotal)
+      const result = await validateDiscountViaWC(discountCode, subtotal - bundleDiscountAmount)
       if (result.valid) {
         discountAmount = result.discountAmount
         discountLabel = result.label
       }
     }
 
-    const amountCents = Math.round((subtotal - discountAmount) * 100)
+    const amountCents = Math.round((subtotal - bundleDiscountAmount - discountAmount) * 100)
 
     const cap = (s: string) => s.slice(0, 500)
 
@@ -71,8 +75,10 @@ export async function POST(request: Request) {
         )),
         // Store shipping so the webhook can create a WC order if the browser never reaches /success
         ...(shipping ? { shipping: cap(JSON.stringify(shipping)) } : {}),
-        // Store UTMs so the webhook can set order attribution if the browser never reaches /success
-        ...(utm ? { utm: cap(JSON.stringify(utm)) } : {}),
+        // Store UTMs so the webhook can set order attribution if the browser never reaches /success.
+        // entry_url is excluded — it can contain a long fbclid and push the value past Stripe's 500-char
+        // metadata limit, which silently truncates the JSON and crashes JSON.parse in the webhook.
+        ...(utm ? { utm: JSON.stringify({ utm_source: utm.utm_source, utm_medium: utm.utm_medium, utm_campaign: utm.utm_campaign, utm_content: utm.utm_content, utm_term: utm.utm_term, referrer: utm.referrer }) } : {}),
         ...(discountLabel ? { discount: discountLabel } : {}),
       },
     })

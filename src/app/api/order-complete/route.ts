@@ -39,16 +39,46 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+async function sendGA4Purchase(opts: {
+  clientId: string
+  transactionId: string
+  value: number
+  items: { item_id: string; item_name: string; price: number; quantity: number }[]
+}) {
+  const measurementId = process.env.NEXT_PUBLIC_GA_ID
+  const apiSecret = process.env.GA4_API_SECRET
+  if (!measurementId || !apiSecret) return
+
+  await fetch(
+    `https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: opts.clientId,
+        events: [{
+          name: 'purchase',
+          params: {
+            transaction_id: opts.transactionId,
+            value: opts.value,
+            currency: 'EUR',
+            items: opts.items,
+          },
+        }],
+      }),
+    }
+  ).catch((err) => console.error('[order-complete] GA4 MP failed:', err))
+}
+
 export async function POST(request: Request) {
   try {
-    const { paymentIntentId }: { paymentIntentId: string } = await request.json()
+    const { paymentIntentId, ga4ClientId }: { paymentIntentId: string; ga4ClientId?: string } = await request.json()
 
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
     if (paymentIntent.status !== 'succeeded') {
       return NextResponse.json({ error: 'Payment not completed' }, { status: 400 })
     }
 
-    type LineItem = { wcId: number; quantity: number }
+    type LineItem = { wcId: number; title: string; colorName: string; quantity: number; price: number }
     const lineItems: LineItem[] = JSON.parse(paymentIntent.metadata.line_items ?? '[]')
     const total = paymentIntent.amount / 100
     const itemCount = lineItems.reduce((s, i) => s + i.quantity, 0)
@@ -63,11 +93,22 @@ export async function POST(request: Request) {
 
     const credentials = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString('base64')
 
+    const ga4Items = lineItems.map((item) => ({
+      item_id: String(item.wcId),
+      item_name: item.colorName ? `${item.title} — ${item.colorName}` : item.title,
+      price: item.price,
+      quantity: item.quantity,
+    }))
+    // Use provided client_id or generate a fallback so revenue always shows in GA4
+    const ga4Client = ga4ClientId ?? `server.${Date.now()}`
+
     // Fast path: webhook already stored the WC order ID in Stripe metadata
     if (paymentIntent.metadata.wc_order_id) {
+      const orderNumber = paymentIntent.metadata.wc_order_number ?? paymentIntent.metadata.wc_order_id
+      sendGA4Purchase({ clientId: ga4Client, transactionId: orderNumber, value: total, items: ga4Items })
       return NextResponse.json({
         orderId: Number(paymentIntent.metadata.wc_order_id),
-        orderNumber: paymentIntent.metadata.wc_order_number ?? paymentIntent.metadata.wc_order_id,
+        orderNumber,
         total,
         itemCount,
       })
@@ -83,9 +124,11 @@ export async function POST(request: Request) {
       // Re-fetch Stripe metadata on each attempt — webhook may have written wc_order_id
       const fresh = i > 0 ? await stripe.paymentIntents.retrieve(paymentIntentId) : paymentIntent
       if (fresh.metadata.wc_order_id) {
+        const orderNumber = fresh.metadata.wc_order_number ?? fresh.metadata.wc_order_id
+        sendGA4Purchase({ clientId: ga4Client, transactionId: orderNumber, value: total, items: ga4Items })
         return NextResponse.json({
           orderId: Number(fresh.metadata.wc_order_id),
-          orderNumber: fresh.metadata.wc_order_number ?? fresh.metadata.wc_order_id,
+          orderNumber,
           total,
           itemCount,
         })
@@ -94,6 +137,7 @@ export async function POST(request: Request) {
       const order = await findExistingOrder(WC_URL, credentials, paymentIntentId)
       if (order) {
         console.log(`[order-complete] Found WC order #${order.id} on attempt ${i + 1}`)
+        sendGA4Purchase({ clientId: ga4Client, transactionId: order.number, value: total, items: ga4Items })
         return NextResponse.json({ orderId: order.id, orderNumber: order.number, total, itemCount })
       }
 

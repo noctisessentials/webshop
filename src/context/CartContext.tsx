@@ -28,6 +28,8 @@ type CartContextType = {
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
+  subtotal: number
+  bundleDiscount: number
   total: number
   count: number
 }
@@ -118,15 +120,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items])
 
-  const total = items.reduce(
+  const subtotal = items.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   )
+  const distinctProducts = new Set(items.map((i) => i.product.id)).size
+  const bundleDiscount = distinctProducts >= 2 ? Math.round(subtotal * 0.10 * 100) / 100 : 0
+  const total = subtotal - bundleDiscount
   const count = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
     <CartContext.Provider
-      value={{ items, isOpen, openCart, closeCart, addItem, removeItem, updateQuantity, clearCart, total, count }}
+      value={{ items, isOpen, openCart, closeCart, addItem, removeItem, updateQuantity, clearCart, subtotal, bundleDiscount, total, count }}
     >
       {children}
     </CartContext.Provider>

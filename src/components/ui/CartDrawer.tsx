@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
-import { X, Plus, ShoppingBag, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { X, Plus, Minus, ShoppingBag, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { Button } from './Button'
@@ -61,6 +61,17 @@ const ALL_SUGGESTIONS: CartSuggestion[] = [
     color: { name: 'Zwart wit', slug: 'zwart-wit', hex: '#9E9E9E', inStock: true, wcId: 2444 },
   },
   {
+    id: 'upsell-mills-black',
+    handle: 'pepper-salt-mills-black',
+    title: 'Peper- en zoutmolens zwart',
+    titleEn: 'Pepper & Salt Mills black',
+    subtitle: 'Perfecte match op je set',
+    price: 66.95,
+    image: '/images/products/mills-black.jpg',
+    href: '/products/pepper-salt-mills-black',
+    color: { name: 'Zwart', slug: 'black', hex: '#2C2C2C', inStock: true, wcId: 2617 },
+  },
+  {
     id: 'upsell-mills-white',
     handle: 'pepper-salt-mills-white',
     title: 'Peper- en zoutmolens wit',
@@ -108,9 +119,10 @@ function getSuggestions(cartHandles: Set<string>): CartSuggestion[] {
   const hasKitchenGreen = [...cartHandles].some((h) => h.includes('19-piece-kitchenware-green') || h.includes('19-piece-kitchenware-mint'))
   const hasKitchen = hasKitchenBlack || hasKitchenNude || hasKitchenGreen || [...cartHandles].some((h) => h.includes('19-piece-kitchenware'))
   const hasMillsBlackWhite = [...cartHandles].some((h) => h.includes('pepper-salt-mills-black-white') || h.includes('pepper-salt-mills-blackwhite'))
+  const hasMillsBlack = [...cartHandles].some((h) => h === 'pepper-salt-mills-black')
   const hasMillsWhite = [...cartHandles].some((h) => h.includes('pepper-salt-mills-white'))
   const hasMillsGreen = [...cartHandles].some((h) => h.includes('pepper-salt-mills-green'))
-  const hasMills = hasMillsBlackWhite || hasMillsWhite || hasMillsGreen || [...cartHandles].some((h) => h.includes('pepper-salt-mills'))
+  const hasMills = hasMillsBlackWhite || hasMillsBlack || hasMillsWhite || hasMillsGreen || [...cartHandles].some((h) => h.includes('pepper-salt-mills'))
   const hasAcacia = cartHandles.has('acacia-cutting-board')
 
   const candidates: CartSuggestion[] = []
@@ -210,11 +222,28 @@ function toSuggestionProduct(suggestion: CartSuggestion): Product {
   }
 }
 
+const KITCHEN_VARIANTS = ALL_SUGGESTIONS.filter((s) => s.id.includes('kitchen'))
+const MILLS_VARIANTS = ALL_SUGGESTIONS.filter((s) => s.id.includes('mills'))
+
+function getGroupKey(s: CartSuggestion): string {
+  if (s.id.includes('kitchen')) return 'kitchen'
+  if (s.id.includes('mills')) return 'mills'
+  return s.id
+}
+
+function getGroupVariants(s: CartSuggestion): CartSuggestion[] {
+  if (s.id.includes('kitchen')) return KITCHEN_VARIANTS
+  if (s.id.includes('mills')) return MILLS_VARIANTS
+  return [s]
+}
+
 export function CartDrawer() {
   const t = useTranslations('cart')
   const locale = useLocale()
   const isEn = locale === 'en'
-  const { isOpen, closeCart, items, removeItem, updateQuantity, addItem, total, count } = useCart()
+  const { isOpen, closeCart, items, removeItem, updateQuantity, addItem, subtotal, bundleDiscount, total, count } = useCart()
+
+  const [selectedVariantIds, setSelectedVariantIds] = useState<Record<string, string>>({})
 
   const discountTotal = items.reduce((sum, item) => {
     const compareAt = item.product.compareAtPrice
@@ -222,11 +251,11 @@ export function CartDrawer() {
     return sum + (compareAt - item.product.price) * item.quantity
   }, 0)
 
-  const shippingProgress = Math.min(total / FREE_SHIPPING_THRESHOLD, 1)
+  const shippingProgress = Math.min(subtotal / FREE_SHIPPING_THRESHOLD, 1)
   const shippingMessage =
-    total >= FREE_SHIPPING_THRESHOLD
+    subtotal >= FREE_SHIPPING_THRESHOLD
       ? t('freeShipping')
-      : t('freeShippingProgress', { amount: formatPrice(FREE_SHIPPING_THRESHOLD - total) })
+      : t('freeShippingProgress', { amount: formatPrice(FREE_SHIPPING_THRESHOLD - subtotal) })
 
   const cartHandles = new Set(items.map((item) => item.product.handle))
   const visibleSuggestions = getSuggestions(cartHandles)
@@ -342,11 +371,11 @@ export function CartDrawer() {
 
                       <div className="mt-3 flex items-center gap-3">
                         <button
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => item.quantity === 1 ? removeItem(item.id) : updateQuantity(item.id, item.quantity - 1)}
                           className="h-10 w-10 rounded-full border border-border bg-light text-dark hover:bg-surface transition-colors duration-200 flex items-center justify-center"
-                          aria-label={t('remove')}
+                          aria-label={item.quantity === 1 ? t('remove') : t('removeOne')}
                         >
-                          <Trash2 size={16} strokeWidth={1.6} />
+                          {item.quantity === 1 ? <Trash2 size={16} strokeWidth={1.6} /> : <Minus size={16} strokeWidth={1.6} />}
                         </button>
                         <span className="min-w-4 text-center text-base font-sans font-medium text-dark">
                           {item.quantity}
@@ -365,50 +394,70 @@ export function CartDrawer() {
 
                 {visibleSuggestions.length > 0 && (
                   <div className="pt-2">
-                    <h3 className="text-base font-sans font-semibold text-dark mb-3">
-                      {t('upsellTitle')}
-                    </h3>
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <h3 className="text-base font-sans font-semibold text-dark">
+                        {t('upsellTitle')}
+                      </h3>
+                      <span className="flex-shrink-0 inline-flex rounded-full bg-[#EAF4FF] px-2.5 py-1 text-xs font-sans font-semibold text-[#1a6fb8]">
+                        Bespaar 10%
+                      </span>
+                    </div>
                     <div className="grid grid-cols-2 gap-2.5">
-                      {visibleSuggestions.map((suggestion) => (
-                        <article
-                          key={suggestion.id}
-                          className="rounded-xl border border-border bg-[#EAF0F4] overflow-hidden"
-                        >
-                          <div className="relative aspect-[4/3]">
-                            <Image
-                              src={suggestion.image}
-                              alt={isEn ? suggestion.titleEn : suggestion.title}
-                              fill
-                              className="object-contain p-3"
-                              sizes="180px"
-                            />
-                          </div>
-                          <div className="px-3 pb-3">
-                            <p className="text-base font-sans font-semibold text-dark leading-snug">
-                              {isEn ? suggestion.titleEn : suggestion.title}
-                            </p>
-                            <div className="mt-1.5 flex items-center justify-between gap-2">
-                              <span className="text-base font-sans font-semibold text-dark">
-                                {formatPrice(suggestion.price)}
-                              </span>
-                              <button
-                                onClick={() => addItem(toSuggestionProduct(suggestion), suggestion.color, 1)}
-                                className="h-8 w-8 rounded-full bg-accent text-white hover:bg-accent-dark transition-colors duration-200 flex items-center justify-center"
-                                aria-label={`${isEn ? 'Add' : 'Voeg toe'} ${isEn ? suggestion.titleEn : suggestion.title}`}
-                              >
-                                <Plus size={14} strokeWidth={2} />
-                              </button>
+                      {visibleSuggestions.map((suggestion) => {
+                        const groupKey = getGroupKey(suggestion)
+                        const variants = getGroupVariants(suggestion)
+                        const activeId = selectedVariantIds[groupKey] ?? suggestion.id
+                        const active = variants.find((v) => v.id === activeId) ?? suggestion
+                        const cartHandleSet = new Set(items.map((i) => i.product.handle))
+                        return (
+                          <article
+                            key={suggestion.id}
+                            className="rounded-xl border border-border bg-[#EAF0F4] overflow-hidden"
+                          >
+                            <div className="relative aspect-[4/3]">
+                              <Image
+                                src={active.image}
+                                alt={isEn ? active.titleEn : active.title}
+                                fill
+                                className="object-contain p-3"
+                                sizes="180px"
+                              />
                             </div>
-                            <Link
-                              href={suggestion.href as Parameters<typeof Link>[0]['href']}
-                              onClick={closeCart}
-                              className="mt-2 block text-xs font-sans text-muted hover:text-dark transition-colors duration-200"
-                            >
-                              {t('viewProduct')}
-                            </Link>
-                          </div>
-                        </article>
-                      ))}
+                            <div className="px-3 pb-3">
+                              <p className="text-sm font-sans font-semibold text-dark leading-snug">
+                                {isEn ? active.titleEn : active.title}
+                              </p>
+                              {variants.length > 1 && (
+                                <div className="mt-2 flex gap-1.5 flex-wrap">
+                                  {variants.map((v) => (
+                                    <button
+                                      key={v.id}
+                                      type="button"
+                                      onClick={() => setSelectedVariantIds((prev) => ({ ...prev, [groupKey]: v.id }))}
+                                      title={isEn ? v.titleEn : v.title}
+                                      className={`h-5 w-5 rounded-full border-2 transition-all duration-150 ${active.id === v.id ? 'border-dark scale-110' : 'border-transparent hover:border-dark/40'} ${cartHandleSet.has(v.handle) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                      style={v.color.slug === 'zwart-wit' ? { background: 'linear-gradient(90deg, #212121 0%, #212121 50%, #F4F2ED 50%, #F4F2ED 100%)' } : { backgroundColor: v.color.hex }}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                              <div className="mt-2 flex items-center justify-between gap-2">
+                                <span className="text-sm font-sans font-semibold text-dark">
+                                  {formatPrice(active.price)}
+                                </span>
+                                <button
+                                  onClick={() => !cartHandleSet.has(active.handle) && addItem(toSuggestionProduct(active), active.color, 1)}
+                                  disabled={cartHandleSet.has(active.handle)}
+                                  className="h-8 w-8 rounded-full bg-accent text-white hover:bg-accent-dark transition-colors duration-200 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                                  aria-label={`${isEn ? 'Add' : 'Voeg toe'} ${isEn ? active.titleEn : active.title}`}
+                                >
+                                  <Plus size={14} strokeWidth={2} />
+                                </button>
+                              </div>
+                            </div>
+                          </article>
+                        )
+                      })}
                     </div>
                   </div>
                 )}
@@ -420,10 +469,18 @@ export function CartDrawer() {
           {items.length > 0 && (
             <div className="border-t border-border bg-light px-6 py-5 space-y-4">
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm text-muted">
-                  <span>{t('discount')}</span>
-                  <span>{discountTotal > 0 ? formatPrice(discountTotal) : formatPrice(0)}</span>
-                </div>
+                {discountTotal > 0 && (
+                  <div className="flex items-center justify-between text-sm text-muted">
+                    <span>{t('discount')}</span>
+                    <span>- {formatPrice(discountTotal)}</span>
+                  </div>
+                )}
+                {bundleDiscount > 0 && (
+                  <div className="flex items-center justify-between text-sm font-medium text-[#1a6fb8]">
+                    <span>10% bundelkorting</span>
+                    <span>- {formatPrice(bundleDiscount)}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-sm text-muted">
                   <span>{t('shipping')}</span>
                   <span>{t('free')}</span>

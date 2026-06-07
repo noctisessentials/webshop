@@ -101,6 +101,49 @@ function getRelatedProductsForPost(slug: string, products: Product[]): Product[]
     ])
     if (ordered.length >= 3) return ordered
   }
+  if (slug === 'siliconen-vs-plastic-keukentools') {
+    const ordered = pickByHandleOrder(products, [
+      '19-piece-kitchenware-black',
+      '19-piece-kitchenware-nude',
+      'acacia-cutting-board',
+      'pepper-salt-mills-black-white',
+    ])
+    if (ordered.length >= 3) return ordered
+  }
+  if (slug === 'siliconen-spatels-hoge-temperaturen') {
+    const ordered = pickByHandleOrder(products, [
+      '19-piece-kitchenware-black',
+      '19-piece-kitchenware-nude',
+      '19-piece-kitchenware-grey',
+    ])
+    if (ordered.length >= 3) return ordered
+  }
+  if (slug === 'wat-zit-er-in-een-goede-keukenset') {
+    const ordered = pickByHandleOrder(products, [
+      '19-piece-kitchenware-nude',
+      '19-piece-kitchenware-black',
+      'pepper-salt-mills-black-white',
+      'acacia-cutting-board',
+    ])
+    if (ordered.length >= 3) return ordered
+  }
+  if (slug === 'bpa-vrij-siliconen-wat-betekent-dat') {
+    const ordered = pickByHandleOrder(products, [
+      '19-piece-kitchenware-black',
+      '19-piece-kitchenware-nude',
+      '19-piece-kitchenware-pink',
+    ])
+    if (ordered.length >= 3) return ordered
+  }
+  if (slug === 'keukenset-als-cadeau-tips') {
+    const ordered = pickByHandleOrder(products, [
+      '19-piece-kitchenware-nude',
+      '19-piece-kitchenware-pink',
+      'pepper-salt-mills-black-white',
+      'acacia-cutting-board',
+    ])
+    if (ordered.length >= 3) return ordered
+  }
   if (slug === 'hoe-kies-je-de-juiste-kleur-voor-je-keuken') {
     const ordered = pickByHandleOrder(products, [
       '19-piece-kitchenware-nude',
@@ -252,6 +295,15 @@ export default async function BlogPostPage({
                           </li>
                         ))}
                       </ul>
+                    )}
+                    {section.numberedList && section.numberedList.length > 0 && (
+                      <ol className="mt-5 space-y-2 pl-5">
+                        {section.numberedList.map((item) => (
+                          <li key={item} className="list-decimal font-sans text-dark/85 text-base md:text-[20px] leading-relaxed">
+                            {item}
+                          </li>
+                        ))}
+                      </ol>
                     )}
                   </section>
                 ))}

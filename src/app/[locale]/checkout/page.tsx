@@ -103,7 +103,7 @@ function PaymentForm({
     const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/checkout/success`,
+        return_url: `${window.location.origin}${window.location.pathname.replace('/checkout', '/checkout/success')}`,
         payment_method_data: {
           billing_details: {
             name: `${shipping.firstName} ${shipping.lastName}`,
@@ -180,7 +180,7 @@ function PaymentForm({
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, total, count, addItem } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
+  const { items, subtotal, bundleDiscount, total, count, addItem } = useCart() as ReturnType<typeof useCart> & { clearCart?: () => void }
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loadingIntent, setLoadingIntent] = useState(false)
@@ -293,7 +293,7 @@ export default function CheckoutPage() {
   }
 
   const shipping_total = 0
-  const order_total = total + shipping_total - (appliedDiscount?.amount ?? 0)
+  const order_total = subtotal - bundleDiscount - (appliedDiscount?.amount ?? 0) + shipping_total
 
   const requiredFields: Array<keyof ShippingForm> = [
     'firstName',
@@ -740,12 +740,18 @@ export default function CheckoutPage() {
             <div className="border-t border-border pt-4 space-y-2">
               <div className="flex items-center justify-between text-sm font-sans">
                 <span className="text-muted">Subtotaal</span>
-                <span className="text-dark">{formatPrice(total)}</span>
+                <span className="text-dark">{formatPrice(subtotal)}</span>
               </div>
+              {bundleDiscount > 0 && (
+                <div className="flex items-center justify-between text-sm font-sans font-medium text-[#1a6fb8]">
+                  <span>10% bundelkorting</span>
+                  <span>- {formatPrice(bundleDiscount)}</span>
+                </div>
+              )}
               {appliedDiscount && (
                 <div className="flex items-center justify-between text-sm font-sans text-green-700">
-                  <span>Korting</span>
-                  <span>-{formatPrice(appliedDiscount.amount)}</span>
+                  <span>Korting ({appliedDiscount.code})</span>
+                  <span>- {formatPrice(appliedDiscount.amount)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between text-sm font-sans">
