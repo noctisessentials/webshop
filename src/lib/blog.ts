@@ -642,11 +642,6 @@ export const BLOG_POSTS: BlogPost[] = [
           'Niet bij food-grade kwaliteitssiliconen tot 230°C. Siliconen is chemisch inert en reageert niet met voedsel, vetten of zuren. Goedkope silicoentools van lage kwaliteit kunnen wél een smaak afgeven — herkenbaar aan een chemische geur bij verhitting.',
       },
       {
-        question: 'Hoe weet ik of mijn siliconen spatel food-grade is?',
-        answer:
-          'Let op de productomschrijving: "food-grade siliconen", "voedselveilig siliconen" of een vermelding van de maximale temperatuurgrens zijn positieve indicatoren. Kwaliteitssiliconen verkleurt niet bij knijpen en geeft geen chemische geur bij verhitting. Ontbreekt alle vermelding, dan is voorzichtigheid geboden.',
-      },
-      {
         question: 'Wat gebeurt er als siliconen oververhit raakt?',
         answer:
           'Bij temperaturen boven de limiet (230–260°C) begint siliconen te degraderen: het kan verkleuren naar geel of bruin en een lichte geur of smaak afgeven. Het materiaal smelt niet plotseling, maar de kwaliteit neemt af. Bij normale kooksituaties thuis is dit scenario niet realistisch.',
