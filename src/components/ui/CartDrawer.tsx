@@ -435,9 +435,16 @@ export function CartDrawer() {
                                       type="button"
                                       onClick={() => setSelectedVariantIds((prev) => ({ ...prev, [groupKey]: v.id }))}
                                       title={isEn ? v.titleEn : v.title}
-                                      className={`h-5 w-5 rounded-full border-2 transition-all duration-150 ${active.id === v.id ? 'border-dark scale-110' : 'border-transparent hover:border-dark/40'} ${cartHandleSet.has(v.handle) ? 'opacity-30 cursor-not-allowed' : ''}`}
-                                      style={v.color.slug === 'zwart-wit' ? { background: 'linear-gradient(90deg, #212121 0%, #212121 50%, #F4F2ED 50%, #F4F2ED 100%)' } : { backgroundColor: v.color.hex }}
-                                    />
+                                      className={`h-5 w-5 rounded-full border-2 overflow-hidden flex transition-all duration-150 ${active.id === v.id ? 'border-dark scale-110' : 'border-transparent hover:border-dark/40'} ${cartHandleSet.has(v.handle) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                      style={v.color.slug !== 'zwart-wit' ? { backgroundColor: v.color.hex } : undefined}
+                                    >
+                                      {v.color.slug === 'zwart-wit' && (
+                                        <>
+                                          <span className="flex-1 h-full" style={{ backgroundColor: '#222222' }} />
+                                          <span className="flex-1 h-full" style={{ backgroundColor: '#DEDEDE' }} />
+                                        </>
+                                      )}
+                                    </button>
                                   ))}
                                 </div>
                               )}

@@ -821,16 +821,30 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                           </p>
                           {colorOptions && (
                             <div className="mt-1.5 flex gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
-                              {colorOptions.map((opt) => (
-                                <button
-                                  key={opt.handle}
-                                  type="button"
-                                  title={opt.label}
-                                  onClick={() => setUpsellColorMap((prev) => ({ ...prev, [upsell.id]: opt }))}
-                                  className={`h-4 w-4 rounded-full border-2 transition-all duration-150 ${activeOption?.handle === opt.handle ? 'border-dark scale-110' : 'border-transparent hover:border-dark/40'}`}
-                                  style={opt.background ? { background: opt.background } : { backgroundColor: opt.hex }}
-                                />
-                              ))}
+                              {colorOptions.map((opt) => {
+                                const isActive = activeOption?.handle === opt.handle
+                                return opt.background ? (
+                                  <button
+                                    key={opt.handle}
+                                    type="button"
+                                    title={opt.label}
+                                    onClick={() => setUpsellColorMap((prev) => ({ ...prev, [upsell.id]: opt }))}
+                                    className={`h-4 w-4 rounded-full border-2 overflow-hidden flex transition-all duration-150 ${isActive ? 'border-dark scale-110' : 'border-transparent hover:border-dark/40'}`}
+                                  >
+                                    <span className="flex-1 h-full" style={{ backgroundColor: '#222222' }} />
+                                    <span className="flex-1 h-full" style={{ backgroundColor: '#DEDEDE' }} />
+                                  </button>
+                                ) : (
+                                  <button
+                                    key={opt.handle}
+                                    type="button"
+                                    title={opt.label}
+                                    onClick={() => setUpsellColorMap((prev) => ({ ...prev, [upsell.id]: opt }))}
+                                    className={`h-4 w-4 rounded-full border-2 transition-all duration-150 ${isActive ? 'border-dark scale-110' : 'border-transparent hover:border-dark/40'}`}
+                                    style={{ backgroundColor: opt.hex }}
+                                  />
+                                )
+                              })}
                             </div>
                           )}
                           <div className="mt-1 flex items-center gap-2 text-xs">
