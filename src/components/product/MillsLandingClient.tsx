@@ -26,7 +26,7 @@ const MILLS_VIDEO_ITEM: GalleryMediaItem = {
   type: 'video',
   src: '/videos/peper-en-zoutmolens-pdp-video.webm',
   alt: 'Video van de peper- en zoutmolens in gebruik',
-  poster: '/images/products/mills-blackwhite.jpg',
+  poster: '/images/pdp/mills-video-poster.webp',
 }
 
 const DUTCH_COLOR_MAP: Record<string, string> = {

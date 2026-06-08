@@ -21,7 +21,7 @@ const KITCHEN_SET_VIDEO_ITEM: GalleryMediaItem = {
   type: 'video',
   src: '/videos/19-delige-set-pdp-video.webm',
   alt: 'Video van de 19-delige keukenset in gebruik',
-  poster: '/images/pdp/kitchen-set-black/main.jpg',
+  poster: '/images/pdp/kitchen-set-video-poster.webp',
 }
 
 const BLACK_GALLERY_IMAGES: GalleryMediaItem[] = [
@@ -951,6 +951,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
           <div className="relative overflow-hidden rounded-[24px] bg-surface aspect-square">
             <video
               src="/videos/nude-grab-set-comp.mp4"
+              poster="/images/pdp/nude-grab-set-poster.jpg"
               className="h-full w-full object-cover"
               autoPlay
               loop
@@ -992,6 +993,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
           <div className="order-1 lg:order-2 relative overflow-hidden rounded-[24px] bg-surface aspect-square">
             <video
               src="/videos/spatel-pan-grijs.mp4"
+              poster="/images/pdp/spatel-pan-grijs-poster.jpg"
               className="h-full w-full object-cover"
               autoPlay
               loop
