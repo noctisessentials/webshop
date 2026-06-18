@@ -6,6 +6,7 @@ import Image from 'next/image'
 import * as Accordion from '@radix-ui/react-accordion'
 import { Check, ChevronRight, Leaf, Minus, Package, Plus, Ruler, ShieldCheck, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { StickyAddToCartBar } from '@/components/ui/StickyAddToCartBar'
 import { cn, formatPrice } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
 import { type Product, type ProductColor } from '@/lib/data'
@@ -338,6 +339,7 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
   const [adding, setAdding] = useState(false)
   const [testimonialsPaused, setTestimonialsPaused] = useState(false)
 
+  const addToCartRef = useRef<HTMLDivElement | null>(null)
   const selectedColor = getSelectedColor(product)
   const galleryImages = getAcaciaGalleryImages(product)
   const activeGalleryImage = galleryImages[activeImageIndex] ?? galleryImages[0]
@@ -650,9 +652,11 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
                   <span className="text-[#1a6fb8] font-semibold">- {formatPrice(bundleDiscount)}</span>
                 </div>
               )}
-              <Button variant="accent" size="xl" fullWidth loading={adding} onClick={handleAddToCart}>
-                In winkelwagen - {formatPrice(totalCartValue)}
-              </Button>
+              <div ref={addToCartRef}>
+                <Button variant="accent" size="xl" fullWidth loading={adding} onClick={handleAddToCart}>
+                  In winkelwagen - {formatPrice(totalCartValue)}
+                </Button>
+              </div>
 
               <div className="border-y border-border py-4 space-y-3">
                 <div className="flex items-center gap-2 text-sm text-dark">
@@ -839,6 +843,19 @@ export function AcaciaLandingClient({ product, upsellProducts }: AcaciaLandingCl
           </div>
         </div>
       </section>
+
+      <StickyAddToCartBar
+        anchorRef={addToCartRef}
+        image={product.images[0]?.src ?? '/images/products/acacia.jpg'}
+        title="Acacia snijplank"
+        price={basePrice}
+        compareAtPrice={product.compareAtPrice && product.compareAtPrice > basePrice ? product.compareAtPrice : undefined}
+        colors={product.colors}
+        selectedColor={selectedColor}
+        onSelectColor={handleColorSelect}
+        onAddToCart={handleAddToCart}
+        adding={adding}
+      />
     </>
   )
 }

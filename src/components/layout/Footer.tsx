@@ -124,7 +124,7 @@ export async function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-white/10">
+      <div className="footer-bottom-bar border-t border-white/10">
         <div className="container-content py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs font-sans text-light/30 tracking-wide">
             © {new Date().getFullYear()} Noctis. {t('rights')}

@@ -306,6 +306,22 @@ body {
 }
 
 /* ===========================
+   STICKY ADD-TO-CART / CTA BAR
+   Pages with a fixed bottom bar add 'has-sticky-bar' to <body>
+   so the footer's payment-methods row doesn't get covered.
+=========================== */
+
+body.has-sticky-bar .footer-bottom-bar {
+  padding-bottom: 64px;
+}
+
+@media (min-width: 768px) {
+  body.has-sticky-bar .footer-bottom-bar {
+    padding-bottom: 72px;
+  }
+}
+
+/* ===========================
    MARQUEE
 =========================== */
 

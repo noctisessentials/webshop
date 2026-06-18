@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Check, ChevronRight, Minus, Pause, Play, Plus, ShieldCheck, Truck, X } from 'lucide-react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { Button } from '@/components/ui/Button'
+import { StickyAddToCartBar } from '@/components/ui/StickyAddToCartBar'
 import { cn, formatPrice } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
 import { type Product, type ProductColor } from '@/lib/data'
@@ -422,6 +423,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
   const { addItem } = useCart()
   const activeVideoRef = useRef<HTMLVideoElement | null>(null)
   const touchStartXRef = useRef<number | null>(null)
+  const addToCartRef = useRef<HTMLDivElement | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [openInfoRow, setOpenInfoRow] = useState('sleep')
   const [activeSetPartId, setActiveSetPartId] = useState<SetPartId>('messen-schaar')
@@ -887,15 +889,17 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                 <span className="text-[#1a6fb8] font-semibold">- {formatPrice(bundleDiscount)}</span>
               </div>
             )}
-            <Button
-              variant="accent"
-              size="xl"
-              fullWidth
-              loading={adding}
-              onClick={handleAddToCart}
-            >
-              In winkelwagen - {formatPrice(totalCartValue)}
-            </Button>
+            <div ref={addToCartRef}>
+              <Button
+                variant="accent"
+                size="xl"
+                fullWidth
+                loading={adding}
+                onClick={handleAddToCart}
+              >
+                In winkelwagen - {formatPrice(totalCartValue)}
+              </Button>
+            </div>
 
             <div className="border-y border-border py-4 space-y-3">
               <div className="flex items-center gap-2 text-sm text-dark">
@@ -1377,6 +1381,19 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
           </div>
         </div>
       </section>
+
+      <StickyAddToCartBar
+        anchorRef={addToCartRef}
+        image={product.images[0]?.src ?? '/images/products/kitchenware-black.jpg'}
+        title={kitchenSetTitle}
+        price={basePrice}
+        compareAtPrice={baseCompareAt > basePrice ? baseCompareAt : undefined}
+        colors={product.colors}
+        selectedColor={selectedColor}
+        onSelectColor={handleColorSelect}
+        onAddToCart={handleAddToCart}
+        adding={adding}
+      />
     </>
   )
 }
