@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type RefObject } from 'react'
 import Image from 'next/image'
-import { Check, Truck, RotateCcw } from 'lucide-react'
+import { Check, Truck, RotateCcw, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { cn, formatPrice } from '@/lib/utils'
 import { type ProductColor } from '@/lib/data'
@@ -127,9 +127,11 @@ export function StickyAddToCartBar({
               size="md"
               loading={adding}
               onClick={onAddToCart}
-              className="flex-shrink-0"
+              aria-label="In winkelwagen"
+              className="flex-shrink-0 px-3.5 sm:px-6"
             >
-              In winkelwagen
+              <ShoppingBag size={18} className="sm:hidden" />
+              <span className="hidden sm:inline">In winkelwagen</span>
             </Button>
           </div>
         </div>
