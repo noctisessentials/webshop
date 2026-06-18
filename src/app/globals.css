@@ -321,6 +321,19 @@ body.has-sticky-bar .footer-bottom-bar {
   }
 }
 
+/* Push the chat launcher above the sticky bar so it never overlaps it */
+body.has-sticky-bar .chat-widget-fixed {
+  bottom: 92px;
+  right: 12px;
+}
+
+@media (min-width: 768px) {
+  body.has-sticky-bar .chat-widget-fixed {
+    bottom: 100px;
+    right: 24px;
+  }
+}
+
 /* ===========================
    MARQUEE
 =========================== */

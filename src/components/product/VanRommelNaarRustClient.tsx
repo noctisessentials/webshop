@@ -77,7 +77,7 @@ const COMPARISON_ITEMS = [
 
 const FAQ_ITEMS = [
   { id: 'damage', question: 'Beschadigen de tools mijn pannen?', answer: 'Nee, juist niet. De siliconen koppen zijn zacht en veilig voor anti-aanbaklagen, zodat je pannen langer mooi blijven.' },
-  { id: 'heat', question: 'Zijn de tools hittebestendig?', answer: 'Ja, tot 230°C. Je kunt ze gewoon in de pan laten liggen zonder dat ze smelten of vervormen.' },
+  { id: 'heat', question: 'Zijn de tools hittebestendig?', answer: 'Ja, het siliconen materiaal is hittebestendig tot 230°C, dus het smelt of vervormt niet tijdens het koken.' },
   { id: 'dishwasher', question: 'Mag het in de vaatwasser?', answer: 'Liever niet. Handwas houdt alles op zijn mooist, voor langere tijd.' },
   { id: 'returns', question: 'Wat als het toch niet past?', answer: '14 dagen bedenktijd. Gewoon terugsturen, geen vragen nodig.' },
   { id: 'delivery', question: 'Hoe snel heb ik hem in huis?', answer: 'Voor 23:30 besteld, morgen al op je aanrecht.' },
