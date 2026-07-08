@@ -2,13 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocale } from 'next-intl'
-import { Bot, MessageCircle, Send, UserRound, X } from 'lucide-react'
+import { Bot, ExternalLink, MessageCircle, Package, Send, Truck, UserRound, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+type OrderTrackResult = {
+  number: string
+  status: string
+  customer_name: string
+  line_items: Array<{ name: string; quantity: number }>
+  tracking: { carrier: string | null; code: string | null; url: string | null }
+}
 
 type UiMessage = {
   id: string
   role: 'user' | 'assistant'
   content: string
+  trackingCard?: OrderTrackResult
 }
 
 type ChatApiResponse = {
@@ -26,6 +35,28 @@ type EscalationApiResponse = {
 
 const CHAT_SESSION_KEY = 'noctis-chat-session'
 
+const ORDER_STATUS_NL: Record<string, string> = {
+  pending: 'In behandeling',
+  processing: 'Wordt verwerkt',
+  'on-hold': 'In de wacht',
+  completed: 'Voltooid',
+  shipped: 'Onderweg',
+  cancelled: 'Geannuleerd',
+  refunded: 'Terugbetaald',
+  failed: 'Mislukt',
+}
+
+const ORDER_STATUS_EN: Record<string, string> = {
+  pending: 'Pending',
+  processing: 'Processing',
+  'on-hold': 'On hold',
+  completed: 'Completed',
+  shipped: 'Shipped',
+  cancelled: 'Cancelled',
+  refunded: 'Refunded',
+  failed: 'Failed',
+}
+
 const COPY = {
   nl: {
     launcher: 'Klantenservice chat',
@@ -41,6 +72,7 @@ const COPY = {
     quickReturns: 'Retourneren',
     quickDelivery: 'Levering',
     quickPayment: 'Betaling',
+    quickTrack: 'Bestelling volgen',
     quickHuman: 'Spreek medewerker',
     humanPrompt:
       'Natuurlijk, ik zet dit direct door. Laat hieronder je naam en e-mailadres achter. We nemen binnen 24 uur contact met je op.',
@@ -52,6 +84,18 @@ const COPY = {
     submitEscalation: 'Verstuur naar support',
     escalationLoading: 'Bezig met verzenden...',
     escalationSuccess: 'Bedankt, we nemen binnen 24 uur contact met je op.',
+    // Order tracking
+    orderTrackPrompt: 'Geen probleem! Geef je ordernummer en postcode, dan zoek ik het direct voor je op.',
+    orderNumber: 'Ordernummer',
+    orderPostcode: 'Postcode',
+    orderTrackSubmit: 'Opzoeken',
+    orderTrackLoading: 'Zoeken...',
+    orderTrackNotFound: 'Geen bestelling gevonden. Controleer je gegevens en probeer opnieuw.',
+    orderTrackTitle: 'Bestelling gevonden',
+    orderTrackCarrier: 'Track & trace',
+    orderTrackFollow: 'Volg pakket',
+    orderTrackNoTracking: 'Nog geen trackinginformatie beschikbaar. Je ontvangt een e-mail zodra je pakket onderweg is.',
+    orderStatusLabel: 'Status',
   },
   en: {
     launcher: 'Customer support chat',
@@ -67,6 +111,7 @@ const COPY = {
     quickReturns: 'Returns',
     quickDelivery: 'Delivery',
     quickPayment: 'Payment',
+    quickTrack: 'Track order',
     quickHuman: 'Talk to a person',
     humanPrompt:
       'Absolutely, I will escalate this right away. Please share your name and email below. We will get back to you within 24 hours.',
@@ -78,11 +123,27 @@ const COPY = {
     submitEscalation: 'Send to support',
     escalationLoading: 'Sending...',
     escalationSuccess: 'Thanks, we will contact you within 24 hours.',
+    // Order tracking
+    orderTrackPrompt: 'No problem! Share your order number and postcode and I\'ll look it up right away.',
+    orderNumber: 'Order number',
+    orderPostcode: 'Postcode',
+    orderTrackSubmit: 'Look up',
+    orderTrackLoading: 'Searching...',
+    orderTrackNotFound: 'No order found. Please check your details and try again.',
+    orderTrackTitle: 'Order found',
+    orderTrackCarrier: 'Track & trace',
+    orderTrackFollow: 'Track package',
+    orderTrackNoTracking: 'No tracking information yet. You\'ll receive an email once your package is on its way.',
+    orderStatusLabel: 'Status',
   },
 } as const
 
 function isHumanSupportIntent(text: string): boolean {
   return /(human|real person|agent|support medewerker|medewerker|persoon spreken|iemand spreken|mens spreken|customer service|klantenservice)/i.test(text)
+}
+
+function isOrderTrackIntent(text: string): boolean {
+  return /(bestelling volgen|track|traceer|volgen|pakket|where.*order|waar.*bestelling|waar.*pakket|status.*bestelling|bestelling.*status|wanneer.*levering|levering.*wanneer|mijn bestelling|order.*status)/i.test(text)
 }
 
 function makeId() {
@@ -99,6 +160,66 @@ function getOrCreateSessionId() {
   const created = makeId()
   window.localStorage.setItem(CHAT_SESSION_KEY, created)
   return created
+}
+
+type CopyShape = typeof COPY['nl'] | typeof COPY['en']
+
+function TrackingCard({ data, t, locale }: { data: OrderTrackResult; t: CopyShape; locale: 'nl' | 'en' }) {
+  const statusMap = locale === 'en' ? ORDER_STATUS_EN : ORDER_STATUS_NL
+  const statusLabel = statusMap[data.status] ?? data.status
+
+  return (
+    <div className="mt-2 rounded-xl border border-border bg-white overflow-hidden text-[12.5px]">
+      {/* Header */}
+      <div className="px-3 py-2.5 border-b border-border flex items-center justify-between gap-2">
+        <div>
+          <p className="font-semibold text-dark">#{data.number}</p>
+          <p className="text-muted text-[11px]">{data.customer_name}</p>
+        </div>
+        <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-100 whitespace-nowrap">
+          {statusLabel}
+        </span>
+      </div>
+
+      {/* Products */}
+      {data.line_items.length > 0 && (
+        <div className="px-3 py-2 border-b border-border space-y-1">
+          {data.line_items.slice(0, 3).map((item, i) => (
+            <div key={i} className="flex items-center gap-1.5 text-dark/75">
+              <Package size={10} className="text-muted flex-shrink-0" />
+              <span>{item.name} × {item.quantity}</span>
+            </div>
+          ))}
+          {data.line_items.length > 3 && (
+            <p className="text-muted text-[10px]">+{data.line_items.length - 3} meer</p>
+          )}
+        </div>
+      )}
+
+      {/* Tracking */}
+      <div className="px-3 py-2.5">
+        {data.tracking.url ? (
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-dark/70 min-w-0">
+              <Truck size={11} className="flex-shrink-0 text-blue-600" />
+              <span className="truncate">{data.tracking.carrier ?? 'DHL'}{data.tracking.code ? ` · ${data.tracking.code}` : ''}</span>
+            </div>
+            <a
+              href={data.tracking.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg bg-dark text-white hover:bg-dark/85 transition-colors"
+            >
+              {t.orderTrackFollow}
+              <ExternalLink size={9} />
+            </a>
+          </div>
+        ) : (
+          <p className="text-muted text-[11px] italic">{t.orderTrackNoTracking}</p>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export function ChatWidget() {
@@ -123,6 +244,13 @@ export function ChatWidget() {
   const [escalationStatus, setEscalationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [escalationFeedback, setEscalationFeedback] = useState('')
 
+  // Order tracking form state
+  const [showOrderTrackForm, setShowOrderTrackForm] = useState(false)
+  const [orderTrackNumber, setOrderTrackNumber] = useState('')
+  const [orderTrackPostcode, setOrderTrackPostcode] = useState('')
+  const [orderTrackLoading, setOrderTrackLoading] = useState(false)
+  const [orderTrackError, setOrderTrackError] = useState('')
+
   const listRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -132,7 +260,7 @@ export function ChatWidget() {
   useEffect(() => {
     if (!listRef.current) return
     listRef.current.scrollTop = listRef.current.scrollHeight
-  }, [messages, open, loading, showEscalationForm, escalationStatus])
+  }, [messages, open, loading, showEscalationForm, escalationStatus, showOrderTrackForm])
 
   const canSend = useMemo(() => input.trim().length > 0 && !loading, [input, loading])
 
@@ -140,8 +268,12 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, { id: makeId(), role: 'assistant', content }])
   }
 
-  const sendQuickPrompt = (prompt: string) => {
-    setInput(prompt)
+  const triggerOrderTrack = () => {
+    appendAssistant(t.orderTrackPrompt)
+    setShowOrderTrackForm(true)
+    setOrderTrackError('')
+    setOrderTrackNumber('')
+    setOrderTrackPostcode('')
   }
 
   const handleSend = async () => {
@@ -157,6 +289,11 @@ export function ChatWidget() {
     if (isHumanSupportIntent(text)) {
       appendAssistant(t.humanPrompt)
       setShowEscalationForm(true)
+      return
+    }
+
+    if (isOrderTrackIntent(text) && !showOrderTrackForm) {
+      triggerOrderTrack()
       return
     }
 
@@ -195,6 +332,47 @@ export function ChatWidget() {
       appendAssistant(t.fallbackError)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleOrderTrack = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setOrderTrackLoading(true)
+    setOrderTrackError('')
+
+    try {
+      const res = await fetch(
+        `/api/order-track?number=${encodeURIComponent(orderTrackNumber.trim())}&postcode=${encodeURIComponent(orderTrackPostcode.trim())}`
+      )
+
+      if (res.status === 404) {
+        setOrderTrackError(t.orderTrackNotFound)
+        return
+      }
+      if (!res.ok) {
+        setOrderTrackError(t.fallbackError)
+        return
+      }
+
+      const data: OrderTrackResult = await res.json()
+
+      setShowOrderTrackForm(false)
+      setOrderTrackNumber('')
+      setOrderTrackPostcode('')
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: makeId(),
+          role: 'assistant',
+          content: t.orderTrackTitle,
+          trackingCard: data,
+        },
+      ])
+    } catch {
+      setOrderTrackError(t.fallbackError)
+    } finally {
+      setOrderTrackLoading(false)
     }
   }
 
@@ -289,22 +467,34 @@ export function ChatWidget() {
               className={cn('chat-message-pop flex', message.role === 'user' ? 'justify-end' : 'justify-start')}
               style={{ animationDelay: `${Math.min(index * 35, 220)}ms` }}
             >
-              <div
-                className={cn(
-                  'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed shadow-[0_8px_26px_rgba(30,29,29,0.08)]',
-                  message.role === 'user'
-                    ? 'bg-dark text-white rounded-br-md'
-                    : 'bg-white text-dark rounded-bl-md border border-border/80'
-                )}
-              >
-                <div className="flex items-center gap-1.5 mb-1 opacity-70">
-                  {message.role === 'user' ? <UserRound size={12} /> : <Bot size={12} />}
-                  <span className="text-[10.5px] uppercase tracking-wider font-semibold">
-                    {message.role === 'user' ? t.you : 'Noctis'}
-                  </span>
+              {message.trackingCard ? (
+                // Tracking result card — full-width assistant bubble
+                <div className="w-full max-w-full rounded-2xl rounded-bl-md bg-white border border-border/80 shadow-[0_8px_26px_rgba(30,29,29,0.08)] px-3.5 py-2.5">
+                  <div className="flex items-center gap-1.5 mb-1.5 opacity-70">
+                    <Bot size={12} />
+                    <span className="text-[10.5px] uppercase tracking-wider font-semibold">Noctis</span>
+                  </div>
+                  <p className="text-[13.5px] leading-relaxed text-dark">{message.content}</p>
+                  <TrackingCard data={message.trackingCard!} t={t} locale={locale} />
                 </div>
-                {message.content}
-              </div>
+              ) : (
+                <div
+                  className={cn(
+                    'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed shadow-[0_8px_26px_rgba(30,29,29,0.08)]',
+                    message.role === 'user'
+                      ? 'bg-dark text-white rounded-br-md'
+                      : 'bg-white text-dark rounded-bl-md border border-border/80'
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 mb-1 opacity-70">
+                    {message.role === 'user' ? <UserRound size={12} /> : <Bot size={12} />}
+                    <span className="text-[10.5px] uppercase tracking-wider font-semibold">
+                      {message.role === 'user' ? t.you : 'Noctis'}
+                    </span>
+                  </div>
+                  {message.content}
+                </div>
+              )}
             </div>
           ))}
 
@@ -320,6 +510,40 @@ export function ChatWidget() {
             </div>
           )}
 
+          {/* Order tracking inline form */}
+          {showOrderTrackForm && (
+            <form onSubmit={handleOrderTrack} className="mt-2 bg-white border border-border rounded-2xl p-3.5 space-y-3 chat-message-pop">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t.quickTrack}</p>
+              <input
+                value={orderTrackNumber}
+                onChange={(e) => setOrderTrackNumber(e.target.value)}
+                required
+                placeholder={t.orderNumber}
+                inputMode="numeric"
+                className="w-full h-10 px-3 rounded-xl border border-border bg-surface/60 text-sm focus:outline-none focus:ring-2 focus:ring-dark/10"
+              />
+              <input
+                value={orderTrackPostcode}
+                onChange={(e) => setOrderTrackPostcode(e.target.value)}
+                required
+                placeholder={t.orderPostcode}
+                autoComplete="postal-code"
+                className="w-full h-10 px-3 rounded-xl border border-border bg-surface/60 text-sm focus:outline-none focus:ring-2 focus:ring-dark/10"
+              />
+              {orderTrackError && (
+                <p className="text-xs text-red-600">{orderTrackError}</p>
+              )}
+              <button
+                type="submit"
+                disabled={orderTrackLoading}
+                className="w-full h-10 rounded-xl bg-dark text-white text-sm font-semibold hover:bg-dark/85 transition-colors disabled:opacity-60"
+              >
+                {orderTrackLoading ? t.orderTrackLoading : t.orderTrackSubmit}
+              </button>
+            </form>
+          )}
+
+          {/* Escalation form */}
           {showEscalationForm && (
             <form onSubmit={handleEscalationSubmit} className="mt-2 bg-white border border-border rounded-2xl p-3.5 space-y-3 chat-message-pop">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t.contactTitle}</p>
@@ -363,26 +587,17 @@ export function ChatWidget() {
         </div>
 
         <div className="border-t border-border p-3 bg-white/92 space-y-2">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            <button
-              type="button"
-              onClick={() => sendQuickPrompt(t.quickDelivery)}
-              className="chat-quick-chip"
-            >
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+            <button type="button" onClick={() => triggerOrderTrack()} className="chat-quick-chip">
+              {t.quickTrack}
+            </button>
+            <button type="button" onClick={() => { setInput(t.quickDelivery) }} className="chat-quick-chip">
               {t.quickDelivery}
             </button>
-            <button
-              type="button"
-              onClick={() => sendQuickPrompt(t.quickReturns)}
-              className="chat-quick-chip"
-            >
+            <button type="button" onClick={() => { setInput(t.quickReturns) }} className="chat-quick-chip">
               {t.quickReturns}
             </button>
-            <button
-              type="button"
-              onClick={() => sendQuickPrompt(t.quickPayment)}
-              className="chat-quick-chip"
-            >
+            <button type="button" onClick={() => { setInput(t.quickPayment) }} className="chat-quick-chip">
               {t.quickPayment}
             </button>
             <button
