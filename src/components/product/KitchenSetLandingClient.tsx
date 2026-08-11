@@ -314,9 +314,19 @@ const KITCHEN_COLOR_OPTIONS: UpsellColorOption[] = [
   { label: 'Mintgroen', hex: '#7FB5A2', wcId: 2642, handle: '19-piece-kitchenware-mint-green', image: '/images/products/kitchenware-mint.jpg' },
 ]
 
+/**
+ * Labels and images live here, availability comes from the product's live WooCommerce stock
+ * (Product.colors is stock-merged server-side in lib/woocommerce.ts).
+ */
+function inStockOnly(options: UpsellColorOption[], upsell: Product): UpsellColorOption[] {
+  return options.filter(
+    (option) => upsell.colors.find((color) => color.wcSlug === option.handle)?.inStock !== false
+  )
+}
+
 function getUpsellColorOptions(upsell: Product): UpsellColorOption[] | null {
-  if (upsell.handle.includes('pepper-salt-mills')) return MILLS_COLOR_OPTIONS
-  if (upsell.handle.includes('19-piece-kitchenware')) return KITCHEN_COLOR_OPTIONS
+  if (upsell.handle.includes('pepper-salt-mills')) return inStockOnly(MILLS_COLOR_OPTIONS, upsell)
+  if (upsell.handle.includes('19-piece-kitchenware')) return inStockOnly(KITCHEN_COLOR_OPTIONS, upsell)
   return null
 }
 
@@ -478,7 +488,10 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
   const klarnaSplit = totalCartValue / 3
   const deliveryLine = getDeliveryLine(new Date())
 
+  const isSoldOut = !product.inStock || !selectedColor.inStock
+
   const handleAddToCart = async () => {
+    if (isSoldOut) return
     setAdding(true)
     await new Promise((resolve) => setTimeout(resolve, 450))
     addItem({ ...product, title: kitchenSetTitle }, selectedColor, 1)
@@ -733,7 +746,12 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
             {product.colors.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-sans text-muted">Geselecteerde kleur</p>
-                <p className="text-sm font-sans font-semibold text-dark">{getDutchColorName(selectedColor)}</p>
+                <p className="text-sm font-sans font-semibold text-dark">
+                  {getDutchColorName(selectedColor)}
+                  {!selectedColor.inStock && (
+                    <span className="ml-2 font-normal text-muted">· Uitverkocht</span>
+                  )}
+                </p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {product.colors.map((color) => (
                     <button
@@ -741,8 +759,16 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                       type="button"
                       onClick={() => handleColorSelect(color)}
                       disabled={!color.inStock}
-                      aria-label={getDutchColorName(color)}
-                      title={getDutchColorName(color)}
+                      aria-label={
+                        color.inStock
+                          ? getDutchColorName(color)
+                          : `${getDutchColorName(color)} — uitverkocht`
+                      }
+                      title={
+                        color.inStock
+                          ? getDutchColorName(color)
+                          : `${getDutchColorName(color)} — uitverkocht`
+                      }
                       className={cn(
                         'relative h-8 w-8 rounded-full border-2 transition-all duration-200 flex items-center justify-center',
                         selectedColor.slug === color.slug
@@ -895,10 +921,18 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
                 size="xl"
                 fullWidth
                 loading={adding}
+                disabled={isSoldOut}
                 onClick={handleAddToCart}
               >
-                In winkelwagen - {formatPrice(totalCartValue)}
+                {isSoldOut
+                  ? 'Uitverkocht'
+                  : `In winkelwagen - ${formatPrice(totalCartValue)}`}
               </Button>
+              {isSoldOut && (
+                <p className="mt-2 text-sm font-sans text-muted">
+                  Deze kleur is tijdelijk uitverkocht. Kies hierboven een andere kleur.
+                </p>
+              )}
             </div>
 
             <div className="border-y border-border py-4 space-y-3">
@@ -1393,6 +1427,7 @@ export function KitchenSetLandingClient({ product, upsellProducts }: KitchenSetL
         onSelectColor={handleColorSelect}
         onAddToCart={handleAddToCart}
         adding={adding}
+        soldOut={isSoldOut}
       />
     </>
   )

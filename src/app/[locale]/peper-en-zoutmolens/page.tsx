@@ -37,8 +37,7 @@ export default async function MillsLandingPage({
   if (!product) notFound()
 
   const kitchenUpsell =
-    (await getWCProductByHandle('19-piece-kitchenware-black-2')) ??
-    (await getWCProductByHandle('19-piece-kitchenware-black'))
+    await getLandingProduct('kitchenSet')
   const acaciaUpsell = await getWCProductByHandle('acacia-cutting-board')
   const upsellProducts = [kitchenUpsell, acaciaUpsell].filter(
     (item): item is Product => item !== undefined

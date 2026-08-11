@@ -103,13 +103,21 @@ export function ProductCard({
           />
         )}
 
-        {/* Badge */}
-        {product.badge && (
+        {/* Badge — sold out takes precedence over any marketing badge */}
+        {!product.inStock ? (
           <div className="absolute top-3 right-3 z-10">
-            <span className="inline-block bg-accent text-white text-2xs font-sans font-semibold px-2.5 py-1 rounded-full tracking-wide capitalize shadow-sm">
-              {product.badge}
+            <span className="inline-block bg-dark/85 text-light text-2xs font-sans font-semibold px-2.5 py-1 rounded-full tracking-wide shadow-sm">
+              Uitverkocht
             </span>
           </div>
+        ) : (
+          product.badge && (
+            <div className="absolute top-3 right-3 z-10">
+              <span className="inline-block bg-accent text-white text-2xs font-sans font-semibold px-2.5 py-1 rounded-full tracking-wide capitalize shadow-sm">
+                {product.badge}
+              </span>
+            </div>
+          )
         )}
 
         {/* Hover CTA */}

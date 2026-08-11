@@ -37,8 +37,7 @@ export default async function CuttingBoardLandingPage({
   if (!product) notFound()
 
   const kitchenUpsell =
-    (await getWCProductByHandle('19-piece-kitchenware-black-2')) ??
-    (await getWCProductByHandle('19-piece-kitchenware-black'))
+    await getLandingProduct('kitchenSet')
   const millsUpsell =
     (await getWCProductByHandle('pepper-salt-mills-black-white')) ??
     (await getWCProductByHandle('pepper-salt-mills-blackwhite'))

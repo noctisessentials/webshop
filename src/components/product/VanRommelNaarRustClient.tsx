@@ -61,6 +61,7 @@ function TestimonialCard({ review }: { review: (typeof TESTIMONIALS)[number] }) 
   )
 }
 
+// Presentation only — sold-out colors are filtered out against live WooCommerce stock.
 const COLOR_SWATCHES = [
   { label: 'Zwart', image: '/images/products/kitchenware-black.jpg', handle: '19-piece-kitchenware-black' },
   { label: 'Nude', image: '/images/products/kitchenware-nude.jpg', handle: '19-piece-kitchenware-nude' },
@@ -99,7 +100,13 @@ function MicroCta({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function VanRommelNaarRustClient() {
+type VanRommelNaarRustClientProps = {
+  /** Handles WooCommerce currently reports as sellable. */
+  inStockHandles: string[]
+}
+
+export function VanRommelNaarRustClient({ inStockHandles }: VanRommelNaarRustClientProps) {
+  const availableSwatches = COLOR_SWATCHES.filter((c) => inStockHandles.includes(c.handle))
   const [testimonialsPaused, setTestimonialsPaused] = useState(false)
   const [stickyVisible, setStickyVisible] = useState(false)
   const heroAnchorRef = useRef<HTMLDivElement | null>(null)
@@ -360,7 +367,7 @@ export function VanRommelNaarRustClient() {
         <div className="max-w-5xl mx-auto">
           <div data-animate className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 items-center">
             <div className="relative aspect-[4/5] w-full rounded-[24px] overflow-hidden">
-              <Image src="/images/story/kleur-sectie-2.webp" alt="De 19-delige keukenset in vijf kleuren naast elkaar" fill quality={95} className="object-cover" />
+              <Image src="/images/story/kleur-sectie-2.webp" alt="De 19-delige keukenset in meerdere kleuren naast elkaar" fill quality={95} className="object-cover" />
             </div>
             <div>
               <p className="font-sans text-xl md:text-2xl font-semibold text-dark leading-relaxed">
@@ -372,7 +379,7 @@ export function VanRommelNaarRustClient() {
               </p>
 
               <div className="flex gap-4 md:gap-5 mt-8 flex-wrap">
-                {COLOR_SWATCHES.map((c) => (
+                {availableSwatches.map((c) => (
                   <Link
                     key={c.label}
                     href={{ pathname: '/products/[handle]', params: { handle: c.handle } }}

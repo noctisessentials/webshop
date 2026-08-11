@@ -1,12 +1,19 @@
+/**
+ * Curated product content. The `inStock` flags here are the *fallback* used when WooCommerce
+ * is unreachable — live stock is overlaid per request in woocommerce.ts (see wc-stock.ts).
+ * Read products through `@/lib/woocommerce`, never straight from here, unless you only need
+ * static content (titles, images) and explicitly do not care about availability.
+ */
+
 import type { Product, ProductColor } from './data'
 import { PRODUCT_STATIC } from './data'
 
 // ── Color palettes ────────────────────────────────────────────────────────────
 
 const KITCHEN_COLORS: ProductColor[] = [
-  { name: 'Black',      slug: 'black',      hex: '#2C2C2C', inStock: true, wcId: 2640, wcSlug: '19-piece-kitchenware-black' },
-  { name: 'Nude',       slug: 'nude',       hex: '#E9E3D8', inStock: true, wcId: 1991, wcSlug: '19-piece-kitchenware-nude' },
-  { name: 'Grey',       slug: 'grey',       hex: '#B0ADA9', inStock: true, wcId: 2648, wcSlug: '19-piece-kitchenware-grey' },
+  { name: 'Black',      slug: 'black',      hex: '#2C2C2C', inStock: false, wcId: 2640, wcSlug: '19-piece-kitchenware-black' },
+  { name: 'Nude',       slug: 'nude',       hex: '#E9E3D8', inStock: true,  wcId: 1991, wcSlug: '19-piece-kitchenware-nude' },
+  { name: 'Grey',       slug: 'grey',       hex: '#B0ADA9', inStock: false, wcId: 2648, wcSlug: '19-piece-kitchenware-grey' },
   { name: 'Pink',       slug: 'pink',       hex: '#E8B4B8', inStock: true, wcId: 2645, wcSlug: '19-piece-kitchenware-pink' },
   { name: 'Mint Green', slug: 'mint-green', hex: '#A8C5B5', inStock: true, wcId: 2642, wcSlug: '19-piece-kitchenware-mint-green' },
 ]
@@ -44,7 +51,7 @@ export const STATIC_PRODUCTS: Product[] = [
     description: KS?.description ?? '',
     shortDescription: KS?.shortDescription ?? '',
     badge: 'Bestseller',
-    inStock: true,
+    inStock: false,
     images: [
       { src: '/images/products/kitchenware-black.jpg',            alt: '19-delige keukenset Zwart' },
       { src: '/images/pdp/kitchen-set-black/lifestyle-new.webp', alt: '19-delige keukenset Zwart — lifestyle' },
@@ -90,7 +97,7 @@ export const STATIC_PRODUCTS: Product[] = [
     description: KS?.description ?? '',
     shortDescription: KS?.shortDescription ?? '',
     badge: undefined,
-    inStock: true,
+    inStock: false,
     images: [
       { src: '/images/products/kitchenware-grey.jpg',             alt: '19-delige keukenset Grijs' },
       { src: '/images/pdp/kitchen-set-grey/lifestyle-new.webp',  alt: '19-delige keukenset Grijs — lifestyle' },
@@ -270,37 +277,6 @@ export function getProductByHandle(handle: string): Product | undefined {
   return STATIC_PRODUCTS.find((p) => p.handle === handle)
 }
 
-export function getRelatedProducts(currentHandle: string, limit = 3): Product[] {
-  const current = STATIC_PRODUCTS.find((p) => p.handle === currentHandle)
-  const others = STATIC_PRODUCTS.filter((p) => p.handle !== currentHandle && p.inStock)
-  const differentFamily = others.filter((p) => current && p.categoryHandle !== current.categoryHandle)
-  const sameFamily = others.filter((p) => current && p.categoryHandle === current.categoryHandle)
-  return [...differentFamily, ...sameFamily].slice(0, limit)
-}
-
 export function getProductSlugs(): string[] {
   return STATIC_PRODUCTS.map((p) => p.handle)
-}
-
-export function getCollections() {
-  return [
-    {
-      handle: 'all',
-      title: 'All Products',
-      description: 'The complete Noctis collection.',
-      products: STATIC_PRODUCTS,
-    },
-    {
-      handle: 'kitchen-sets',
-      title: 'Kitchen Sets',
-      description: 'Complete tool sets that bring cohesion and calm to your kitchen.',
-      products: STATIC_PRODUCTS.filter((p) => p.categoryHandle === 'kitchen-sets'),
-    },
-    {
-      handle: 'accessories',
-      title: 'Kitchen Accessories',
-      description: 'Refined individual pieces for a considered kitchen.',
-      products: STATIC_PRODUCTS.filter((p) => p.categoryHandle === 'accessories'),
-    },
-  ]
 }

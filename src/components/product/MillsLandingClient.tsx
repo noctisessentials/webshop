@@ -270,9 +270,19 @@ const MILLS_COLOR_OPTIONS: UpsellColorOption[] = [
   { label: 'Groen',     hex: '#4A6741', wcId: 2621, handle: 'pepper-salt-mills-green',       image: '/images/products/mills-green.jpg' },
 ]
 
+/**
+ * Labels and images live here, availability comes from the product's live WooCommerce stock
+ * (Product.colors is stock-merged server-side in lib/woocommerce.ts).
+ */
+function inStockOnly(options: UpsellColorOption[], upsell: Product): UpsellColorOption[] {
+  return options.filter(
+    (option) => upsell.colors.find((color) => color.wcSlug === option.handle)?.inStock !== false
+  )
+}
+
 function getUpsellColorOptions(upsell: Product): UpsellColorOption[] | null {
-  if (upsell.handle.includes('19-piece-kitchenware')) return KITCHEN_COLOR_OPTIONS
-  if (upsell.handle.includes('pepper-salt-mills')) return MILLS_COLOR_OPTIONS
+  if (upsell.handle.includes('19-piece-kitchenware')) return inStockOnly(KITCHEN_COLOR_OPTIONS, upsell)
+  if (upsell.handle.includes('pepper-salt-mills')) return inStockOnly(MILLS_COLOR_OPTIONS, upsell)
   return null
 }
 

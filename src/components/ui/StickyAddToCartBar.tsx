@@ -24,6 +24,7 @@ type StickyAddToCartBarProps = {
   onSelectColor: (color: ProductColor) => void
   onAddToCart: () => void
   adding: boolean
+  soldOut?: boolean
 }
 
 export function StickyAddToCartBar({
@@ -37,6 +38,7 @@ export function StickyAddToCartBar({
   onSelectColor,
   onAddToCart,
   adding,
+  soldOut = false,
 }: StickyAddToCartBarProps) {
   const [visible, setVisible] = useState(false)
 
@@ -126,12 +128,19 @@ export function StickyAddToCartBar({
               variant="accent"
               size="md"
               loading={adding}
+              disabled={soldOut}
               onClick={onAddToCart}
-              aria-label="In winkelwagen"
+              aria-label={soldOut ? 'Uitverkocht' : 'In winkelwagen'}
               className="flex-shrink-0 px-3.5 sm:px-6"
             >
-              <ShoppingBag size={18} className="sm:hidden" />
-              <span className="hidden sm:inline">In winkelwagen</span>
+              {soldOut ? (
+                <span className="text-xs sm:text-sm">Uitverkocht</span>
+              ) : (
+                <>
+                  <ShoppingBag size={18} className="sm:hidden" />
+                  <span className="hidden sm:inline">In winkelwagen</span>
+                </>
+              )}
             </Button>
           </div>
         </div>

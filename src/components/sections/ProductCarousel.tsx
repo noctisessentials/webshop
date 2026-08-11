@@ -133,21 +133,36 @@ function buildCarouselItems(products: Product[], customProducts?: Product[]): Ca
     return undefined
   }
 
+  const toItem = (product: Product, spec?: BestsellerSpec): CarouselItem => ({
+    id: spec?.id ?? product.id,
+    handle: product.handle,
+    title: spec?.title ?? product.title,
+    variant: spec?.variant ?? getVariantLabelFromProduct(product),
+    price: product.price,
+    compareAtPrice: product.compareAtPrice,
+    image: product.images[0]?.src ?? `https://picsum.photos/seed/${product.handle}/560/700`,
+    hoverImage: product.images[1]?.src ?? getHoverImageFallback(product.handle),
+  })
+
+  // Only sellable products belong in a bestsellers rail — a sold-out tile is a dead click.
   const items: CarouselItem[] = []
+  const usedHandles = new Set<string>()
+
   for (const spec of BESTSELLER_SPECS) {
     const product = findByCandidates(spec.handleCandidates)
-    if (!product) continue
+    if (!product || !product.inStock || usedHandles.has(product.handle)) continue
+    usedHandles.add(product.handle)
+    items.push(toItem(product, spec))
+  }
 
-    items.push({
-      id: spec.id,
-      handle: product.handle,
-      title: spec.title,
-      variant: spec.variant,
-      price: product.price,
-      compareAtPrice: product.compareAtPrice,
-      image: product.images[0]?.src ?? `https://picsum.photos/seed/${product.handle}/560/700`,
-      hoverImage: product.images[1]?.src ?? getHoverImageFallback(product.handle),
-    })
+  // Top the rail back up with whatever else is in stock, so a sold-out colour does not
+  // shrink the carousel.
+  const targetLength = BESTSELLER_SPECS.length
+  for (const product of products) {
+    if (items.length >= targetLength) break
+    if (!product.inStock || usedHandles.has(product.handle)) continue
+    usedHandles.add(product.handle)
+    items.push(toItem(product))
   }
 
   return items
@@ -212,7 +227,13 @@ export function ProductCarousel({
   useEffect(() => {
     const track = trackRef.current
     if (!track || items.length <= 1) return
-    const cw = track.offsetWidth / 3
+    // Measure true copy period as distance between first item of copy1 and copy2
+    // This avoids errors from track padding not dividing evenly by 3
+    const children = track.children
+    if (children.length < items.length + 1) return
+    const rect0 = (children[0] as HTMLElement).getBoundingClientRect()
+    const rectN = (children[items.length] as HTMLElement).getBoundingClientRect()
+    const cw = rectN.left - rect0.left
     copyWidthRef.current = cw
     posRef.current = -cw
     track.style.transform = `translateX(${-cw}px)`

@@ -14,10 +14,9 @@ export const metadata: Metadata = {
 export default async function KitchenSetCadeauPage() {
   const fallback = await getLandingProduct('kitchenSet')
 
-  const product =
-    (await getWCProductByHandle('19-piece-kitchenware-black-2')) ??
-    (await getWCProductByHandle('19-piece-kitchenware-black')) ??
-    fallback
+  // getLandingProduct picks the first kitchen-set variant WooCommerce reports as sellable,
+  // so this page never opens on a sold-out colour.
+  const product = fallback
 
   if (!product) return null
 

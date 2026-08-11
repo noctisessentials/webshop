@@ -168,6 +168,7 @@ export function KitchenSetStijlClient({ product }: Props) {
   const vid2 = useRef<HTMLVideoElement>(null)
 
   const sortedColors = sortColors(product.colors)
+  const availableColorCount = sortedColors.filter((color) => color.inStock).length
 
   // Scroll animations
   useEffect(() => {
@@ -283,7 +284,7 @@ export function KitchenSetStijlClient({ product }: Props) {
         <div className="max-w-5xl mx-auto">
           <div data-animate className="text-center mb-10">
             <p className="text-[10px] font-sans font-semibold uppercase tracking-[0.24em] text-accent mb-3">
-              5 kleuren
+              {availableColorCount} {availableColorCount === 1 ? 'kleur' : 'kleuren'}
             </p>
             <h2
               className="font-sans font-bold text-dark"

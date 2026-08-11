@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import type { UTMData } from '@/lib/utm'
 import { validateDiscountViaWC } from '@/lib/discounts'
 import { STATIC_PRODUCTS } from '@/lib/products-static'
+import { getSoldOutWcIds } from '@/lib/wc-stock'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -41,6 +42,22 @@ export async function POST(request: Request) {
 
     if (!items?.length) {
       return NextResponse.json({ error: 'No items' }, { status: 400 })
+    }
+
+    // Never take money for stock the fulfilment partner cannot ship. Checked against live
+    // WooCommerce stock, uncached, because the cart may have been sitting open for a while.
+    const soldOutIds = await getSoldOutWcIds(items.map((i) => i.wcId))
+    if (soldOutIds.length > 0) {
+      const soldOutTitles = items
+        .filter((i) => soldOutIds.includes(i.wcId))
+        .map((i) => (i.colorName ? `${i.title} — ${i.colorName}` : i.title))
+      return NextResponse.json(
+        {
+          error: `Niet meer op voorraad: ${[...new Set(soldOutTitles)].join(', ')}. Pas je winkelwagen aan om verder te gaan.`,
+          soldOutWcIds: soldOutIds,
+        },
+        { status: 409 }
+      )
     }
 
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)

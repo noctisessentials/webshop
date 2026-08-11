@@ -33,19 +33,9 @@ export default async function KitchenSetLandingPage({
   const { locale } = await params
   const t = await getTranslations('product')
 
-  const fallbackFamilyProduct = await getLandingProduct('kitchenSet')
-  const blackSiblingSlug = fallbackFamilyProduct?.colors.find((color) =>
-    /black|zwart/.test(`${color.slug} ${color.name}`.toLowerCase())
-  )?.wcSlug
-  const blackSiblingProduct = blackSiblingSlug
-    ? await getWCProductByHandle(blackSiblingSlug)
-    : undefined
-
-  const product =
-    (await getWCProductByHandle('19-piece-kitchenware-black-2')) ??
-    (await getWCProductByHandle('19-piece-kitchenware-black')) ??
-    blackSiblingProduct ??
-    fallbackFamilyProduct
+  // getLandingProduct picks the first kitchen-set variant WooCommerce reports as sellable,
+  // so this page never opens on a sold-out colour.
+  const product = await getLandingProduct('kitchenSet')
 
   if (!product) notFound()
 

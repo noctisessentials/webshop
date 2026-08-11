@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getWCProductByHandle, getWCProductSlugs } from '@/lib/woocommerce'
+import { getLandingProduct } from '@/lib/landingPages'
 import { ProductPageClient } from '@/components/product/ProductPageClient'
 import { KitchenSetLandingClient } from '@/components/product/KitchenSetLandingClient'
 import { MillsLandingClient } from '@/components/product/MillsLandingClient'
@@ -169,8 +170,7 @@ export default async function ProductPage({
 
   if (isMillsVariant) {
     const kitchenUpsell =
-      (await getWCProductByHandle('19-piece-kitchenware-black-2')) ??
-      (await getWCProductByHandle('19-piece-kitchenware-black'))
+      await getLandingProduct('kitchenSet')
     const acaciaUpsell = await getWCProductByHandle('acacia-cutting-board')
     const upsellProducts = [kitchenUpsell, acaciaUpsell].filter(
       (item): item is Product => item !== undefined
@@ -197,8 +197,7 @@ export default async function ProductPage({
 
   if (isAcaciaVariant) {
     const kitchenUpsell =
-      (await getWCProductByHandle('19-piece-kitchenware-black-2')) ??
-      (await getWCProductByHandle('19-piece-kitchenware-black'))
+      await getLandingProduct('kitchenSet')
     const millsUpsell =
       (await getWCProductByHandle('pepper-salt-mills-black-white')) ??
       (await getWCProductByHandle('pepper-salt-mills-blackwhite'))

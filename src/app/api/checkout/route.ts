@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getSoldOutWcIds } from '@/lib/wc-stock'
 
 type CheckoutItem = {
   wcId: number
@@ -11,6 +12,17 @@ export async function POST(request: Request) {
 
     if (!items?.length) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
+    }
+
+    const soldOutIds = await getSoldOutWcIds(items.map((i) => i.wcId))
+    if (soldOutIds.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Een of meer producten in je winkelwagen zijn niet meer op voorraad.',
+          soldOutWcIds: soldOutIds,
+        },
+        { status: 409 }
+      )
     }
 
     const WC_URL = process.env.NEXT_PUBLIC_WC_URL

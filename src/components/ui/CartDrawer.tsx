@@ -28,17 +28,6 @@ type CartSuggestion = {
 
 const ALL_SUGGESTIONS: CartSuggestion[] = [
   {
-    id: 'upsell-kitchen-black',
-    handle: 'pepper-salt-mills-black-white',
-    title: '19-delige keukenset zwart',
-    titleEn: '19-Piece Kitchen Set black',
-    subtitle: 'Perfecte match bij je molens',
-    price: 64.95,
-    image: '/images/products/kitchenware-black.jpg',
-    href: '/products/19-piece-kitchenware-black',
-    color: { name: 'Zwart', slug: 'black', hex: '#1E1D1D', inStock: true, wcId: 2640 },
-  },
-  {
     id: 'upsell-kitchen-nude',
     handle: '19-piece-kitchenware-nude',
     title: '19-delige keukenset nude',
@@ -111,7 +100,6 @@ function getSuggestions(cartHandles: Set<string>): CartSuggestion[] {
   const millsBlackWhite = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-mills-black-white')!
   const millsWhite = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-mills-white')!
   const millsGreen = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-mills-green')!
-  const kitchenBlack = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-kitchen-black')!
   const kitchenNude = ALL_SUGGESTIONS.find((s) => s.id === 'upsell-kitchen-nude')!
 
   const hasKitchenBlack = [...cartHandles].some((h) => h.includes('19-piece-kitchenware-black'))
@@ -133,15 +121,15 @@ function getSuggestions(cartHandles: Set<string>): CartSuggestion[] {
   else if (hasKitchen && !hasMills) candidates.push(millsBlackWhite)
 
   if (hasMillsWhite && !hasKitchen) candidates.push(kitchenNude)
-  else if ((hasMillsBlackWhite || hasMillsGreen) && !hasKitchen) candidates.push(kitchenBlack)
-  else if (hasMills && !hasKitchen) candidates.push(kitchenBlack)
+  else if ((hasMillsBlackWhite || hasMillsGreen) && !hasKitchen) candidates.push(kitchenNude)
+  else if (hasMills && !hasKitchen) candidates.push(kitchenNude)
 
-  if (hasAcacia && !hasKitchen) candidates.push(kitchenBlack)
+  if (hasAcacia && !hasKitchen) candidates.push(kitchenNude)
   if (hasAcacia && !hasMills) candidates.push(millsBlackWhite)
 
   if (!hasAcacia) candidates.push(acacia)
   if (!hasMills && !candidates.some((c) => c.id.includes('mills'))) candidates.push(millsBlackWhite)
-  if (!hasKitchen && !candidates.some((c) => c.id.includes('kitchen'))) candidates.push(kitchenBlack)
+  if (!hasKitchen && !candidates.some((c) => c.id.includes('kitchen'))) candidates.push(kitchenNude)
 
   const seen = new Set<string>()
   return candidates.filter((s) => {
